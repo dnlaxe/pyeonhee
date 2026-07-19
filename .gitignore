@@ -1,0 +1,21 @@
+# Node / frontend / CDK
+node_modules/
+dist/
+cdk.out/
+*.js
+!jest.config.js
+*.d.ts
+!*.config.js
+
+# Go
+backend/bin/
+*.exe
+
+# Env
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
