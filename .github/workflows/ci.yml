@@ -48,4 +48,4 @@ jobs:
         run: go build
 
       - name: ubuntu-latest
-        run: go test ./..
+        run: go test ./...
