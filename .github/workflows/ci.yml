@@ -49,3 +49,32 @@ jobs:
 
       - name: ubuntu-latest
         run: go test ./...
+
+  infra:
+    name: Infra
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Check out repo code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: infra/go.mod
+          cache-dependency-path: infra/go.sum
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Test
+        run: go test ./...
+
+      - name: Synth
+        run: cdk synth
