@@ -8,5 +8,11 @@ jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repo code
+        uses: actions/checkout@v7
+
+      - name: List files
+        run: ls
+
       - name: Say hello
-        run: echo "Hello from CI!"
+        run: echo "hello from CI"
