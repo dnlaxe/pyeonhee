@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Say hello
-        run: echo "Hello from CI"
+        run: echo "Hello from CI!"
