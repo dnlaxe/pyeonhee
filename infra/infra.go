@@ -6,6 +6,8 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+	"github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -30,7 +32,18 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
-	awscdk.NewCfnOutput(stack, jsii.String("Table Name"), &awscdk.CfnOutputProps{
+	fn := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("JobsFunction"), &awscdklambdagoalpha.GoFunctionProps{
+		Entry:        jsii.String("../backend"),
+		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
+		Architecture: awslambda.Architecture_ARM_64(),
+		Environment: &map[string]*string{
+			"TABLE_NAME": table.TableName(),
+		},
+	})
+
+	table.GrantReadData(fn)
+
+	awscdk.NewCfnOutput(stack, jsii.String("TableName"), &awscdk.CfnOutputProps{
 		Value: table.TableName(),
 	})
 

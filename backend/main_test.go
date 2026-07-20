@@ -2,12 +2,18 @@ package main
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
 )
 
 func TestHandlerListsJobs(t *testing.T) {
+
+	if os.Getenv("TABLE_NAME") == "" {
+		t.Skip("TABLE_NAME is not set - tested in AWS after deploy")
+	}
+
 	resp, err := handler(context.Background(), events.APIGatewayV2HTTPRequest{
 		RawPath: "/jobs",
 		RequestContext: events.APIGatewayV2HTTPRequestContext{
