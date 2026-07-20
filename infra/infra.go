@@ -58,9 +58,15 @@ func env() *awscdk.Environment {
 	// Account/Region-dependent features and context lookups will not work, but a
 	// single synthesized template can be deployed anywhere.
 	//---------------------------------------------------------------------------
+	account := os.Getenv("CDK_DEFAULT_ACCOUNT")
+	region := os.Getenv("CDK_DEFAULT_REGION")
+
+	if account == "" || region == "" {
+		return nil
+	}
 	return &awscdk.Environment{
-		Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
-		Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+		Account: jsii.String(account),
+		Region:  jsii.String(region),
 	}
 
 	// Uncomment if you know exactly what account and region you want to deploy
