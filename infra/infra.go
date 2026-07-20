@@ -1,7 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
@@ -18,12 +21,18 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
-	// The code that defines your stack goes here
+	table := awsdynamodb.NewTable(stack, jsii.String("JobsTable"), &awsdynamodb.TableProps{
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("id"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+	})
 
-	// example resource
-	// queue := awssqs.NewQueue(stack, jsii.String("InfraQueue"), &awssqs.QueueProps{
-	// 	VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
-	// })
+	awscdk.NewCfnOutput(stack, jsii.String("Table Name"), &awscdk.CfnOutputProps{
+		Value: table.TableName(),
+	})
 
 	return stack
 }
@@ -49,7 +58,10 @@ func env() *awscdk.Environment {
 	// Account/Region-dependent features and context lookups will not work, but a
 	// single synthesized template can be deployed anywhere.
 	//---------------------------------------------------------------------------
-	return nil
+	return &awscdk.Environment{
+		Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
+		Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+	}
 
 	// Uncomment if you know exactly what account and region you want to deploy
 	// the stack to. This is the recommendation for production stacks.
