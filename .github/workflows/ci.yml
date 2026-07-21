@@ -61,6 +61,7 @@ jobs:
 
   infra:
     name: Infra
+    needs: [frontend]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -74,6 +75,7 @@ jobs:
         with:
           go-version-file: infra/go.mod
           cache-dependency-path: infra/go.sum
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -84,6 +86,12 @@ jobs:
 
       - name: Test
         run: go test ./...
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v5
+        with:
+          name: frontend-dist
+          path: frontend/dist
 
       - name: Synth
         run: cdk synth
@@ -96,6 +104,12 @@ jobs:
     steps:
       - name: Check out repo code
         uses: actions/checkout@v7
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v5
+        with:
+          name: frontend-dist
+          path: frontend/dist
 
       - name: Set up Go
         uses: actions/setup-go@v5
