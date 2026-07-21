@@ -31,6 +31,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
   backend:
     name: Backend
     runs-on: ubuntu-latest
@@ -87,9 +93,6 @@ jobs:
     needs: [frontend, backend, infra]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
     steps:
       - name: Check out repo code
         uses: actions/checkout@v7
@@ -104,16 +107,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve API URL from stack
+        id: api
+        working-directory: scripts/get-api-url
+        run: go run .
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ steps.api.outputs.url }}
+        run: npm run build
 
       - name: Install CDK CLI
         run: npm install -g aws-cdk
 
       - name: Deploy CDK stack
+        working-directory: infra
         run: cdk deploy --require-approval never --ci
