@@ -13,6 +13,12 @@ import (
 	"github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
+
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscloudfront"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscloudfrontorigins"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awss3"
+
+	"github.com/aws/aws-cdk-go/awscdk/v2/awss3deployment"
 )
 
 type InfraStackProps struct {
@@ -68,11 +74,42 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Integration: integration,
 	})
 
+	siteBucket := awss3.NewBucket(stack, jsii.String("SiteBucket"), &awss3.BucketProps{
+		BlockPublicAccess: awss3.BlockPublicAccess_BLOCK_ALL(),
+		Encryption:        awss3.BucketEncryption_S3_MANAGED,
+		EnforceSSL:        jsii.Bool(true),
+		RemovalPolicy:     awscdk.RemovalPolicy_DESTROY,
+		AutoDeleteObjects: jsii.Bool(true),
+	})
+
+	distribution := awscloudfront.NewDistribution(stack, jsii.String("SiteDistribution"), &awscloudfront.DistributionProps{
+		DefaultRootObject: jsii.String("index.html"),
+		DefaultBehavior: &awscloudfront.BehaviorOptions{
+			Origin: awscloudfrontorigins.S3BucketOrigin_WithOriginAccessControl(
+				siteBucket,
+				nil,
+			),
+			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
+		},
+	})
+
+	awss3deployment.NewBucketDeployment(stack, jsii.String("DeployWebsite"), &awss3deployment.BucketDeploymentProps{
+		Sources: &[]awss3deployment.ISource{
+			awss3deployment.Source_Asset(jsii.String("../frontend/dist"), nil),
+		},
+		DestinationBucket: siteBucket,
+		Distribution:      distribution,
+		DistributionPaths: jsii.Strings("/*"),
+	})
+
 	awscdk.NewCfnOutput(stack, jsii.String("TableName"), &awscdk.CfnOutputProps{
 		Value: table.TableName(),
 	})
 	awscdk.NewCfnOutput(stack, jsii.String("ApiUrl"), &awscdk.CfnOutputProps{
 		Value: httpApi.ApiEndpoint(),
+	})
+	awscdk.NewCfnOutput(stack, jsii.String("SiteUrl"), &awscdk.CfnOutputProps{
+		Value: jsii.String("https://" + *distribution.DistributionDomainName()),
 	})
 
 	return stack
