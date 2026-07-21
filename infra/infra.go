@@ -4,7 +4,10 @@ import (
 	"os"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2integrations"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
+
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
@@ -43,8 +46,33 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 
 	table.GrantReadData(fn)
 
+	httpApi := awsapigatewayv2.NewHttpApi(stack, jsii.String("JobsApi"), &awsapigatewayv2.HttpApiProps{
+		ApiName: jsii.String("pyeonhee-jobs"),
+		CorsPreflight: &awsapigatewayv2.CorsPreflightOptions{
+			AllowOrigins: jsii.Strings("*"),
+			AllowMethods: &[]awsapigatewayv2.CorsHttpMethod{
+				awsapigatewayv2.CorsHttpMethod_GET,
+			},
+		},
+	})
+
+	integration := awsapigatewayv2integrations.NewHttpLambdaIntegration(
+		jsii.String("JobsIntegration"),
+		fn,
+		nil,
+	)
+
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/jobs"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Integration: integration,
+	})
+
 	awscdk.NewCfnOutput(stack, jsii.String("TableName"), &awscdk.CfnOutputProps{
 		Value: table.TableName(),
+	})
+	awscdk.NewCfnOutput(stack, jsii.String("ApiUrl"), &awscdk.CfnOutputProps{
+		Value: httpApi.ApiEndpoint(),
 	})
 
 	return stack
