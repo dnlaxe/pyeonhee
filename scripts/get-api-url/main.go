@@ -25,7 +25,7 @@ func main() {
 		StackName: aws.String("InfraStack"),
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "describe stack: %v/n", err)
+		fmt.Fprintf(os.Stderr, "describe stack: %v\n", err)
 		os.Exit(1)
 	}
 

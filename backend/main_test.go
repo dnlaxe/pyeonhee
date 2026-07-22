@@ -6,15 +6,23 @@ import (
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
+	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	"github.com/go-chi/chi/v5"
 )
 
-func TestHandlerListsJobs(t *testing.T) {
+func newTestAdapter() *chiadapter.ChiLambdaV2 {
+	r := chi.NewRouter()
+	r.Get("/jobs", listJobs)
+	return chiadapter.NewV2(r)
+}
 
+func TestHandlerListsJobs(t *testing.T) {
 	if os.Getenv("TABLE_NAME") == "" {
 		t.Skip("TABLE_NAME is not set - tested in AWS after deploy")
 	}
 
-	resp, err := handler(context.Background(), events.APIGatewayV2HTTPRequest{
+	adapter := newTestAdapter()
+	resp, err := adapter.ProxyWithContextV2(context.Background(), events.APIGatewayV2HTTPRequest{
 		RawPath: "/jobs",
 		RequestContext: events.APIGatewayV2HTTPRequestContext{
 			HTTP: events.APIGatewayV2HTTPRequestContextHTTPDescription{
@@ -34,7 +42,8 @@ func TestHandlerListsJobs(t *testing.T) {
 }
 
 func TestHandlerNotFound(t *testing.T) {
-	resp, err := handler(context.Background(), events.APIGatewayV2HTTPRequest{
+	adapter := newTestAdapter()
+	resp, err := adapter.ProxyWithContextV2(context.Background(), events.APIGatewayV2HTTPRequest{
 		RawPath: "/nope",
 		RequestContext: events.APIGatewayV2HTTPRequestContext{
 			HTTP: events.APIGatewayV2HTTPRequestContextHTTPDescription{
