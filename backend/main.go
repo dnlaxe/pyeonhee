@@ -1,15 +1,18 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Job struct {
@@ -18,62 +21,105 @@ type Job struct {
 	Company string `json:"company" dynamodbav:"company"`
 }
 
-func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	if req.RequestContext.HTTP.Method != "GET" || req.RawPath != "/jobs" {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: 404,
-			Body:       "not found",
-		}, nil
-	}
+func listJobs(w http.ResponseWriter, r *http.Request) {
 
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: 500,
-			Body:       "TABLE_NAME not set",
-		}, nil
+		http.Error(w, "TABLE_NAME not set", http.StatusInternalServerError)
+		return
 	}
 
-	cfg, err := config.LoadDefaultConfig(ctx)
+	cfg, err := config.LoadDefaultConfig(r.Context())
 	if err != nil {
-		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: err.Error()}, nil
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	client := dynamodb.NewFromConfig(cfg)
-	out, err := client.Scan(ctx, &dynamodb.ScanInput{
+	out, err := client.Scan(r.Context(), &dynamodb.ScanInput{
 		TableName: &tableName,
 	})
 	if err != nil {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: 500,
-			Body:       err.Error(),
-		}, nil
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	var jobs []Job
 	if err := attributevalue.UnmarshalListOfMaps(out.Items, &jobs); err != nil {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: 500,
-			Body:       err.Error(),
-		}, nil
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-
 	if jobs == nil {
 		jobs = []Job{}
 	}
 
-	body, err := json.Marshal(jobs)
-	if err != nil {
-		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: err.Error()}, nil
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(jobs); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func getJob(w http.ResponseWriter, r *http.Request) {
+
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
 	}
 
-	return events.APIGatewayV2HTTPResponse{
-		StatusCode: 200,
-		Headers:    map[string]string{"content-type": "application/json"},
-		Body:       string(body),
-	}, nil
+	tableName := os.Getenv("TABLE_NAME")
+	if tableName == "" {
+		http.Error(w, "TABLE_NAME not set", http.StatusInternalServerError)
+		return
+	}
+
+	cfg, err := config.LoadDefaultConfig(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	client := dynamodb.NewFromConfig(cfg)
+	out, err := client.GetItem(r.Context(), &dynamodb.GetItemInput{
+		TableName: &tableName,
+		Key: map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: id},
+		},
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if out.Item == nil {
+		http.Error(w, "job not found", http.StatusNotFound)
+		return
+	}
+
+	var job Job
+	if err := attributevalue.UnmarshalMap(out.Item, &job); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(job); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
-	lambda.Start(handler)
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Get("/jobs", listJobs)
+	r.Get("/jobs/{id}", getJob)
+
+	adapter := chiadapter.NewV2(r)
+
+	lambda.Start(adapter.ProxyWithContextV2)
 }

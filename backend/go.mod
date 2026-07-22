@@ -7,6 +7,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.30
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.52
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.60.1
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
+	github.com/go-chi/chi/v5 v5.3.1
 )
 
 require (

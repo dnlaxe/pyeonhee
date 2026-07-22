@@ -74,6 +74,12 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Integration: integration,
 	})
 
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/jobs/{id}"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Integration: integration,
+	})
+
 	siteBucket := awss3.NewBucket(stack, jsii.String("SiteBucket"), &awss3.BucketProps{
 		BlockPublicAccess: awss3.BlockPublicAccess_BLOCK_ALL(),
 		Encryption:        awss3.BucketEncryption_S3_MANAGED,
@@ -90,6 +96,20 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 				nil,
 			),
 			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
+		},
+		ErrorResponses: &[]*awscloudfront.ErrorResponse{
+			{
+				HttpStatus:         jsii.Number(403),
+				ResponseHttpStatus: jsii.Number(200),
+				ResponsePagePath:   jsii.String("/index.html"),
+				Ttl:                awscdk.Duration_Seconds(jsii.Number(0)),
+			},
+			{
+				HttpStatus:         jsii.Number(404),
+				ResponseHttpStatus: jsii.Number(200),
+				ResponsePagePath:   jsii.String("/index.html"),
+				Ttl:                awscdk.Duration_Seconds(jsii.Number(0)),
+			},
 		},
 	})
 
