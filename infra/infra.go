@@ -42,7 +42,7 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	fn := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("JobsFunction"), &awscdklambdagoalpha.GoFunctionProps{
-		Entry:        jsii.String("../backend"),
+		Entry:        jsii.String("../backend/cmd/lambda"),
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
 		Environment: &map[string]*string{
