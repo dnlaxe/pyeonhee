@@ -2,31 +2,18 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/aws/aws-sdk-go-v2/config"
+	"net/http"
+
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/go-chi/chi/v5"
-	"net/http"
-	"os"
 )
 
-func listJobs(w http.ResponseWriter, r *http.Request) {
-	tableName := os.Getenv("TABLE_NAME")
-	if tableName == "" {
-		writeInternalError(w, "listJobs: TABLE_NAME not set", nil)
-		return
-	}
+func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 
-	cfg, err := config.LoadDefaultConfig(r.Context())
-	if err != nil {
-		writeInternalError(w, "listJobs: load config", err)
-		return
-	}
-
-	client := dynamodb.NewFromConfig(cfg)
-	out, err := client.Scan(r.Context(), &dynamodb.ScanInput{
-		TableName: &tableName,
+	out, err := a.DB.Scan(r.Context(), &dynamodb.ScanInput{
+		TableName: &a.TableName,
 	})
 	if err != nil {
 		writeInternalError(w, "listJobs: scan", err)
@@ -49,32 +36,20 @@ func listJobs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getJob(w http.ResponseWriter, r *http.Request) {
+func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		http.Error(w, "missing id", http.StatusBadRequest)
 		return
 	}
 
-	tableName := os.Getenv("TABLE_NAME")
-	if tableName == "" {
-		writeInternalError(w, "getJob: TABLE_NAME not set", nil)
-		return
-	}
-
-	cfg, err := config.LoadDefaultConfig(r.Context())
-	if err != nil {
-		writeInternalError(w, "getJob: load config", err)
-		return
-	}
-
-	client := dynamodb.NewFromConfig(cfg)
-	out, err := client.GetItem(r.Context(), &dynamodb.GetItemInput{
-		TableName: &tableName,
+	out, err := a.DB.GetItem(r.Context(), &dynamodb.GetItemInput{
+		TableName: &a.TableName,
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: id},
 		},
 	})
+
 	if err != nil {
 		writeInternalError(w, "getJob: get item", err)
 		return
