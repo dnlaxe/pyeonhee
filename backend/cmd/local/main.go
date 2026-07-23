@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -8,7 +9,12 @@ import (
 )
 
 func main() {
-	r := app.NewRouter()
+	a, err := app.New(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := a.NewRouter()
 
 	addr := ":3000"
 	log.Printf("local API listening on http://localhost%s", addr)

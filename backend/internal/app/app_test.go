@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -8,27 +9,23 @@ import (
 )
 
 func TestUnknownRouteNotFound(t *testing.T) {
+	a := &App{}
 	req := httptest.NewRequest(http.MethodGet, "/nope", nil)
 	rec := httptest.NewRecorder()
 
-	NewRouter().ServeHTTP(rec, req)
+	a.NewRouter().ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
 	}
 }
 
-func TestListJobsRequiresTableName(t *testing.T) {
-	// Ensure this test doesn't accidentally use a real table from the environment.
+func TestNewRequiresTableName(t *testing.T) {
 	t.Setenv("TABLE_NAME", "")
 
-	req := httptest.NewRequest(http.MethodGet, "/jobs", nil)
-	rec := httptest.NewRecorder()
-
-	NewRouter().ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusInternalServerError {
-		t.Fatalf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+	_, err := New(context.Background())
+	if err == nil {
+		t.Fatal("expected error when TABLE_NAME is empty")
 	}
 }
 
@@ -37,10 +34,15 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 		t.Skip("TABLE_NAME not set; skipping live DynamoDB check")
 	}
 
+	a, err := New(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	req := httptest.NewRequest(http.MethodGet, "/jobs", nil)
 	rec := httptest.NewRecorder()
 
-	NewRouter().ServeHTTP(rec, req)
+	a.NewRouter().ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d body = %q", rec.Code, rec.Body.String())
