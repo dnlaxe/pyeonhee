@@ -1,35 +1,15 @@
-package main
+package app
 
 import (
 	"encoding/json"
-	"log"
-	"net/http"
-	"os"
-
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
+	"os"
 )
-
-type Job struct {
-	ID      string `json:"id" dynamodbav:"id"`
-	Title   string `json:"title" dynamodbav:"title"`
-	Company string `json:"company" dynamodbav:"company"`
-}
-
-func writeInternalError(w http.ResponseWriter, where string, err error) {
-	if err != nil {
-		log.Printf("%s: %v", where, err)
-	} else {
-		log.Printf("%s", where)
-	}
-	http.Error(w, "internal error", http.StatusInternalServerError)
-}
 
 func listJobs(w http.ResponseWriter, r *http.Request) {
 	tableName := os.Getenv("TABLE_NAME")
@@ -116,18 +96,4 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, "getJob: encode", err)
 		return
 	}
-}
-
-func main() {
-	r := chi.NewRouter()
-
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-
-	r.Get("/jobs", listJobs)
-	r.Get("/jobs/{id}", getJob)
-
-	adapter := chiadapter.NewV2(r)
-
-	lambda.Start(adapter.ProxyWithContextV2)
 }
