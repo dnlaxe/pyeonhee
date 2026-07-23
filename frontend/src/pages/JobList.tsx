@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
+import { throwIfNotOk } from "../lib/httpError";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 type Job = {
 	id: string;
@@ -19,7 +21,7 @@ export function JobList() {
 		enabled: Boolean(apiUrl),
 		queryFn: async () => {
 			const res = await fetch(`${apiUrl}/jobs`);
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			throwIfNotOk(res);
 			return res.json() as Promise<Job[]>;
 		},
 	});
@@ -30,7 +32,7 @@ export function JobList() {
 
 			{!apiUrl && <p className="text-red-700">VITE_API_URL is not set</p>}
 			{isPending && <p className="text-stone-600">Loading…</p>}
-			{error && <p className="text-red-700">Error: {error.message}</p>}
+			{error && <ErrorMessage error={error} />}
 			{!isPending && !error && jobs.length === 0 && <p>No jobs yet.</p>}
 			<ul className="flex flex-col gap-2">
 				{jobs.map((job) => (
