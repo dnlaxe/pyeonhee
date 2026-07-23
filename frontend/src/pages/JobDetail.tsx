@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
+import { throwIfNotOk } from "../lib/httpError";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 type Job = {
   id: string;
@@ -20,8 +22,7 @@ export function JobDetails() {
     enabled: Boolean(apiUrl) && Boolean(id),
     queryFn: async () => {
       const res = await fetch(`${apiUrl}/jobs/${id}`);
-      if (res.status === 404) throw new Error("Job not found");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      throwIfNotOk(res);
       return res.json() as Promise<Job>;
     },
   });
@@ -34,7 +35,7 @@ export function JobDetails() {
         </Link>
       </p>
       {isPending && <p className="text-stone-600">Loading…</p>}
-      {error && <p className="text-red-700">Error: {error.message}</p>}
+      {error && <ErrorMessage error={error} />}
       {job && (
         <>
           <h1 className="text-3xl">{job.title}</h1>
