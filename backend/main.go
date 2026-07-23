@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 
@@ -21,17 +22,25 @@ type Job struct {
 	Company string `json:"company" dynamodbav:"company"`
 }
 
-func listJobs(w http.ResponseWriter, r *http.Request) {
+func writeInternalError(w http.ResponseWriter, where string, err error) {
+	if err != nil {
+		log.Printf("%s: %v", where, err)
+	} else {
+		log.Printf("%s", where)
+	}
+	http.Error(w, "internal error", http.StatusInternalServerError)
+}
 
+func listJobs(w http.ResponseWriter, r *http.Request) {
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
-		http.Error(w, "TABLE_NAME not set", http.StatusInternalServerError)
+		writeInternalError(w, "listJobs: TABLE_NAME not set", nil)
 		return
 	}
 
 	cfg, err := config.LoadDefaultConfig(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "listJobs: load config", err)
 		return
 	}
 
@@ -40,13 +49,13 @@ func listJobs(w http.ResponseWriter, r *http.Request) {
 		TableName: &tableName,
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "listJobs: scan", err)
 		return
 	}
 
 	var jobs []Job
 	if err := attributevalue.UnmarshalListOfMaps(out.Items, &jobs); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "listJobs: unmarshal", err)
 		return
 	}
 	if jobs == nil {
@@ -55,13 +64,12 @@ func listJobs(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(jobs); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "listJobs: encode", err)
 		return
 	}
 }
 
 func getJob(w http.ResponseWriter, r *http.Request) {
-
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		http.Error(w, "missing id", http.StatusBadRequest)
@@ -70,13 +78,13 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
-		http.Error(w, "TABLE_NAME not set", http.StatusInternalServerError)
+		writeInternalError(w, "getJob: TABLE_NAME not set", nil)
 		return
 	}
 
 	cfg, err := config.LoadDefaultConfig(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "getJob: load config", err)
 		return
 	}
 
@@ -88,7 +96,7 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "getJob: get item", err)
 		return
 	}
 
@@ -99,13 +107,13 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 
 	var job Job
 	if err := attributevalue.UnmarshalMap(out.Item, &job); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "getJob: unmarshal", err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(job); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeInternalError(w, "getJob: encode", err)
 		return
 	}
 }
