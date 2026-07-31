@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/dnlaxe/pyeonhee/backend/internal/config"
 )
 
 func TestUnknownRouteNotFound(t *testing.T) {
@@ -21,9 +23,8 @@ func TestUnknownRouteNotFound(t *testing.T) {
 }
 
 func TestNewRequiresTableName(t *testing.T) {
-	t.Setenv("TABLE_NAME", "")
 
-	_, err := New(context.Background())
+	_, err := New(context.Background(), config.Config{})
 	if err == nil {
 		t.Fatal("expected error when TABLE_NAME is empty")
 	}
@@ -34,7 +35,9 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 		t.Skip("TABLE_NAME not set; skipping live DynamoDB check")
 	}
 
-	a, err := New(context.Background())
+	a, err := New(context.Background(), config.Config{
+		TableName: os.Getenv("TABLE_NAME"),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
