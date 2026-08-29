@@ -34,7 +34,11 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 
 	table := awsdynamodb.NewTable(stack, jsii.String("JobsTable"), &awsdynamodb.TableProps{
 		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("id"),
+			Name: jsii.String("PK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("SK"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
 		BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
