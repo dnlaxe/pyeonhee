@@ -13,20 +13,30 @@ import (
 func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 
 	out, err := a.DB.Scan(r.Context(), &dynamodb.ScanInput{
-		TableName: &a.TableName,
+		TableName:        &a.TableName,
+		FilterExpression: new("SK = :meta AND #status = :published"),
+		ExpressionAttributeNames: map[string]string{
+			"#status": "status",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":meta":      &types.AttributeValueMemberS{Value: JobSortKeyMeta},
+			":published": &types.AttributeValueMemberS{Value: "published"},
+		},
 	})
 	if err != nil {
 		writeInternalError(w, "listJobs: scan", err)
 		return
 	}
 
-	var jobs []Job
-	if err := attributevalue.UnmarshalListOfMaps(out.Items, &jobs); err != nil {
+	var items []JobItem
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &items); err != nil {
 		writeInternalError(w, "listJobs: unmarshal", err)
 		return
 	}
-	if jobs == nil {
-		jobs = []Job{}
+
+	jobs := make([]Job, 0, len(items))
+	for _, item := range items {
+		jobs = append(jobs, item.ToJob())
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -46,7 +56,8 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 	out, err := a.DB.GetItem(r.Context(), &dynamodb.GetItemInput{
 		TableName: &a.TableName,
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberS{Value: id},
+			"PK": &types.AttributeValueMemberS{Value: JobPK(id)},
+			"SK": &types.AttributeValueMemberS{Value: JobSortKeyMeta},
 		},
 	})
 
@@ -60,14 +71,19 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var job Job
-	if err := attributevalue.UnmarshalMap(out.Item, &job); err != nil {
+	var item JobItem
+	if err := attributevalue.UnmarshalMap(out.Item, &item); err != nil {
 		writeInternalError(w, "getJob: unmarshal", err)
 		return
 	}
 
+	if item.Status != "published" {
+		http.Error(w, "job not found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(job); err != nil {
+	if err := json.NewEncoder(w).Encode(item.ToJob()); err != nil {
 		writeInternalError(w, "getJob: encode", err)
 		return
 	}
