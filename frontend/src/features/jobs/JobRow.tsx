@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { TagList, minutesSince } from "../../shared";
+import { TagList, formatTimeSince } from "../../shared";
 import type { Job } from "./data";
 import styles from "./JobRow.module.css";
 
@@ -21,7 +21,7 @@ export function JobRow({ job }: { job: Job }) {
             {job.title}
           </h3>
           <span className="font-mono text-sm font-normal leading-[1.2] text-muted">
-            [{minutesSince(job.createdAt)}m]
+            [{formatTimeSince(job.createdAt)}]
           </span>
         </div>
         <p className="m-0 line-clamp-2 text-sm font-normal leading-[1.2] text-body">
