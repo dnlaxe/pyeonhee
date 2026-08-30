@@ -1,4 +1,17 @@
-export function minutesSince(uploadedAt: Date | string): number {
-  const ms = Date.now() - new Date(uploadedAt).getTime();
-  return Math.max(0, Math.floor(ms / 60_000));
+export function formatTimeSince(createdAt: Date | string): string {
+  const ms = Math.max(0, Date.now() - new Date(createdAt).getTime());
+  const totalMinutes = Math.floor(ms / 60_000);
+
+  const days = Math.floor(totalMinutes / (60 * 24));
+  if (days >= 1) {
+    return days === 1 ? "1 day" : `${days} days`;
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  if (hours >= 1) {
+    const mins = totalMinutes % 60;
+    return `${hours}hr ${mins}m`;
+  }
+
+  return `${totalMinutes}m`;
 }

@@ -13,4 +13,4 @@ export { ReportLink } from "./listing/ReportLink";
 export { FaqHelpLink } from "./links/FaqHelpLink";
 
 export { useTagFilter } from "./hooks/useTagFilter";
-export { minutesSince } from "./lib/text";
+export { formatTimeSince } from "./lib/text";

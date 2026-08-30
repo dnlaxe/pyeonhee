@@ -6,7 +6,7 @@ import {
   RelayEmail,
   ReportLink,
   TagList,
-  minutesSince,
+  formatTimeSince,
   ErrorMessage,
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
@@ -83,7 +83,7 @@ export function JobDetails() {
                 {job.title}
               </h1>
               <span className="font-mono text-sm leading-[1.2] text-muted">
-                [{minutesSince(job.createdAt)}m]
+                [{formatTimeSince(job.createdAt)}m]
               </span>
             </div>
           </div>
