@@ -1,4 +1,4 @@
-import { AppError } from "../lib/httpError";
+import { AppError } from "../../lib/httpError";
 
 function errorStyle(error: Error): string {
 	const tone = error instanceof AppError ? error.tone : "danger";
