@@ -11,7 +11,7 @@ export function Footer() {
           {footerTagline}
         </p>
         <nav
-          className="mt-2 flex flex-wrap items-center justify-center gap-x-[18px] gap-y-2"
+          className="mt-2 flex flex-wrap items-center justify-center md:gap-x-[18px] gap-y-2"
           aria-label="Footer"
         >
           {footerLinks.map((l) => (

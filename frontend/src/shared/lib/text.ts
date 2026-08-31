@@ -4,7 +4,7 @@ export function formatTimeSince(createdAt: Date | string): string {
 
   const days = Math.floor(totalMinutes / (60 * 24));
   if (days >= 1) {
-    return days === 1 ? "1 day" : `${days} days`;
+    return `${days}d`;
   }
 
   const hours = Math.floor(totalMinutes / 60);
