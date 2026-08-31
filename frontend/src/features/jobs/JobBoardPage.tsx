@@ -7,8 +7,9 @@ import {
   ErrorMessage,
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
-import { jobFilters, type Job } from "./data";
+import { type Job } from "./types";
 import { JobRow } from "./JobRow";
+import { jobFilters } from "./constants";
 
 const PAGE_SIZE = 10;
 

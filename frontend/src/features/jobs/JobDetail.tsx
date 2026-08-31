@@ -10,7 +10,7 @@ import {
   ErrorMessage,
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
-import type { Job } from "./data";
+import type { Job } from "./types";
 
 export function JobDetails() {
   const { id } = useParams<{ id: string }>();
@@ -83,7 +83,7 @@ export function JobDetails() {
                 {job.title}
               </h1>
               <span className="font-mono text-sm leading-[1.2] text-muted">
-                [{formatTimeSince(job.createdAt)}m]
+                [{formatTimeSince(job.createdAt)}]
               </span>
             </div>
           </div>

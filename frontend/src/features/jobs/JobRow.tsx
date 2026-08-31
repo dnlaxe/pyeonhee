@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { TagList, formatTimeSince } from "../../shared";
-import type { Job } from "./data";
+import type { Job } from "./types";
 import styles from "./JobRow.module.css";
 
 export function JobRow({ job }: { job: Job }) {
