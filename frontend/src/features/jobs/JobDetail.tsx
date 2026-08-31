@@ -10,7 +10,7 @@ import {
   ErrorMessage,
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
-import type { Job } from "./data";
+import type { Job } from "./types";
 
 export function JobDetails() {
   const { id } = useParams<{ id: string }>();
