@@ -4,6 +4,7 @@ import { JobDetails } from "./features/jobs/JobDetail";
 import { ScrollToTop } from "./shared/layout/ScrollToTop";
 import { Header } from "./shared/layout/Header";
 import { Footer } from "./shared/layout/Footer";
+import { PostFormPage, PostPage } from "./features/post";
 
 export function App() {
   return (
@@ -15,6 +16,8 @@ export function App() {
           <Route path="/" element={<main />} />
           <Route path="/jobs" element={<JobBoardPage />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
+          <Route path="/post" element={<PostPage />} />
+          <Route path="/post/:kind" element={<PostFormPage />} />
         </Routes>
       </div>
       <Footer />
