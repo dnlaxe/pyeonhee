@@ -8,6 +8,7 @@ import { PostFormPage, PostPage } from "./features/post";
 import { FaqPage } from "./features/faq";
 import { MarketPage } from "./features/market";
 import { MarketItemPage } from "./features/market/MarketItemPage";
+import { ServicesPage } from "./features/services";
 
 export function App() {
   return (
@@ -23,6 +24,7 @@ export function App() {
           <Route path="/post/:kind" element={<PostFormPage />} />
           <Route path="/market" element={<MarketPage />} />
           <Route path="/market/:id" element={<MarketItemPage />} />
+          <Route path="/services" element={<ServicesPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>
       </div>
