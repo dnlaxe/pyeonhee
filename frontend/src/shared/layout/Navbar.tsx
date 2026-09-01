@@ -3,13 +3,15 @@ import { useLocation, useNavigate } from "react-router";
 import { type NavLink, navLinks } from "./config/nav";
 
 function activeLabel(pathname: string, links: NavLink[]): string {
+  if (pathname === "/") return "menu";
+
   const exact = links.find((l) => l.path === pathname);
   if (exact) return exact.label;
 
   const nested = links.find(
     (l) => l.path !== "/" && pathname.startsWith(`${l.path}/`),
   );
-  return nested?.label ?? links[0]?.label ?? "jobs";
+  return nested?.label ?? "menu";
 }
 
 type Props = {
