@@ -1,0 +1,164 @@
+[
+  {
+    "id": "seoul-visa-desk",
+    "company": "Seoul Visa Desk",
+    "location": "Seoul",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-seoul-visa-desk/176/176",
+    "blurb": "English-speaking visa support for **D-2, E-2, E-7, and F-series** paperwork.\n\nDocs checklist, appointment booking, and clear guidance on what immigration asks for.",
+    "contact": "hello@seoulvisadesk.example",
+    "tags": ["Visa", "Legal"]
+  },
+  {
+    "id": "bridge-translate",
+    "company": "Bridge Translate",
+    "location": "Nationwide",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-bridge-translate/176/176",
+    "blurb": "Certified **Korean ↔ English** translation for contracts, leases, medical records, and school forms.\n\nSame-day turnaround on short docs. Notarial wording when you need it.",
+    "contact": "hello@bridgetranslate.example",
+    "tags": ["Translation", "Legal"]
+  },
+  {
+    "id": "hanriver-law",
+    "company": "Han River Law",
+    "location": "Gangnam",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-hanriver-law/176/176",
+    "blurb": "Counsel for **employment disputes**, lease issues, and small business setup — all in English.\n\nFixed-fee first consult so you know the cost before anything starts.",
+    "contact": "hello@hanriverlaw.example",
+    "tags": ["Legal", "Business setup"]
+  },
+  {
+    "id": "keymoney-homes",
+    "company": "Keymoney Homes",
+    "location": "Seoul & Gyeonggi",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-keymoney-homes/176/176",
+    "blurb": "Finds **jeonse and wolse** places that accept foreign tenants — studios, shared houses, and family flats.\n\nExplains key money, agency fees, and deposit return in plain English before you sign.",
+    "contact": "hello@keymoneyhomes.example",
+    "tags": ["Housing"]
+  },
+  {
+    "id": "openaccount-ko",
+    "company": "OpenAccount KO",
+    "location": "Seoul",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-openaccount-ko/176/176",
+    "blurb": "Helps foreigners open bank accounts, set up **KakaoPay / Toss**, and unlock online banking.\n\nKnows which branches actually help and which forms to bring.",
+    "contact": "hello@openaccountko.example",
+    "tags": ["Banking"]
+  },
+  {
+    "id": "lineup-mobile",
+    "company": "LineUp Mobile",
+    "location": "Hongdae",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-lineup-mobile/176/176",
+    "blurb": "Same-day **Korean number and data plans** — prepaid or postpaid, with English plan comparisons.\n\nAlso unlocks phones and transfers numbers when you switch carriers.",
+    "contact": "hello@lineupmobile.example",
+    "tags": ["Phone & SIM"]
+  },
+  {
+    "id": "boxcart-movers",
+    "company": "Boxcart Movers",
+    "location": "Seoul metro",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-boxcart-movers/176/176",
+    "blurb": "Apartment and studio moves with optional packing help.\n\nQuotes by volume, not mystery fees — **weekend slots** book out fast.",
+    "contact": "hello@boxcartmovers.example",
+    "tags": ["Moving", "Housing"]
+  },
+  {
+    "id": "daily-korean-lab",
+    "company": "Daily Korean Lab",
+    "location": "Itaewon",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-daily-korean-lab/176/176",
+    "blurb": "Practical Korean for daily life — **banking, hospital visits, landlord chats**, not just textbook drills.\n\n1:1 and small-group sessions for beginners through intermediate. Trial lesson available.",
+    "contact": "hello@dailykoreanlab.example",
+    "tags": ["Tutoring"]
+  },
+  {
+    "id": "care-english-clinic",
+    "company": "Care English Clinic",
+    "location": "Apgujeong",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-care-english-clinic/176/176",
+    "blurb": "English-friendly **GP, dental, and derm** appointments with help on insurance paperwork.\n\nOn-site translation available when you need it.",
+    "contact": "hello@careenglishclinic.example",
+    "tags": ["Healthcare", "Translation"]
+  },
+  {
+    "id": "startup-korea-co",
+    "company": "Startup Korea Co.",
+    "location": "Seoul",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-startup-korea-co/176/176",
+    "blurb": "Guides freelancers and small teams through **business registration**, tax IDs, and invoicing in Korea.\n\nGood fit if you already have clients and need the legal shell sorted.",
+    "contact": "hello@startupkoreaco.example",
+    "tags": ["Business setup", "Legal"]
+  },
+  {
+    "id": "northgate-notary",
+    "company": "Northgate Notary",
+    "location": "Jongno",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-northgate-notary/176/176",
+    "blurb": "English-friendly **notarization and apostille** help for foreign residents.\n\nWalk-ins welcome for simple docs; appointments for multi-page packets.",
+    "contact": "hello@northgatenotary.example",
+    "tags": ["Legal", "Translation"]
+  },
+  {
+    "id": "hanok-stays-mgmt",
+    "company": "Hanok Stays Mgmt",
+    "location": "Bukchon",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-hanok-stays-mgmt/176/176",
+    "blurb": "Property management for **short-stay and long-term** rentals that welcome foreigners.\n\nHandles landlord liaison, deposit return, and English listings.",
+    "contact": "hello@hanokstays.example",
+    "tags": ["Housing"]
+  },
+  {
+    "id": "wirefast-fx",
+    "company": "WireFast FX",
+    "location": "Yeouido",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-wirefast-fx/176/176",
+    "blurb": "Helps with **overseas remittances**, FX accounts, and bank letters employers ask for.\n\nClear fee quotes before you send anything.",
+    "contact": "hello@wirefastfx.example",
+    "tags": ["Banking"]
+  },
+  {
+    "id": "signal-roam",
+    "company": "Signal Roam",
+    "location": "Gangnam",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-signal-roam/176/176",
+    "blurb": "Corporate and personal **eSIM / roaming** plans with English support.\n\nGood for newcomers who need data before a local number is ready.",
+    "contact": "hello@signalroam.example",
+    "tags": ["Phone & SIM"]
+  },
+  {
+    "id": "clean-shift-ko",
+    "company": "CleanShift KO",
+    "location": "Seoul",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-clean-shift-ko/176/176",
+    "blurb": "Move-out cleaning and **deposit-ready** apartment resets for foreigners leaving Korea.\n\nPhoto reports included so you can show the landlord.",
+    "contact": "hello@cleanshiftko.example",
+    "tags": ["Moving", "Housing"]
+  },
+  {
+    "id": "topik-path",
+    "company": "TOPIK Path",
+    "location": "Sinchon",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-topik-path/176/176",
+    "blurb": "Structured **TOPIK prep** for levels 2–4 with weekend intensives.\n\nSmall classes, English explanations of grammar patterns that trip learners up.",
+    "contact": "hello@topikpath.example",
+    "tags": ["Tutoring"]
+  },
+  {
+    "id": "wellnest-dental",
+    "company": "Wellnest Dental",
+    "location": "Seocho",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-wellnest-dental/176/176",
+    "blurb": "Dental clinic with **English chairside** explanations and transparent pricing.\n\nCleaning, fillings, and whitening — insurance paperwork help available.",
+    "contact": "hello@wellnestdental.example",
+    "tags": ["Healthcare"]
+  },
+  {
+    "id": "incorp-partner",
+    "company": "Incorp Partner",
+    "location": "Pangyo",
+    "logo": "https://picsum.photos/seed/pyeonhee-svc-incorp-partner/176/176",
+    "blurb": "Incorporation and **payroll setup** for foreign founders hiring in Korea.\n\nHandles corp seals, bank intros, and bilingual contracts.",
+    "contact": "hello@incorppartner.example",
+    "tags": ["Business setup", "Legal"]
+  }
+]
