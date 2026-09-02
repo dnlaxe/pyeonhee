@@ -10,6 +10,7 @@ import { MarketPage } from "./features/market";
 import { MarketItemPage } from "./features/market/MarketItemPage";
 import { ServicesPage } from "./features/services";
 import { NotFound } from "./features/not-found/NotFound";
+import { LandingPage } from "./features/landing";
 
 export function App() {
   return (
@@ -18,7 +19,7 @@ export function App() {
       <Header />
       <div className="flex flex-1 flex-col">
         <Routes>
-          <Route path="/" element={<main />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/jobs" element={<JobBoardPage />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
           <Route path="/post" element={<PostPage />} />
