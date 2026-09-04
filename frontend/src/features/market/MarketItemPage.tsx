@@ -134,7 +134,7 @@ export function MarketItemPage() {
     <main>
       <article className={styles.article}>
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
-          <BackLink to="/market">← back to market</BackLink>
+          <BackLink to="/market">back to market</BackLink>
           <div className={styles.mediaWrap}>
             <button
               type="button"

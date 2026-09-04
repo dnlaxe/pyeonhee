@@ -44,10 +44,12 @@ export const koreanLevels = [
   "Fluent Korean required",
 ] as const;
 
-export const emailOptions = [
-  { value: "real", label: "Show my real email address" },
-  { value: "none", label: "No replies to email" },
-] as const;
+export const emailOptionLabels = {
+  relay:
+    "Use email relay (recommended). Email address won't be shown in the post.",
+  real: "Post will show your email address.",
+  none: "Don't accept email replies. Email address won't be shown in the post.",
+} as const;
 
 export const kinds = {
   job: {
@@ -66,3 +68,14 @@ export const kinds = {
       "Your service may appear on English Services for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
   },
 } as const;
+
+export const marketListingTypes = ["Selling", "Wanted", "Free"] as const;
+
+export const marketCategories = [
+  "Furniture",
+  "Electronics",
+  "Clothing",
+  "Kitchen",
+  "Books",
+  "Sports",
+] as const;
