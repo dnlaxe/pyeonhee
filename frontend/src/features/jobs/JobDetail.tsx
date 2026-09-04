@@ -70,7 +70,7 @@ export function JobDetails() {
     <main>
       <article className="py-2 pb-20">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
-          <BackLink to="/jobs">← back to jobs</BackLink>
+          <BackLink to="/jobs">back to jobs</BackLink>
           <div className="mb-5 flex items-start gap-5">
             <div
               className="grid size-12 shrink-0 place-items-center rounded-full bg-yellow font-mono text-base font-medium leading-normal text-text-dark"
