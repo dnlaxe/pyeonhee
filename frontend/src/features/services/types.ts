@@ -7,5 +7,6 @@ export type Service = {
   logo: string;
   blurb: string;
   contact: string;
+  webpage?: string;
   tags: ServiceTag[];
 };
