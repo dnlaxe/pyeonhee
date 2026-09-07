@@ -302,14 +302,42 @@ function MarketPostForm() {
 }
 
 function ServicePostForm() {
+  const MAX_PHOTOS = 1;
+  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+
+  function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
+    const chosen = Array.from(e.target.files ?? []);
+    setPhotos((prev) => {
+      const room = MAX_PHOTOS - prev.length;
+      const added = chosen.slice(0, room).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      return [...prev, ...added];
+    });
+    e.target.value = "";
+  }
+
+  function removePhoto(url: string) {
+    setPhotos((prev) => {
+      const target = prev.find((p) => p.url === url);
+      if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((p) => p.url !== url);
+    });
+  }
+
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, []);
+
   return (
     <Form>
       <FormField label="Company name:">
         <TextInput type="text" name="company" required />
-      </FormField>
-
-      <FormField label="Location:">
-        <TextInput type="text" name="location" required />
       </FormField>
 
       <FormField label="Service:">
@@ -323,6 +351,66 @@ function ServicePostForm() {
             </option>
           ))}
         </SelectInput>
+      </FormField>
+
+      <FormField label="Attach photo:">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <label
+              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+                photos.length >= MAX_PHOTOS
+                  ? "pointer-events-none opacity-50"
+                  : "hover:bg-yellow"
+              }`}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                disabled={photos.length >= MAX_PHOTOS}
+                onChange={handlePhotosChange}
+                className="sr-only"
+              />
+              Add photo
+            </label>
+            <span className="text-[15px] text-muted">
+              {photos.length}/{MAX_PHOTOS}
+            </span>
+          </div>
+
+          {photos.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {photos.map((photo) => (
+                <li key={photo.url} className="relative">
+                  <img
+                    src={photo.url}
+                    alt=""
+                    className="h-20 w-20 rounded border-[1.5px] border-text-dark object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(photo.url)}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </FormField>
+
+      <FormField label="Location:">
+        <TextInput type="text" name="location" required />
+      </FormField>
+
+      <FormField label="Email address:">
+        <TextInput type="email" name="email" required />
+      </FormField>
+
+      <FormField label="Webpage link:">
+        <TextInput type="url" name="webpage" placeholder="https://" />
       </FormField>
 
       <FormField label="Message:">
