@@ -7,19 +7,26 @@ import {
   ErrorMessage,
 } from "../../shared";
 import { serviceFilters } from "./constants";
-import { getServices } from "./servicesData";
 import { ServiceCard } from "./ServiceCard";
+import { throwIfNotOk } from "../../lib/httpError";
+import type { Service } from "./types";
 
 const PAGE_SIZE = 9;
 
 export function ServicesPage() {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const {
     data: services = [],
     isPending,
     error,
   } = useQuery({
     queryKey: ["services"],
-    queryFn: getServices,
+    enabled: Boolean(apiUrl),
+    queryFn: async () => {
+      const res = await fetch(`${apiUrl}/services`);
+      throwIfNotOk(res);
+      return res.json() as Promise<Service[]>;
+    },
   });
 
   const { visible, hasMore, isEmpty, filter, setFilterTag, loadMore } =

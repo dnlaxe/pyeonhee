@@ -14,13 +14,14 @@ func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 
 	out, err := a.DB.Scan(r.Context(), &dynamodb.ScanInput{
 		TableName:        &a.TableName,
-		FilterExpression: new("SK = :meta AND #status = :published"),
+		FilterExpression: new("SK = :meta AND #status = :published AND entityType = :job"),
 		ExpressionAttributeNames: map[string]string{
 			"#status": "status",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":meta":      &types.AttributeValueMemberS{Value: JobSortKeyMeta},
 			":published": &types.AttributeValueMemberS{Value: "published"},
+			":job":       &types.AttributeValueMemberS{Value: JobEntityType},
 		},
 	})
 	if err != nil {
@@ -85,6 +86,43 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(item.ToJob()); err != nil {
 		writeInternalError(w, "getJob: encode", err)
+		return
+	}
+}
+
+func (a *App) listServices(w http.ResponseWriter, r *http.Request) {
+
+	out, err := a.DB.Scan(r.Context(), &dynamodb.ScanInput{
+		TableName:        &a.TableName,
+		FilterExpression: new("SK = :meta AND #status = :published AND entityType = :service"),
+		ExpressionAttributeNames: map[string]string{
+			"#status": "status",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":meta":      &types.AttributeValueMemberS{Value: ServiceSortKeyMeta},
+			":published": &types.AttributeValueMemberS{Value: "published"},
+			":service":   &types.AttributeValueMemberS{Value: ServiceEntityType},
+		},
+	})
+	if err != nil {
+		writeInternalError(w, "listServices: scan", err)
+		return
+	}
+
+	var items []ServiceItem
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &items); err != nil {
+		writeInternalError(w, "listServices: unmarshal", err)
+		return
+	}
+
+	services := make([]Service, 0, len(items))
+	for _, item := range items {
+		services = append(services, item.ToService())
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(services); err != nil {
+		writeInternalError(w, "listServices: encode", err)
 		return
 	}
 }
