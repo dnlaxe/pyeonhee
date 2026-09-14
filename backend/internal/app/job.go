@@ -2,6 +2,7 @@ package app
 
 const (
 	JobSortKeyMeta = "META"
+	JobEntityType  = "job"
 )
 
 type JobItem struct {
