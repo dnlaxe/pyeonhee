@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { Job } from "../jobs/types";
-import { getMarketItems } from "../market/marketData";
 import { Hero } from "./Hero";
 import { JobsSection } from "./JobsSection";
 import { MarketSection } from "./MarketSection";
 import { ServicesSection } from "./ServicesSection";
 import type { Service } from "../services";
+import type { MarketItem } from "../market";
 
 const JOBS_PREVIEW = 3;
 const MARKET_PREVIEW = 6;
@@ -37,7 +37,12 @@ export function LandingPage() {
 
   const marketQuery = useQuery({
     queryKey: ["market"],
-    queryFn: getMarketItems,
+    enabled: Boolean(apiUrl),
+    queryFn: async () => {
+      const res = await fetch(`${apiUrl}/market`);
+      throwIfNotOk(res);
+      return res.json() as Promise<MarketItem[]>; // import type
+    },
   });
 
   return (

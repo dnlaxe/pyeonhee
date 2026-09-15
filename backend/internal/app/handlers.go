@@ -126,3 +126,83 @@ func (a *App) listServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (a *App) listMarket(w http.ResponseWriter, r *http.Request) {
+
+	out, err := a.DB.Scan(r.Context(), &dynamodb.ScanInput{
+		TableName:        &a.TableName,
+		FilterExpression: new("SK = :meta AND #status = :published AND entityType = :market"),
+		ExpressionAttributeNames: map[string]string{
+			"#status": "status",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":meta":      &types.AttributeValueMemberS{Value: MarketSortKeyMeta},
+			":published": &types.AttributeValueMemberS{Value: "published"},
+			":market":    &types.AttributeValueMemberS{Value: MarketEntityType},
+		},
+	})
+	if err != nil {
+		writeInternalError(w, "listMarket: scan", err)
+		return
+	}
+
+	var items []MarketItem
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &items); err != nil {
+		writeInternalError(w, "listMarket: unmarshal", err)
+		return
+	}
+
+	markets := make([]Market, 0, len(items))
+	for _, item := range items {
+		markets = append(markets, item.ToMarket())
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(markets); err != nil {
+		writeInternalError(w, "listMarket: encode", err)
+		return
+	}
+}
+
+func (a *App) getMarket(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	out, err := a.DB.GetItem(r.Context(), &dynamodb.GetItemInput{
+		TableName: &a.TableName,
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: MarketPK(id)},
+			"SK": &types.AttributeValueMemberS{Value: MarketSortKeyMeta},
+		},
+	})
+
+	if err != nil {
+		writeInternalError(w, "getMarket: get item", err)
+		return
+	}
+
+	if out.Item == nil {
+		http.Error(w, "market not found", http.StatusNotFound)
+		return
+	}
+
+	var item MarketItem
+	if err := attributevalue.UnmarshalMap(out.Item, &item); err != nil {
+		writeInternalError(w, "getMarket: unmarshal", err)
+		return
+	}
+
+	if item.Status != "published" {
+		http.Error(w, "market not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(item.ToMarket()); err != nil {
+		writeInternalError(w, "getMarket: encode", err)
+		return
+	}
+}

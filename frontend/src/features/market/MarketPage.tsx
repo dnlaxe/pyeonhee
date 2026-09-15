@@ -6,7 +6,8 @@ import {
   useTagFilter,
   ErrorMessage,
 } from "../../shared";
-import { getMarketItems } from "./marketData";
+import { throwIfNotOk } from "../../lib/httpError";
+import type { MarketItem } from "./types";
 import { marketFilters } from "./constants";
 import { MarketCard } from "./MarketCard";
 
@@ -21,7 +22,12 @@ export function MarketPage() {
     error,
   } = useQuery({
     queryKey: ["market"],
-    queryFn: getMarketItems,
+    enabled: Boolean(apiUrl),
+    queryFn: async () => {
+      const res = await fetch(`${apiUrl}/market`);
+      throwIfNotOk(res);
+      return res.json() as Promise<MarketItem[]>;
+    },
   });
 
   const { visible, hasMore, isEmpty, filter, setFilterTag, loadMore } =
