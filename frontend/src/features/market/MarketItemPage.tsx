@@ -11,7 +11,7 @@ import {
   ErrorMessage,
 } from "../../shared";
 import type { MarketItem } from "./types";
-import { getMarketItemById } from "./marketData";
+import { throwIfNotOk } from "../../lib/httpError";
 import styles from "./MarketItemPage.module.css";
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
@@ -49,6 +49,7 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
 export function MarketItemPage() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const fromList = queryClient
     .getQueryData<MarketItem[]>(["market"])
@@ -60,11 +61,14 @@ export function MarketItemPage() {
     error,
   } = useQuery({
     queryKey: ["market", id],
-    enabled: Boolean(id) && !fromList,
+    enabled: Boolean(apiUrl) && Boolean(id) && !fromList,
     initialData: fromList,
-    queryFn: () => getMarketItemById(id!),
+    queryFn: async () => {
+      const res = await fetch(`${apiUrl}/market/${id}`);
+      throwIfNotOk(res);
+      return res.json() as Promise<MarketItem>;
+    },
   });
-
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
