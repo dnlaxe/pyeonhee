@@ -14,8 +14,8 @@ type JobItem struct {
 	Location    string   `dynamodbav:"location"`
 	Description string   `dynamodbav:"description"`
 	Tags        []string `dynamodbav:"tags"`
-	Initials    string   `dynamodbav:"initials"`
-	Level       int      `dynamodbav:"level"`
+	Logo        string   `dynamodbav:"logo,omitempty"`
+	Pinned      bool     `dynamodbav:"pinned"`
 	Status      string   `dynamodbav:"status"`
 	CreatedAt   string   `dynamodbav:"createdAt"`
 }
@@ -26,8 +26,8 @@ type Job struct {
 	Location    string   `json:"location"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
-	Initials    string   `json:"initials"`
-	Level       int      `json:"level"`
+	Logo        string   `json:"logo,omitempty"`
+	Pinned      bool     `json:"pinned"`
 	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
 }
@@ -47,8 +47,8 @@ func (item JobItem) ToJob() Job {
 		Location:    item.Location,
 		Description: item.Description,
 		Tags:        tags,
-		Initials:    item.Initials,
-		Level:       item.Level,
+		Logo:        item.Logo,
+		Pinned:      item.Pinned,
 		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}

@@ -4,8 +4,8 @@ export type Job = {
   location: string;
   description: string;
   tags: string[];
-  initials: string;
-  level: number;
+  logo?: string;
+  pinned: boolean;
   status: string;
   createdAt: string;
 };

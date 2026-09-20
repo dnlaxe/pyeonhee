@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -39,6 +40,13 @@ func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 	for _, item := range items {
 		jobs = append(jobs, item.ToJob())
 	}
+
+	sort.SliceStable(jobs, func(i, j int) bool {
+		if jobs[i].Pinned != jobs[j].Pinned {
+			return jobs[i].Pinned
+		}
+		return jobs[i].CreatedAt > jobs[j].CreatedAt
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(jobs); err != nil {

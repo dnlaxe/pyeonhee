@@ -35,14 +35,14 @@ export function Logo({ to = "/", showWordmark = true, className }: Props) {
     <>
       <LogoMark />
       {showWordmark && (
-        <span className="font-mono text-base leading-[1.2] text-black">
+        <span className="font-sans text-lg font-semibold leading-[1.2] text-black">
           pyeonhee
         </span>
       )}
     </>
   );
 
-  const logoClass = `inline-flex items-center gap-2.5 text-text-dark no-underline${
+  const logoClass = `inline-flex items-center gap-2 text-text-dark no-underline${
     className ? ` ${className}` : ""
   }`;
 
