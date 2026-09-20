@@ -44,6 +44,38 @@ function JobPostForm() {
   const [track, setTrack] = useState<"teaching" | "non-teaching" | "">("");
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
 
+  const MAX_PHOTOS = 1;
+  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+
+  function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
+    const chosen = Array.from(e.target.files ?? []);
+    setPhotos((prev) => {
+      const room = MAX_PHOTOS - prev.length;
+      const added = chosen.slice(0, room).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      return [...prev, ...added];
+    });
+    e.target.value = "";
+  }
+
+  function removePhoto(url: string) {
+    setPhotos((prev) => {
+      const target = prev.find((p) => p.url === url);
+      if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((p) => p.url !== url);
+    });
+  }
+
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, []);
+
   return (
     <Form>
       <FormField label="Email address:">
@@ -59,6 +91,54 @@ function JobPostForm() {
 
       <FormField label="Post title:">
         <TextInput type="text" name="title" required />
+      </FormField>
+
+            <FormField label="Attach photo:">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <label
+              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+                photos.length >= MAX_PHOTOS
+                  ? "pointer-events-none opacity-50"
+                  : "hover:bg-yellow"
+              }`}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                disabled={photos.length >= MAX_PHOTOS}
+                onChange={handlePhotosChange}
+                className="sr-only"
+              />
+              Add photo
+            </label>
+            <span className="text-[15px] text-muted">
+              {photos.length}/{MAX_PHOTOS}
+            </span>
+          </div>
+
+          {photos.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {photos.map((photo) => (
+                <li key={photo.url} className="relative">
+                  <img
+                    src={photo.url}
+                    alt=""
+                    className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(photo.url)}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </FormField>
 
       <FormField label="Location:">
@@ -130,6 +210,17 @@ function JobPostForm() {
 
       <FormField label="Post description:">
         <TextareaInput name="description" rows={8} required />
+      </FormField>
+
+      <FormField label="Pinned:">
+        <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
+          <input
+            type="checkbox"
+            name="pinned"
+            className="size-4 accent-yellow"
+          />
+          Show at the top of the job board
+        </span>
       </FormField>
 
       <Button type="submit" variant="yellow" className="mt-2">
@@ -384,7 +475,7 @@ function ServicePostForm() {
                   <img
                     src={photo.url}
                     alt=""
-                    className="h-20 w-20 rounded border-[1.5px] border-text-dark object-cover"
+                    className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
                   />
                   <button
                     type="button"

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&family=Fragment+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;600;700&family=Fragment+Mono&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -12,7 +12,7 @@
 	--color-yellow-accent: #fde047;
 	--color-border: #d4d4d8;
 	--color-surface: #f4f4f5;
-	--font-sans: "Lexend", system-ui, sans-serif;
+	--font-sans: "Lexend Deca", system-ui, sans-serif;
 	--font-mono: "Fragment Mono", ui-monospace, monospace;
 	--max-width-content: 1120px;
 	--max-width-essay: 680px;

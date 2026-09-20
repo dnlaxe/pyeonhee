@@ -8,6 +8,7 @@ import {
   TagList,
   formatTimeSince,
   ErrorMessage,
+  PinIcon,
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { Job } from "./types";
@@ -73,18 +74,27 @@ export function JobDetails() {
           <BackLink to="/jobs">back to jobs</BackLink>
           <div className="mb-5 flex items-start gap-5">
             <div
-              className="grid size-12 shrink-0 place-items-center rounded-full bg-yellow font-mono text-base font-medium leading-normal text-text-dark"
-              aria-hidden
-            >
-              {job.initials}
-            </div>
+                className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"
+                aria-hidden
+              >
+                {job.logo ? (
+                  <img src={job.logo} alt="" className="size-full object-cover" />
+                ) : null}
+              </div>
             <div className="min-w-0">
               <h1 className="mb-2 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
                 {job.title}
               </h1>
-              <span className="font-mono text-sm leading-[1.2] text-muted">
-                [{formatTimeSince(job.createdAt)}]
-              </span>
+              <div className="flex flex-wrap items-center gap-x-2.5">
+                <span className="font-mono text-sm leading-[1.2] text-muted">
+                  [{formatTimeSince(job.createdAt)}]
+                </span>
+                {job.pinned ? (
+                  <span className="self-baseline" aria-label="Pinned">
+                    <PinIcon />
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
           <TagList tags={job.tags} className="mb-7" />

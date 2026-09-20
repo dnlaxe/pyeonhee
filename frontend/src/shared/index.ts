@@ -24,3 +24,5 @@ export { useTagFilter } from "./hooks/useTagFilter";
 
 export { formatTimeSince } from "./lib/text";
 export { richText, richParagraphs } from "./lib/richText";
+
+export { PinIcon } from "./icons/PinIcon";
