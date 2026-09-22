@@ -120,7 +120,7 @@ export function MarketItemPage() {
   }
 
   const paragraphs = item.description.split("\n").filter(Boolean);
-  const photos = item.images;
+  const photos = item.images ?? [];
   const photo = photos[photoIndex] ?? photos[0];
   const hasMany = photos.length > 1;
 
@@ -140,36 +140,44 @@ export function MarketItemPage() {
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
           <BackLink to="/market">back to market</BackLink>
           <div className={styles.mediaWrap}>
-            <button
-              type="button"
-              className={styles.mediaFrame}
-              onClick={() => setZoomed(true)}
-              aria-label="View larger image"
-            >
-              <img src={photo} alt="" className={styles.image} />
-            </button>
-            {hasMany && (
+            {photo ? (
               <>
                 <button
                   type="button"
-                  className={`${styles.navBtn} ${styles.navPrev}`}
-                  onClick={prevPhoto}
-                  aria-label="Previous photo"
+                  className={styles.mediaFrame}
+                  onClick={() => setZoomed(true)}
+                  aria-label="View larger image"
                 >
-                  <Chevron dir="left" />
+                  <img src={photo} alt="" className={styles.image} />
                 </button>
-                <button
-                  type="button"
-                  className={`${styles.navBtn} ${styles.navNext}`}
-                  onClick={nextPhoto}
-                  aria-label="Next photo"
-                >
-                  <Chevron dir="right" />
-                </button>
-                <p className={styles.counter}>
-                  {photoIndex + 1} / {photos.length}
-                </p>
+                {hasMany && (
+                  <>
+                    <button
+                      type="button"
+                      className={`${styles.navBtn} ${styles.navPrev}`}
+                      onClick={prevPhoto}
+                      aria-label="Previous photo"
+                    >
+                      <Chevron dir="left" />
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.navBtn} ${styles.navNext}`}
+                      onClick={nextPhoto}
+                      aria-label="Next photo"
+                    >
+                      <Chevron dir="right" />
+                    </button>
+                    <p className={styles.counter}>
+                      {photoIndex + 1} / {photos.length}
+                    </p>
+                  </>
+                )}
               </>
+            ) : (
+              <div
+                className={`${styles.mediaFrame} ${styles.mediaFrameEmpty}`}
+              />
             )}
           </div>
           <h1 className={styles.title}>{item.title}</h1>

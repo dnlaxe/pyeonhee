@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Port        string   `yaml:"port"`
-	TableName   string   `yaml:"table_name"`
-	CORSOrigins []string `yaml:"cors_origins"`
+	Port         string   `yaml:"port"`
+	TableName    string   `yaml:"table_name"`
+	CORSOrigins  []string `yaml:"cors_origins"`
+	MediaBaseURL string   `yaml:"media_base_url"`
 }
 
 func Defaults() Config {
@@ -44,5 +45,9 @@ func applyEnv(cfg *Config) {
 
 	if v := os.Getenv("PORT"); v != "" {
 		cfg.Port = v
+	}
+
+	if v := os.Getenv("MEDIA_BASE_URL"); v != "" {
+		cfg.MediaBaseURL = v
 	}
 }

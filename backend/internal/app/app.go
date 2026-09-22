@@ -14,9 +14,10 @@ import (
 )
 
 type App struct {
-	DB          *dynamodb.Client
-	TableName   string
-	CORSOrigins []string
+	DB           *dynamodb.Client
+	TableName    string
+	CORSOrigins  []string
+	MediaBaseURL string
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
@@ -31,9 +32,10 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 	}
 
 	return &App{
-		DB:          dynamodb.NewFromConfig(awsCfg),
-		TableName:   cfg.TableName,
-		CORSOrigins: cfg.CORSOrigins,
+		DB:           dynamodb.NewFromConfig(awsCfg),
+		TableName:    cfg.TableName,
+		CORSOrigins:  cfg.CORSOrigins,
+		MediaBaseURL: cfg.MediaBaseURL,
 	}, nil
 }
 
