@@ -54,7 +54,12 @@ export function LandingPage() {
         error={jobsQuery.error}
         apiUrl={apiUrl}
       />
-      <MarketSection items={marketQuery.data?.slice(0, MARKET_PREVIEW) ?? []} />
+      <MarketSection
+        items={marketQuery.data?.slice(0, MARKET_PREVIEW) ?? []}
+        isPending={marketQuery.isPending}
+        error={marketQuery.error}
+        apiUrl={apiUrl}
+      />
       <ServicesSection
         services={servicesQuery.data?.slice(0, SERVICES_PREVIEW) ?? []}
         isPending={servicesQuery.isPending}

@@ -110,6 +110,13 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		AutoDeleteObjects: jsii.Bool(true),
 	})
 
+	uploadsBucket := awss3.NewBucket(stack, jsii.String("UploadsBucket"), &awss3.BucketProps{
+		BlockPublicAccess: awss3.BlockPublicAccess_BLOCK_ALL(),
+		Encryption:        awss3.BucketEncryption_S3_MANAGED,
+		EnforceSSL:        jsii.Bool(true),
+		RemovalPolicy:     awscdk.RemovalPolicy_RETAIN,
+	})
+
 	distribution := awscloudfront.NewDistribution(stack, jsii.String("SiteDistribution"), &awscloudfront.DistributionProps{
 		DefaultRootObject: jsii.String("index.html"),
 		DefaultBehavior: &awscloudfront.BehaviorOptions{
@@ -135,6 +142,25 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		},
 	})
 
+	uploadsOrigin := awscloudfrontorigins.S3BucketOrigin_WithOriginAccessControl(
+		uploadsBucket,
+		nil,
+	)
+
+	distribution.AddBehavior(
+		jsii.String("/media/*"),
+		uploadsOrigin,
+		&awscloudfront.AddBehaviorOptions{
+			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
+		},
+	)
+
+	fn.AddEnvironment(
+		jsii.String("MEDIA_BASE_URL"),
+		jsii.String("https://"+*distribution.DistributionDomainName()),
+		nil,
+	)
+
 	awss3deployment.NewBucketDeployment(stack, jsii.String("DeployWebsite"), &awss3deployment.BucketDeploymentProps{
 		Sources: &[]awss3deployment.ISource{
 			awss3deployment.Source_Asset(jsii.String("../frontend/dist"), nil),
@@ -142,6 +168,10 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		DestinationBucket: siteBucket,
 		Distribution:      distribution,
 		DistributionPaths: jsii.Strings("/*"),
+	})
+
+	awscdk.NewCfnOutput(stack, jsii.String("SiteBucketName"), &awscdk.CfnOutputProps{
+		Value: siteBucket.BucketName(),
 	})
 
 	awscdk.NewCfnOutput(stack, jsii.String("TableName"), &awscdk.CfnOutputProps{
@@ -152,6 +182,10 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 	awscdk.NewCfnOutput(stack, jsii.String("SiteUrl"), &awscdk.CfnOutputProps{
 		Value: jsii.String("https://" + *distribution.DistributionDomainName()),
+	})
+
+	awscdk.NewCfnOutput(stack, jsii.String("UploadsBucketName"), &awscdk.CfnOutputProps{
+		Value: uploadsBucket.BucketName(),
 	})
 
 	return stack

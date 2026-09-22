@@ -164,3 +164,8 @@
   line-height: 1.2;
   color: #111111;
 }
+
+.mediaFrameEmpty {
+  background-color: var(--yellow);
+  cursor: default;
+}

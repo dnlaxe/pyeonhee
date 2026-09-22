@@ -5,11 +5,11 @@ export function ServiceCard({ service }: { service: Service }) {
   return (
     <article className="flex h-full min-w-0 w-full flex-col gap-4 border border-border bg-white p-6">
       <div className="flex min-w-0 items-center gap-3">
-        <img
-          src={service.logo}
-          alt=""
-          className="block size-[88px] shrink-0 rounded-full bg-yellow object-cover"
-        />
+        <div className="grid size-[88px] shrink-0 place-items-center overflow-hidden rounded-full bg-yellow">
+          {service.logo ? (
+            <img src={service.logo} alt="" className="size-full object-cover" />
+          ) : null}
+        </div>
         <div className="min-w-0">
           <div className="text-base font-bold leading-[1.2] text-text-dark [overflow-wrap:anywhere]">
             {service.company}

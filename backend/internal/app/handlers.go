@@ -38,7 +38,9 @@ func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 
 	jobs := make([]Job, 0, len(items))
 	for _, item := range items {
-		jobs = append(jobs, item.ToJob())
+		job := item.ToJob()
+		job.Logo = a.MediaURL(job.Logo)
+		jobs = append(jobs, job)
 	}
 
 	sort.SliceStable(jobs, func(i, j int) bool {
@@ -92,7 +94,9 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(item.ToJob()); err != nil {
+	job := item.ToJob()
+	job.Logo = a.MediaURL(job.Logo)
+	if err := json.NewEncoder(w).Encode(job); err != nil {
 		writeInternalError(w, "getJob: encode", err)
 		return
 	}
@@ -125,7 +129,9 @@ func (a *App) listServices(w http.ResponseWriter, r *http.Request) {
 
 	services := make([]Service, 0, len(items))
 	for _, item := range items {
-		services = append(services, item.ToService())
+		service := item.ToService()
+		service.Logo = a.MediaURL(service.Logo)
+		services = append(services, service)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -162,7 +168,9 @@ func (a *App) listMarket(w http.ResponseWriter, r *http.Request) {
 
 	markets := make([]Market, 0, len(items))
 	for _, item := range items {
-		markets = append(markets, item.ToMarket())
+		market := item.ToMarket()
+		market.Images = a.MediaURLs(market.Images)
+		markets = append(markets, market)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -209,7 +217,9 @@ func (a *App) getMarket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(item.ToMarket()); err != nil {
+	market := item.ToMarket()
+	market.Images = a.MediaURLs(market.Images)
+	if err := json.NewEncoder(w).Encode(market); err != nil {
 		writeInternalError(w, "getMarket: encode", err)
 		return
 	}
