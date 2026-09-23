@@ -39,7 +39,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::993939946685:role/github-actions-deploy
-          aws-region: ${{ env.AWS_REGION}}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Resolve API URL from stack
         id: api
