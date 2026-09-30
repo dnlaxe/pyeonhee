@@ -4,7 +4,7 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   return (
-    <footer className="mt-auto bg-zinc-200 px-0 py-16 pb-12 border-t">
+    <footer className="mt-auto bg-zinc-200 px-0 py-12 border-t">
       <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-center gap-4 text-center max-md:w-[min(100%-32px,1120px)]">
         <Logo to="/" />
         <p className="m-0 max-w-[36ch] text-[15px] leading-normal text-body">

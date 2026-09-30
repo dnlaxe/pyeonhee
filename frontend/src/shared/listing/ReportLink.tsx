@@ -1,13 +1,14 @@
 import { Link } from "react-router";
 
 type Props = {
-  to: string;
+  kind: string;
+  id: string;
 };
 
-export function ReportLink({ to }: Props) {
+export function ReportLink({ kind, id }: Props) {
   return (
     <Link
-      to={to}
+      to={`/report/${kind}/${id}`}
       className="mt-4 block w-fit text-left font-mono text-[13px] leading-[1.2] text-[#a1a1aa] no-underline hover:text-muted hover:underline"
     >
       report this post
