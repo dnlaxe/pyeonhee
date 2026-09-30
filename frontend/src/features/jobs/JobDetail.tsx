@@ -74,13 +74,13 @@ export function JobDetails() {
           <BackLink to="/jobs">back to jobs</BackLink>
           <div className="mb-5 flex items-start gap-5">
             <div
-                className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"
-                aria-hidden
-              >
-                {job.logo ? (
-                  <img src={job.logo} alt="" className="size-full object-cover" />
-                ) : null}
-              </div>
+              className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"
+              aria-hidden
+            >
+              {job.logo ? (
+                <img src={job.logo} alt="" className="size-full object-cover" />
+              ) : null}
+            </div>
             <div className="min-w-0">
               <h1 className="mb-2 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
                 {job.title}
@@ -100,7 +100,7 @@ export function JobDetails() {
           <TagList tags={job.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
           <RelayEmail listingId={job.id} actionLabel="Apply" className="mt-8" />
-          <ReportLink to={`/jobs/${job.id}/report`} />
+          <ReportLink kind="job" id={job.id} />
         </div>
       </article>
     </main>

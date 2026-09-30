@@ -188,7 +188,7 @@ export function MarketItemPage() {
             actionLabel="Contact"
             className="mt-8"
           />
-          <ReportLink to={`/market/${item.id}/report`} />
+          <ReportLink kind="market" id={item.id} />
         </div>
       </article>
 

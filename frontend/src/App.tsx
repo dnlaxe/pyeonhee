@@ -11,6 +11,7 @@ import { MarketItemPage } from "./features/market/MarketItemPage";
 import { ServicesPage } from "./features/services";
 import { NotFound } from "./features/not-found/NotFound";
 import { LandingPage } from "./features/landing";
+import { ReportPage } from "./features/report";
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
           <Route path="/market/:id" element={<MarketItemPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/faq" element={<FaqPage />} />
+          <Route path="/report/:kind/:id" element={<ReportPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

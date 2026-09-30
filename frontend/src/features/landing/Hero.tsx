@@ -5,7 +5,7 @@ export function Hero() {
         <h1 className="mb-5 max-w-[11ch] text-[clamp(36px,5.5vw,64px)] font-bold leading-[1.2] tracking-[-1.2px] text-text">
           Foreign in Korea. Not starting from zero.
         </h1>
-        <h2 className="m-0 max-w-[22ch] text-[clamp(18px,2.2vw,24px)] font-normal leading-[1.6] tracking-[-0.7px] text-heading">
+        <h2 className="m-0 max-w-[22ch] text-[clamp(18px,2.2vw,24px)] font-normal leading-[1.6] tracking-[-0.8px] text-heading">
           Jobs, secondhand finds, and local posts for people living here.
         </h2>
       </div>
