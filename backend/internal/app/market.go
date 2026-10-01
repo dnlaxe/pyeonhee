@@ -14,6 +14,7 @@ type MarketItem struct {
 	Description string   `dynamodbav:"description"`
 	Images      []string `dynamodbav:"images"` // photo URLs for now
 	Tags        []string `dynamodbav:"tags"`
+	Pinned      bool     `dynamodbav:"pinned"`
 	Status      string   `dynamodbav:"status"`
 	CreatedAt   string   `dynamodbav:"createdAt"`
 }
@@ -24,6 +25,7 @@ type Market struct {
 	Description string   `json:"description"`
 	Images      []string `json:"images"`
 	Tags        []string `json:"tags"`
+	Pinned      bool     `json:"pinned"`
 	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
 }
@@ -47,6 +49,7 @@ func (item MarketItem) ToMarket() Market {
 		Description: item.Description,
 		Images:      images,
 		Tags:        tags,
+		Pinned:      item.Pinned,
 		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}

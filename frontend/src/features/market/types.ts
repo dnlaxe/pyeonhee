@@ -6,4 +6,6 @@ export type MarketItem = {
   description: string;
   images: string[];
   tags: MarketTag[];
+  pinned: boolean;
+  createdAt: string;
 };

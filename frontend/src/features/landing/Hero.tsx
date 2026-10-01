@@ -2,12 +2,18 @@ export function Hero() {
   return (
     <section className="py-12 pb-8">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h1 className="mb-5 max-w-[11ch] text-[clamp(36px,5.5vw,64px)] font-bold leading-[1.2] tracking-[-1.2px] text-text">
-          Foreign in Korea. Not starting from zero.
-        </h1>
-        <h2 className="m-0 max-w-[22ch] text-[clamp(18px,2.2vw,24px)] font-normal leading-[1.6] tracking-[-0.8px] text-heading">
-          Jobs, secondhand finds, and local posts for people living here.
-        </h2>
+        <div className="bg-yellow px-7 py-10 md:px-14 md:py-[72px] rounded-lg">
+          <h1 className="m-0 max-w-[10ch] text-[clamp(40px,6vw,72px)] font-bold leading-[1.12] tracking-[-1.6px] text-text">
+            Foreign in Korea.
+            <br />
+            Not starting from zero.
+          </h1>
+        </div>
+        <p className="m-0 mt-7 max-w-[680px] text-[clamp(22px,2.6vw,32px)] font-normal leading-[1.55] tracking-[-0.6px] text-heading">
+          You already live here. This is the board for the job, the bike, and
+          the English-speaking dentist. Written by other foreigners, not by a
+          company.
+        </p>
       </div>
     </section>
   );

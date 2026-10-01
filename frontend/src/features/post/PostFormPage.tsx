@@ -40,6 +40,17 @@ function emailRadioOptions() {
   ];
 }
 
+function PinField({ label }: { label: string }) {
+  return (
+    <FormField label="Pinned:">
+      <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
+        <input type="checkbox" name="pinned" className="size-4 accent-yellow" />
+        {label}
+      </span>
+    </FormField>
+  );
+}
+
 function JobPostForm() {
   const [track, setTrack] = useState<"teaching" | "non-teaching" | "">("");
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
@@ -93,7 +104,7 @@ function JobPostForm() {
         <TextInput type="text" name="title" required />
       </FormField>
 
-            <FormField label="Attach photo:">
+      <FormField label="Attach photo:">
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <label
@@ -212,17 +223,7 @@ function JobPostForm() {
         <TextareaInput name="description" rows={8} required />
       </FormField>
 
-      <FormField label="Pinned:">
-        <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
-          <input
-            type="checkbox"
-            name="pinned"
-            className="size-4 accent-yellow"
-          />
-          Show at the top of the job board
-        </span>
-      </FormField>
-
+      <PinField label="Show at the top of the job board" />
       <Button type="submit" variant="yellow" className="mt-2">
         Send
       </Button>
@@ -384,6 +385,8 @@ function MarketPostForm() {
       <FormField label="Description:">
         <TextareaInput name="description" rows={8} required />
       </FormField>
+
+      <PinField label="Show at the top of the market" />
 
       <Button type="submit" variant="yellow" className="mt-2">
         Send
