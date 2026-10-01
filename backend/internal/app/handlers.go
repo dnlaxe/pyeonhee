@@ -173,6 +173,13 @@ func (a *App) listMarket(w http.ResponseWriter, r *http.Request) {
 		markets = append(markets, market)
 	}
 
+	sort.SliceStable(markets, func(i, j int) bool {
+		if markets[i].Pinned != markets[j].Pinned {
+			return markets[i].Pinned
+		}
+		return markets[i].CreatedAt > markets[j].CreatedAt
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(markets); err != nil {
 		writeInternalError(w, "listMarket: encode", err)

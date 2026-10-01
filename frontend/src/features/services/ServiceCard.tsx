@@ -3,7 +3,7 @@ import type { Service } from "./types";
 
 export function ServiceCard({ service }: { service: Service }) {
   return (
-    <article className="flex h-full min-w-0 w-full flex-col gap-4 border border-border bg-white p-6">
+    <article className="flex h-full min-w-0 w-full flex-col gap-4 rounded-lg border border-border bg-white p-6">
       <div className="flex min-w-0 items-center gap-3">
         <div className="grid size-[88px] shrink-0 place-items-center overflow-hidden rounded-full bg-yellow">
           {service.logo ? (

@@ -9,6 +9,8 @@ import {
   ReportLink,
   TagList,
   ErrorMessage,
+  formatTimeSince,
+  PinIcon,
 } from "../../shared";
 import type { MarketItem } from "./types";
 import { throwIfNotOk } from "../../lib/httpError";
@@ -180,7 +182,20 @@ export function MarketItemPage() {
               />
             )}
           </div>
-          <h1 className={styles.title}>{item.title}</h1>
+          <h1 className={styles.title}>
+            {item.title}{" "}
+            <span className="align-middle font-mono text-sm font-normal text-muted">
+              [{formatTimeSince(item.createdAt)}]
+              {item.pinned ? (
+                <span
+                  className="ml-1.5 inline-flex align-middle"
+                  aria-label="Pinned"
+                >
+                  <PinIcon />
+                </span>
+              ) : null}
+            </span>
+          </h1>
           <TagList tags={item.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
           <RelayEmail

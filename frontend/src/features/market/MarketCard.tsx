@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { TagList } from "../../shared";
+import { formatTimeSince, PinIcon, TagList } from "../../shared";
 import type { MarketItem } from "./types";
 import styles from "./MarketCard.module.css";
 
@@ -15,7 +15,17 @@ export function MarketCard({ item }: { item: MarketItem }) {
           {thumb ? <img src={thumb} alt="" className={styles.image} /> : null}
         </div>
       </div>
-      <h3 className={styles.title}>{item.title}</h3>
+      <h3 className={styles.title}>
+        {item.title}{" "}
+        <span className="font-mono text-sm font-normal text-muted">
+          [{formatTimeSince(item.createdAt)}]
+        </span>
+        {item.pinned ? (
+          <span className="ml-1.5 inline-flex align-middle" aria-label="Pinned">
+            <PinIcon />
+          </span>
+        ) : null}
+      </h3>
       <p className="m-0 line-clamp-2 text-[15px] font-normal leading-normal text-body">
         {item.description.replace(/\n+/g, " ").trim()}
       </p>
