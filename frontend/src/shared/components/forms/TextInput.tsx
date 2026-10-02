@@ -1,13 +1,18 @@
 import type { InputHTMLAttributes } from "react";
 
-type Props = InputHTMLAttributes<HTMLInputElement>;
+type Props = InputHTMLAttributes<HTMLInputElement> & {
+  invalid?: boolean;
+};
 
-export function TextInput({ className, ...props }: Props) {
+export function TextInput({ className, invalid, ...props }: Props) {
   return (
     <input
-      className={`w-full rounded border-[1.5px] border-text-dark bg-white px-3 py-2.5 font-sans text-[15px] leading-[1.4] text-text-dark focus:outline-2 focus:outline-offset-[1px] focus:outline-yellow${
-        className ? ` ${className}` : ""
-      }`}
+      aria-invalid={invalid}
+      className={`w-full rounded border-[1.5px] bg-white px-3 py-2.5 font-sans text-[15px] leading-[1.4] text-text-dark focus:outline-2 focus:outline-offset-[1px] ${
+        invalid
+          ? "border-danger focus:outline-danger"
+          : "border-text-dark focus:outline-yellow"
+      }${className ? ` ${className}` : ""}`}
       {...props}
     />
   );
