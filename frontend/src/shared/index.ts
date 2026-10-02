@@ -13,6 +13,7 @@ export { RadioGroup } from "./components/forms/RadioGroup";
 export { SelectInput } from "./components/forms/SelectInput";
 export { TextInput } from "./components/forms/TextInput";
 export { TextareaInput } from "./components/forms/TextareaInput";
+export { FormErrorSummary } from "./components/forms/FormErrorSummary";
 
 export { RelayEmail } from "./listing/RelayEmail";
 export { ReportLink } from "./listing/ReportLink";

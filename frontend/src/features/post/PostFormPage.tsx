@@ -11,6 +11,7 @@ import {
   TextareaInput,
   FaqHelpLink,
   FaqLink,
+  FormErrorSummary,
 } from "../../shared";
 import {
   serviceFilters,
@@ -23,6 +24,7 @@ import {
   marketCategories,
   kinds,
 } from "./constants";
+import { validateJob, type JobErrors } from "./validation";
 
 function emailRadioOptions() {
   return [
@@ -53,6 +55,8 @@ function PinField({ label }: { label: string }) {
 
 function JobPostForm() {
   const [track, setTrack] = useState<"teaching" | "non-teaching" | "">("");
+  const [errors, setErrors] = useState<JobErrors>({});
+  const [submitted, setSubmitted] = useState(false);
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
 
   const MAX_PHOTOS = 1;
@@ -88,9 +92,30 @@ function JobPostForm() {
   }, []);
 
   return (
-    <Form>
-      <FormField label="Email address:">
-        <TextInput type="email" name="email" required />
+    <Form
+      noValidate
+      onSubmit={(e) => {
+        const next = validateJob(new FormData(e.currentTarget));
+        setSubmitted(true);
+        setErrors(next);
+        if (Object.keys(next).length > 0) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }}
+      onChange={(e) => {
+        if (!submitted) return;
+        setErrors(validateJob(new FormData(e.currentTarget)));
+      }}
+    >
+      <FormErrorSummary count={Object.keys(errors).length} />
+
+      <FormField label="Email address:" error={errors.email}>
+        <TextInput
+          type="email"
+          name="email"
+          required
+          invalid={Boolean(errors.email)}
+        />
       </FormField>
 
       <RadioGroup
@@ -100,8 +125,13 @@ function JobPostForm() {
         defaultValue="relay"
       />
 
-      <FormField label="Post title:">
-        <TextInput type="text" name="title" required />
+      <FormField label="Post title:" error={errors.title}>
+        <TextInput
+          type="text"
+          name="title"
+          required
+          invalid={Boolean(errors.title)}
+        />
       </FormField>
 
       <FormField label="Attach photo:">
@@ -152,12 +182,22 @@ function JobPostForm() {
         </div>
       </FormField>
 
-      <FormField label="Location:">
-        <TextInput type="text" name="location" required />
+      <FormField label="Location:" error={errors.location}>
+        <TextInput
+          type="text"
+          name="location"
+          required
+          invalid={Boolean(errors.location)}
+        />
       </FormField>
 
-      <FormField label="Employment type:">
-        <SelectInput name="employmentType" required defaultValue="">
+      <FormField label="Employment type:" error={errors.employmentType}>
+        <SelectInput
+          name="employmentType"
+          required
+          defaultValue=""
+          invalid={Boolean(errors.employmentType)}
+        >
           <option value="" disabled>
             Select…
           </option>
@@ -169,11 +209,12 @@ function JobPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Teaching / non-teaching:">
+      <FormField label="Teaching / non-teaching:" error={errors.track}>
         <SelectInput
           name="track"
           required
           value={track}
+          invalid={Boolean(errors.track)}
           onChange={(e) =>
             setTrack(e.target.value as "teaching" | "non-teaching" | "")
           }
@@ -186,13 +227,14 @@ function JobPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Job area:">
+      <FormField label="Job area:" error={errors.area}>
         <SelectInput
           name="area"
           required
           disabled={!track}
           key={track || "none"}
           defaultValue=""
+          invalid={Boolean(errors.area)}
         >
           <option value="" disabled>
             {track ? "Select…" : "Select teaching / non-teaching first"}
@@ -206,8 +248,13 @@ function JobPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Korean requirement:">
-        <SelectInput name="korean" required defaultValue="">
+      <FormField label="Korean requirement:" error={errors.korean}>
+        <SelectInput
+          name="korean"
+          required
+          defaultValue=""
+          invalid={Boolean(errors.korean)}
+        >
           <option value="" disabled>
             Select…
           </option>
@@ -219,8 +266,13 @@ function JobPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Post description:">
-        <TextareaInput name="description" rows={8} required />
+      <FormField label="Post description:" error={errors.description}>
+        <TextareaInput
+          name="description"
+          rows={8}
+          required
+          invalid={Boolean(errors.description)}
+        />
       </FormField>
 
       <PinField label="Show at the top of the job board" />
