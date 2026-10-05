@@ -8,7 +8,6 @@ import {
   FaqLink,
   Form,
   FormField,
-  richText,
   TextareaInput,
   TextInput,
 } from "../../shared";
