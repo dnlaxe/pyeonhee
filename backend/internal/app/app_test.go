@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
+	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 )
 
 func TestUnknownRouteNotFound(t *testing.T) {
@@ -53,5 +54,22 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 	body := rec.Body.String()
 	if body == "" || body[0] != '[' {
 		t.Fatalf("expected JSON array, got %q", body)
+	}
+}
+
+func TestAppChargesThroughPaymentField(t *testing.T) {
+	a := &App{Payments: payment.MockPayment{}}
+
+	got, err := a.Payments.Charge(context.Background(), payment.ChargeRequest{
+		JobID:    "job_1",
+		Amount:   5000,
+		Currency: "KRW",
+		Method:   "mock",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ID != "mock_job_1" || got.Status != "paid" {
+		t.Fatalf("got %+v", got)
 	}
 }

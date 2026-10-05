@@ -8,7 +8,6 @@ import {
   FaqLink,
   Form,
   FormField,
-  richText,
   TextareaInput,
   TextInput,
 } from "../../shared";
@@ -71,17 +70,13 @@ export function ReportPage() {
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
           <BackLink to={backTo}>{backLabel}</BackLink>
           <h1 className="mb-4 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
-            Report
+            Reporting {data.title}
           </h1>
           <p className="mb-8 text-[15px] leading-normal text-body">
             Describe what is wrong with this post, such as a scam, harassment,
             or a misleading listing. Your email is only used so pyeonhee can
             follow up. Reports are read by hand, and the post may be edited or
             removed. See our <FaqLink>FAQs</FaqLink> for safety tips.
-          </p>
-
-          <p className="mb-8 text-[15px] leading-normal text-body">
-            {richText(`You are reporting **${data.title}**`)}
           </p>
 
           <Form>

@@ -11,6 +11,8 @@ import (
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
+	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 )
 
 type App struct {
@@ -18,6 +20,7 @@ type App struct {
 	TableName    string
 	CORSOrigins  []string
 	MediaBaseURL string
+	Payments     payment.Payment
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
@@ -36,6 +39,7 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		TableName:    cfg.TableName,
 		CORSOrigins:  cfg.CORSOrigins,
 		MediaBaseURL: cfg.MediaBaseURL,
+		Payments:     payment.MockPayment{},
 	}, nil
 }
 
@@ -45,7 +49,7 @@ func (a *App) NewRouter() *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: a.CORSOrigins,
-		AllowedMethods: []string{"GET", "OPTIONS"},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Content-Type"},
 		MaxAge:         300,
 	}))
@@ -55,6 +59,7 @@ func (a *App) NewRouter() *chi.Mux {
 	r.Get("/services", a.listServices)
 	r.Get("/market", a.listMarket)
 	r.Get("/market/{id}", a.getMarket)
+	r.Post("/payments", a.charge)
 
 	return r
 }

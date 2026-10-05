@@ -1,5 +1,5 @@
 import { useState, useEffect, type ChangeEvent, useRef } from "react";
-import { Navigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 import {
   Button,
   BackLink,
@@ -42,11 +42,22 @@ function emailRadioOptions() {
   ];
 }
 
-function PinField({ label }: { label: string }) {
+function PinField({
+  label,
+  defaultChecked = false,
+}: {
+  label: string;
+  defaultChecked?: boolean;
+}) {
   return (
     <FormField label="Pinned:">
       <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
-        <input type="checkbox" name="pinned" className="size-4 accent-yellow" />
+        <input
+          type="checkbox"
+          name="pinned"
+          defaultChecked={defaultChecked}
+          className="size-4 accent-yellow"
+        />
         {label}
       </span>
     </FormField>
@@ -54,13 +65,39 @@ function PinField({ label }: { label: string }) {
 }
 
 function JobPostForm() {
-  const [track, setTrack] = useState<"teaching" | "non-teaching" | "">("");
+  const [draft] = useState(readJobDraft);
+  const [track, setTrack] = useState<"teaching" | "non-teaching" | "">(
+    draft?.track ?? "",
+  );
   const [errors, setErrors] = useState<JobErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
+  const navigate = useNavigate();
 
   const MAX_PHOTOS = 1;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+
+  function readJobDraft(): {
+    email: string;
+    emailOption: string;
+    title: string;
+    location: string;
+    employmentType: string;
+    track: "teaching" | "non-teaching" | "";
+    area: string;
+    korean: string;
+    description: string;
+    pinned: boolean;
+    method: string;
+  } | null {
+    const raw = sessionStorage.getItem("jobDraft");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
@@ -95,13 +132,32 @@ function JobPostForm() {
     <Form
       noValidate
       onSubmit={(e) => {
-        const next = validateJob(new FormData(e.currentTarget));
+        const data = new FormData(e.currentTarget);
+        const next = validateJob(data);
         setSubmitted(true);
         setErrors(next);
         if (Object.keys(next).length > 0) {
           window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
         }
+
+        const draft = {
+          email: String(data.get("email") ?? ""),
+          emailOption: String(data.get("emailOption") ?? ""),
+          title: String(data.get("title") ?? ""),
+          location: String(data.get("location") ?? ""),
+          employmentType: String(data.get("employmentType") ?? ""),
+          track: String(data.get("track") ?? ""),
+          area: String(data.get("area") ?? ""),
+          korean: String(data.get("korean") ?? ""),
+          description: String(data.get("description") ?? ""),
+          pinned: data.get("pinned") === "on",
+          method: String(data.get("method") ?? ""),
+        };
+        sessionStorage.setItem("jobDraft", JSON.stringify(draft));
+        navigate("/pay");
       }}
+
       onChange={(e) => {
         if (!submitted) return;
         setErrors(validateJob(new FormData(e.currentTarget)));
@@ -114,6 +170,7 @@ function JobPostForm() {
           type="email"
           name="email"
           required
+          defaultValue={draft?.email ?? ""}
           invalid={Boolean(errors.email)}
         />
       </FormField>
@@ -122,7 +179,7 @@ function JobPostForm() {
         legend="Email options:"
         name="emailOption"
         options={emailRadioOptions()}
-        defaultValue="relay"
+        defaultValue={draft?.emailOption || "relay"}
       />
 
       <FormField label="Post title:" error={errors.title}>
@@ -130,6 +187,7 @@ function JobPostForm() {
           type="text"
           name="title"
           required
+          defaultValue={draft?.title ?? ""}
           invalid={Boolean(errors.title)}
         />
       </FormField>
@@ -187,6 +245,7 @@ function JobPostForm() {
           type="text"
           name="location"
           required
+          defaultValue={draft?.location ?? ""}
           invalid={Boolean(errors.location)}
         />
       </FormField>
@@ -195,7 +254,7 @@ function JobPostForm() {
         <SelectInput
           name="employmentType"
           required
-          defaultValue=""
+          defaultValue={draft?.employmentType ?? ""}
           invalid={Boolean(errors.employmentType)}
         >
           <option value="" disabled>
@@ -233,7 +292,7 @@ function JobPostForm() {
           required
           disabled={!track}
           key={track || "none"}
-          defaultValue=""
+          defaultValue={draft?.area ?? ""}
           invalid={Boolean(errors.area)}
         >
           <option value="" disabled>
@@ -252,7 +311,7 @@ function JobPostForm() {
         <SelectInput
           name="korean"
           required
-          defaultValue=""
+          defaultValue={draft?.korean ?? ""}
           invalid={Boolean(errors.korean)}
         >
           <option value="" disabled>
@@ -271,11 +330,21 @@ function JobPostForm() {
           name="description"
           rows={8}
           required
+          defaultValue={draft?.description ?? ""}
           invalid={Boolean(errors.description)}
         />
       </FormField>
 
-      <PinField label="Show at the top of the job board" />
+      <PinField
+        label="Show at the top of the job board"
+        defaultChecked={draft?.pinned ?? false}
+      />
+      <RadioGroup
+        legend="How to pay:"
+        name="method"
+        options={[{ value: "mock", label: "Mock" }]}
+        defaultValue={draft?.method || "mock"}
+      />
       <Button type="submit" variant="yellow" className="mt-2">
         Send
       </Button>
