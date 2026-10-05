@@ -3,6 +3,11 @@
   grid-template-columns: 72px minmax(0, 1.2fr) minmax(0, 1fr) 48px;
   gap: 20px 28px;
   align-items: start;
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--white);
 }
 
 @media (max-width: 900px) {

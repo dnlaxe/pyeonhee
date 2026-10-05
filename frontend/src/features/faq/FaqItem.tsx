@@ -15,7 +15,7 @@ export function FaqItem({
   return (
     <button
       type="button"
-      className={`${styles.item} ${open ? styles.open : ""}`}
+      className={`rounded-lg ${styles.item} ${open ? styles.open : ""}`}
       aria-expanded={open}
       onClick={onToggle}
     >

@@ -55,7 +55,6 @@ export function MarketPage() {
                 filters={marketFilters}
                 active={filter}
                 onChange={setFilterTag}
-                spacing="loose"
               />
               {isEmpty ? (
                 <EmptyState>No items match this tag.</EmptyState>
