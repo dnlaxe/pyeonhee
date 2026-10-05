@@ -27,7 +27,7 @@ export function ServicesSection({
         {error && <ErrorMessage error={error} />}
 
         {!isPending && !error && apiUrl && (
-          <div className="relative mt-9 overflow-hidden">
+          <div className="relative pt-2.5 overflow-hidden">
             <div className="grid grid-cols-3 items-stretch gap-5 max-[1040px]:grid-cols-2 max-[720px]:grid-cols-1">
               {services.map((service) => (
                 <ServiceCard key={service.id} service={service} />

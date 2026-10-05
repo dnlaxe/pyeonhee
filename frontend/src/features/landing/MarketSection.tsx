@@ -27,7 +27,7 @@ export function MarketSection({
         {error && <ErrorMessage error={error} />}
 
         {!isPending && !error && apiUrl && (
-          <div className="relative mt-9 overflow-hidden">
+          <div className="relative pt-2.5 overflow-hidden">
             <div className="grid grid-cols-3 gap-x-[22px] gap-y-7 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
               {items.map((item) => (
                 <MarketCard key={item.id} item={item} />

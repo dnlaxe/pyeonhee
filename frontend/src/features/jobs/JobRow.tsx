@@ -7,7 +7,7 @@ export function JobRow({ job }: { job: Job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className={`${styles.row} group cursor-pointer border-b border-border py-7 text-inherit no-underline`}
+      className={`${styles.row} group cursor-pointer py-7 text-inherit no-underline`}
     >
       <div
         className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"

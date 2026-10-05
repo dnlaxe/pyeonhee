@@ -2,23 +2,13 @@ type Props = {
   filters: readonly string[];
   active: string | null;
   onChange: (tag: string) => void;
-  spacing?: "default" | "loose";
   className?: string;
 };
 
-export function FilterBar({
-  filters,
-  active,
-  onChange,
-  spacing = "default",
-  className,
-}: Props) {
-  const spacingClass =
-    spacing === "default" ? "mb-3 mt-5 max-[900px]:mb-0" : "mb-9 mt-5";
-
+export function FilterBar({ filters, active, onChange, className }: Props) {
   return (
     <div
-      className={`flex flex-wrap gap-2 ${spacingClass}${className ? ` ${className}` : ""}`}
+      className={`flex flex-wrap gap-2 mb-3 mt-5${className ? ` ${className}` : ""}`}
     >
       {filters.map((tag) => (
         <button

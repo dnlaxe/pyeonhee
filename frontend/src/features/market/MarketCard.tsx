@@ -9,27 +9,28 @@ export function MarketCard({ item }: { item: MarketItem }) {
   return (
     <Link to={`/market/${item.id}`} className={styles.card}>
       <div className={styles.media}>
-        <div
-          className={`${styles.mediaFrame} ${!thumb ? styles.mediaFrameEmpty : ""}`}
-        >
-          {thumb ? <img src={thumb} alt="" className={styles.image} /> : null}
-        </div>
+        {thumb ? <img src={thumb} alt="" className={styles.image} /> : null}
       </div>
-      <h3 className={styles.title}>
-        {item.title}{" "}
-        <span className="font-mono text-sm font-normal text-muted">
-          [{formatTimeSince(item.createdAt)}]
-        </span>
-        {item.pinned ? (
-          <span className="ml-1.5 inline-flex align-middle" aria-label="Pinned">
-            <PinIcon />
+      <div className={styles.body}>
+        <h3 className={styles.title}>
+          {item.title}{" "}
+          <span className="font-mono text-sm font-normal text-muted">
+            [{formatTimeSince(item.createdAt)}]
           </span>
-        ) : null}
-      </h3>
-      <p className="m-0 line-clamp-2 text-[15px] font-normal leading-normal text-body">
-        {item.description.replace(/\n+/g, " ").trim()}
-      </p>
-      <TagList tags={item.tags} className="mt-2.5" />
+          {item.pinned ? (
+            <span
+              className="ml-1.5 inline-flex align-middle"
+              aria-label="Pinned"
+            >
+              <PinIcon />
+            </span>
+          ) : null}
+        </h3>
+        <p className="m-0 line-clamp-2 text-[15px] font-normal leading-normal text-body">
+          {item.description.replace(/\n+/g, " ").trim()}
+        </p>
+        <TagList tags={item.tags} className="mt-2.5" />
+      </div>
     </Link>
   );
 }

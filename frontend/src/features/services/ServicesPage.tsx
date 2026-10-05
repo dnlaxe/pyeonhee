@@ -53,7 +53,6 @@ export function ServicesPage() {
                 filters={serviceFilters}
                 active={filter}
                 onChange={setFilterTag}
-                spacing="loose"
               />
               {isEmpty ? (
                 <EmptyState>No services match this tag.</EmptyState>

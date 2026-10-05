@@ -28,12 +28,6 @@ export function JobsSection({
 
         {!isPending && !error && apiUrl && (
           <>
-            <div className="grid grid-cols-[72px_minmax(0,1.2fr)_minmax(0,1fr)_48px] gap-x-7 gap-y-5 border-b border-border py-3 font-mono text-xs leading-[1.2] text-muted max-[900px]:mt-5 max-[900px]:border-b max-[900px]:border-border max-[900px]:p-0 max-[900px]:[&_span]:hidden [&_span:last-child]:text-right mt-5">
-              <span></span>
-              <span>description</span>
-              <span>topics</span>
-              <span></span>
-            </div>
             <div className="relative overflow-hidden">
               {jobs.map((job) => (
                 <JobRow key={job.id} job={job} />
