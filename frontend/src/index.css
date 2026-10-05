@@ -34,6 +34,7 @@
 
   html {
     scroll-behavior: auto;
+    background: linear-gradient(#fafafa 50%, #e4e4e7 50%) fixed;
   }
 
   body {
