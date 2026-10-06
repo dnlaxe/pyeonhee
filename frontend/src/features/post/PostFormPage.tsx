@@ -160,7 +160,11 @@ function JobPostForm() {
 
       onChange={(e) => {
         if (!submitted) return;
-        setErrors(validateJob(new FormData(e.currentTarget)));
+        const data = new FormData(e.currentTarget);
+        if (e.target instanceof HTMLSelectElement && e.target.name === "track") {
+          data.set("area", "");
+        }
+        setErrors(validateJob(data));
       }}
     >
       <FormErrorSummary count={Object.keys(errors).length} />
