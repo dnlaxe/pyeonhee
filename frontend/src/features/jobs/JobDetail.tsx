@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BackLink,
   Prose,
-  RelayEmail,
+  ContactForm,
   ReportLink,
   TagList,
   formatTimeSince,
@@ -99,7 +99,7 @@ export function JobDetails() {
           </div>
           <TagList tags={job.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
-          <RelayEmail listingId={job.id} actionLabel="Apply" className="mt-8" />
+          <ContactForm actionLabel="Apply" className="mt-8" />
           <ReportLink kind="job" id={job.id} />
         </div>
       </article>

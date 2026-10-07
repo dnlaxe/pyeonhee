@@ -30,9 +30,9 @@ export const faqSections: FaqSection[] = [
           "Use the yellow **post** link in the menu. You'll be able to share a job opening or something you're selling, giving away, or looking for.",
       },
       {
-        question: "How does the contact email work?",
+        question: "How to contact a poster?",
         answer:
-          "Apply and Contact show a private **@pyeonhee.com** address. Copy it and write from your own inbox — we forward the message to the poster. Replies go through another **@pyeonhee.com** address, so neither of you sees the other's real email. Your mail app's display name and anything in the message body still come through as usual.",
+          "On a post that hides the email, **Apply** or **Contact** opens a message box. pyeonhee emails the poster your message only, so your email stays hidden. If the poster replies to that email, pyeonhee sends you their reply and their email address. From then on you write each other directly, and nothing else goes through pyeonhee. On a post that shows the email, the address is on the listing and there is no message box.",
       },
     ],
   },

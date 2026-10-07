@@ -1,4 +1,5 @@
 import { Button, BackLink, FaqLink } from "../../shared";
+import {kinds} from "./constants.ts";
 
 export function PostPage() {
   return (
@@ -15,15 +16,11 @@ export function PostPage() {
             <FaqLink>FAQs</FaqLink> for posting guidelines and safety tips.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button variant="yellow-lg" to="/post/job">
-              Job
-            </Button>
-            <Button variant="yellow-lg" to="/post/market">
-              Market
-            </Button>
-            <Button variant="yellow-lg" to="/post/service">
-              Service
-            </Button>
+            {Object.entries(kinds).map(([key, kind]) => (
+              <Button key={key} variant="yellow-lg" to={`/post/${key}`}>
+                {kind.label}
+              </Button>
+            ))}
           </div>
         </div>
       </article>
