@@ -9,7 +9,6 @@ import {
   SelectInput,
   TextInput,
   TextareaInput,
-  FaqHelpLink,
   FaqLink,
   FormErrorSummary,
 } from "../../shared";
@@ -22,24 +21,22 @@ import {
   employmentTypes,
   marketListingTypes,
   marketCategories,
-  kinds,
+  kinds, paymentMethodLabels,
 } from "./constants";
 import { validateJob, type JobErrors } from "./validation";
 
 function emailRadioOptions() {
-  return [
-    {
-      value: "relay",
-      label: (
-        <span className="inline-flex flex-wrap items-center gap-1.5">
-          {emailOptionLabels.relay}
-          <FaqHelpLink />
-        </span>
-      ),
-    },
-    { value: "real", label: emailOptionLabels.real },
-    { value: "none", label: emailOptionLabels.none },
-  ];
+  return Object.entries(emailOptionLabels).map(([value, label]) => ({
+    value,
+    label,
+  }));
+}
+
+function paymentMethodOptions() {
+  return Object.entries(paymentMethodLabels).map(([value, label]) => ({
+    value,
+    label,
+  }));
 }
 
 function PinField({
@@ -183,7 +180,7 @@ function JobPostForm() {
         legend="Email options:"
         name="emailOption"
         options={emailRadioOptions()}
-        defaultValue={draft?.emailOption || "relay"}
+        defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
       />
 
       <FormField label="Post title:" error={errors.title}>
@@ -346,7 +343,7 @@ function JobPostForm() {
       <RadioGroup
         legend="How to pay:"
         name="method"
-        options={[{ value: "mock", label: "Mock" }]}
+        options={paymentMethodOptions()}
         defaultValue={draft?.method || "mock"}
       />
       <Button type="submit" variant="yellow" className="mt-2">
@@ -400,7 +397,7 @@ function MarketPostForm() {
         legend="Email options:"
         name="emailOption"
         options={emailRadioOptions()}
-        defaultValue="relay"
+        defaultValue="hide"
       />
 
       <FormField label="Post title:">

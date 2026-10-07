@@ -45,24 +45,25 @@ export const koreanLevels = [
 ] as const;
 
 export const emailOptionLabels = {
-  relay:
-    "Use email relay (recommended). Email address won't be shown in the post.",
-  real: "Post will show your email address.",
-  none: "Don't accept email replies. Email address won't be shown in the post.",
+  hide: "Hide email. Your email address won't be shown in the post.",
+  show: "Show email. The post will show your email address.",
 } as const;
 
 export const kinds = {
   job: {
+    label: "Job",
     title: "Post a job",
     privacy:
       "Your job post may appear on the job board for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
   },
   market: {
+    label: "Market",
     title: "Post to market",
     privacy:
       "Your listing may appear on the market for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
   },
   service: {
+    label: "Service",
     title: "Post a service",
     privacy:
       "Your service may appear on English Services for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
@@ -79,3 +80,7 @@ export const marketCategories = [
   "Books",
   "Sports",
 ] as const;
+
+export const paymentMethodLabels = {
+  mock: "Mock",
+} as const;

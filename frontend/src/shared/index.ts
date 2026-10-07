@@ -15,7 +15,7 @@ export { TextInput } from "./components/forms/TextInput";
 export { TextareaInput } from "./components/forms/TextareaInput";
 export { FormErrorSummary } from "./components/forms/FormErrorSummary";
 
-export { RelayEmail } from "./listing/RelayEmail";
+export { ContactForm } from "./listing/ContactForm";
 export { ReportLink } from "./listing/ReportLink";
 
 export { FaqHelpLink } from "./links/FaqHelpLink";

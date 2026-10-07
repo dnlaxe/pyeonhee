@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BackLink,
   Prose,
-  RelayEmail,
+  ContactForm,
   ReportLink,
   TagList,
   ErrorMessage,
@@ -198,11 +198,7 @@ export function MarketItemPage() {
           </h1>
           <TagList tags={item.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
-          <RelayEmail
-            listingId={item.id}
-            actionLabel="Contact"
-            className="mt-8"
-          />
+          <ContactForm actionLabel="Contact" className="mt-8" />
           <ReportLink kind="market" id={item.id} />
         </div>
       </article>
