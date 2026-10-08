@@ -6,18 +6,24 @@ const (
 )
 
 type JobItem struct {
-	PK          string   `dynamodbav:"PK"`
-	SK          string   `dynamodbav:"SK"`
-	EntityType  string   `dynamodbav:"entityType"`
-	ID          string   `dynamodbav:"id"`
-	Title       string   `dynamodbav:"title"`
-	Location    string   `dynamodbav:"location"`
-	Description string   `dynamodbav:"description"`
-	Tags        []string `dynamodbav:"tags"`
-	Logo        string   `dynamodbav:"logo,omitempty"`
-	Pinned      bool     `dynamodbav:"pinned"`
-	Status      string   `dynamodbav:"status"`
-	CreatedAt   string   `dynamodbav:"createdAt"`
+	PK             string   `dynamodbav:"PK"`
+	SK             string   `dynamodbav:"SK"`
+	EntityType     string   `dynamodbav:"entityType"`
+	ID             string   `dynamodbav:"id"`
+	Title          string   `dynamodbav:"title"`
+	Location       string   `dynamodbav:"location"`
+	EmploymentType string   `dynamodbav:"employmentType"`
+	Track          string   `dynamodbav:"track"`
+	Tags           []string `dynamodbav:"tags"`
+	Area           string   `dynamodbav:"area"`
+	Korean         string   `dynamodbav:"korean,omitempty"`
+	Description    string   `dynamodbav:"description"`
+	Logo           string   `dynamodbav:"logo,omitempty"`
+	Pinned         bool     `dynamodbav:"pinned"`
+	Status         string   `dynamodbav:"status"`
+	CreatedAt      string   `dynamodbav:"createdAt"`
+	PosterEmail    string   `dynamodbav:"posterEmail"`
+	EmailOption    string   `dynamodbav:"emailOption"`
 }
 
 type Job struct {
@@ -28,6 +34,7 @@ type Job struct {
 	Tags        []string `json:"tags"`
 	Logo        string   `json:"logo,omitempty"`
 	Pinned      bool     `json:"pinned"`
+	Email       string   `json:"email,omitempty"`
 	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
 }
@@ -41,7 +48,7 @@ func (item JobItem) ToJob() Job {
 	if tags == nil {
 		tags = []string{}
 	}
-	return Job{
+	job := Job{
 		ID:          item.ID,
 		Title:       item.Title,
 		Location:    item.Location,
@@ -52,4 +59,8 @@ func (item JobItem) ToJob() Job {
 		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}
+	if item.EmailOption == "show" {
+		job.Email = item.PosterEmail
+	}
+	return job
 }

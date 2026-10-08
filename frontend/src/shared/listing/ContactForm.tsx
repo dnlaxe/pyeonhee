@@ -8,6 +8,7 @@ import { TextareaInput } from "../components/forms/TextareaInput";
 type Props = {
   actionLabel: string;
   className?: string;
+  email?: string;
 };
 
 type ContactErrors = {
@@ -35,7 +36,7 @@ function validateContact(data: FormData): ContactErrors {
   return errors;
 }
 
-export function ContactForm({ actionLabel, className }: Props) {
+export function ContactForm({ actionLabel, className, email }: Props) {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -50,6 +51,18 @@ export function ContactForm({ actionLabel, className }: Props) {
       >
         {actionLabel}
       </Button>
+    );
+  }
+
+  if (email) {
+    return (
+      <p
+        className={`font-mono text-[15px] leading-[1.2] text-text-dark${
+          className ? ` ${className}` : ""
+        }`}
+      >
+        {email}
+      </p>
     );
   }
 

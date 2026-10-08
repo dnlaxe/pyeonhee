@@ -6,6 +6,7 @@ export type MarketItem = {
   description: string;
   images: string[];
   tags: MarketTag[];
+  email?: string;
   pinned: boolean;
   createdAt: string;
 };

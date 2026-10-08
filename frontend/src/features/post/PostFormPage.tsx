@@ -24,6 +24,7 @@ import {
   kinds, paymentMethodLabels,
 } from "./constants";
 import { validateJob, type JobErrors } from "./validation";
+import { config } from "../../config";
 
 function emailRadioOptions() {
   return Object.entries(emailOptionLabels).map(([value, label]) => ({
@@ -71,7 +72,7 @@ function JobPostForm() {
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
   const navigate = useNavigate();
 
-  const MAX_PHOTOS = 1;
+  const MAX_PHOTOS = config.maxPhotos.job;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
 
   function readJobDraft(): {
@@ -354,7 +355,7 @@ function JobPostForm() {
 }
 
 function MarketPostForm() {
-  const MAX_PHOTOS = 3;
+  const MAX_PHOTOS = config.maxPhotos.market;
   const [listingType, setListingType] = useState<string>("");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
 
@@ -518,7 +519,7 @@ function MarketPostForm() {
 }
 
 function ServicePostForm() {
-  const MAX_PHOTOS = 1;
+  const MAX_PHOTOS = config.maxPhotos.service;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
@@ -642,12 +643,12 @@ function ServicePostForm() {
 
 export function PostFormPage() {
   const { kind } = useParams();
-  const config =
+  const kindInfo =
     kind === "job" || kind === "market" || kind === "service"
       ? kinds[kind]
       : null;
 
-  if (!config) {
+  if (!kindInfo) {
     return <Navigate to="/post" replace />;
   }
 
@@ -657,10 +658,10 @@ export function PostFormPage() {
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
           <BackLink to="/post">back to post</BackLink>
           <h1 className="mb-4 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
-            {config.title}
+            {kindInfo.title}
           </h1>
           <p className="mb-8 text-[15px] leading-normal text-body">
-            {config.privacy} See our <FaqLink>FAQs</FaqLink> for posting
+            {kindInfo.privacy} See our <FaqLink>FAQs</FaqLink> for posting
             guidelines and safety tips.
           </p>
           {kind === "job" ? (

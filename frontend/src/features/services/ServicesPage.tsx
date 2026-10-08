@@ -10,8 +10,7 @@ import { serviceFilters } from "./constants";
 import { ServiceCard } from "./ServiceCard";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { Service } from "./types";
-
-const PAGE_SIZE = 9;
+import { config } from "../../config";
 
 export function ServicesPage() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -33,7 +32,7 @@ export function ServicesPage() {
     useTagFilter(
       services,
       (s, tag) => s.tags.includes(tag as (typeof serviceFilters)[number]),
-      PAGE_SIZE,
+      config.pageSize.services,
     );
 
   return (

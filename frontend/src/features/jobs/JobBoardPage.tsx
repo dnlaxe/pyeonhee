@@ -10,8 +10,7 @@ import { throwIfNotOk } from "../../lib/httpError";
 import { type Job } from "./types";
 import { JobRow } from "./JobRow";
 import { jobFilters } from "./constants";
-
-const PAGE_SIZE = 10;
+import { config } from "../../config";
 
 export function JobBoardPage() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -34,7 +33,7 @@ export function JobBoardPage() {
     useTagFilter(
       jobs,
       (job, tag) => job.tags.includes(tag as (typeof jobFilters)[number]),
-      PAGE_SIZE,
+      config.pageSize.jobs,
     );
 
   return (

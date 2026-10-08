@@ -12,8 +12,10 @@ type MarketItem struct {
 	ID          string   `dynamodbav:"id"`
 	Title       string   `dynamodbav:"title"`
 	Description string   `dynamodbav:"description"`
-	Images      []string `dynamodbav:"images"` // photo URLs for now
+	Images      []string `dynamodbav:"images"`
 	Tags        []string `dynamodbav:"tags"`
+	PosterEmail string   `dynamodbav:"posterEmail"`
+	EmailOption string   `dynamodbav:"emailOption"`
 	Pinned      bool     `dynamodbav:"pinned"`
 	Status      string   `dynamodbav:"status"`
 	CreatedAt   string   `dynamodbav:"createdAt"`
@@ -25,6 +27,7 @@ type Market struct {
 	Description string   `json:"description"`
 	Images      []string `json:"images"`
 	Tags        []string `json:"tags"`
+	Email       string   `json:"email,omitempty"`
 	Pinned      bool     `json:"pinned"`
 	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
@@ -43,7 +46,7 @@ func (item MarketItem) ToMarket() Market {
 	if tags == nil {
 		tags = []string{}
 	}
-	return Market{
+	market := Market{
 		ID:          item.ID,
 		Title:       item.Title,
 		Description: item.Description,
@@ -53,4 +56,8 @@ func (item MarketItem) ToMarket() Market {
 		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}
+	if item.EmailOption == "show" {
+		market.Email = item.PosterEmail
+	}
+	return market
 }

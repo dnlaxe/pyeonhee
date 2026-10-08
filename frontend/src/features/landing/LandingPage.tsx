@@ -7,10 +7,7 @@ import { MarketSection } from "./MarketSection";
 import { ServicesSection } from "./ServicesSection";
 import type { Service } from "../services";
 import type { MarketItem } from "../market";
-
-const JOBS_PREVIEW = 3;
-const MARKET_PREVIEW = 6;
-const SERVICES_PREVIEW = 6;
+import { config } from "../../config";
 
 export function LandingPage() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -49,19 +46,19 @@ export function LandingPage() {
     <main>
       <Hero />
       <JobsSection
-        jobs={jobsQuery.data?.slice(0, JOBS_PREVIEW) ?? []}
+        jobs={jobsQuery.data?.slice(0, config.landing.jobs) ?? []}
         isPending={jobsQuery.isPending}
         error={jobsQuery.error}
         apiUrl={apiUrl}
       />
       <MarketSection
-        items={marketQuery.data?.slice(0, MARKET_PREVIEW) ?? []}
+        items={marketQuery.data?.slice(0, config.landing.market) ?? []}
         isPending={marketQuery.isPending}
         error={marketQuery.error}
         apiUrl={apiUrl}
       />
       <ServicesSection
-        services={servicesQuery.data?.slice(0, SERVICES_PREVIEW) ?? []}
+        services={servicesQuery.data?.slice(0, config.landing.services) ?? []}
         isPending={servicesQuery.isPending}
         error={servicesQuery.error}
         apiUrl={apiUrl}
