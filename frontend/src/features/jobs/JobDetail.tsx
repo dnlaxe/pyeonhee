@@ -99,7 +99,7 @@ export function JobDetails() {
           </div>
           <TagList tags={job.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
-          <ContactForm actionLabel="Apply" className="mt-8" />
+          <ContactForm actionLabel="Apply" className="mt-8" email={job.email} />
           <ReportLink kind="job" id={job.id} />
         </div>
       </article>

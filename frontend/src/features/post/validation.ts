@@ -1,3 +1,5 @@
+import { config } from "../../config";
+
 export type JobErrors = {
   email?: string;
   title?: string;
@@ -10,7 +12,7 @@ export type JobErrors = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_DESCRIPTION_LENGTH = 40;
+const MIN_DESCRIPTION_LENGTH = config.minDescriptionLength;
 
 export function validateJob(data: FormData): JobErrors {
   const errors: JobErrors = {};

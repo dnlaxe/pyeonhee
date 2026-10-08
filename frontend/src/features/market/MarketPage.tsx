@@ -10,8 +10,7 @@ import { throwIfNotOk } from "../../lib/httpError";
 import type { MarketItem } from "./types";
 import { marketFilters } from "./constants";
 import { MarketCard } from "./MarketCard";
-
-const PAGE_SIZE = 9;
+import { config } from "../../config";
 
 export function MarketPage() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -34,7 +33,7 @@ export function MarketPage() {
     useTagFilter(
       items,
       (item, tag) => item.tags.includes(tag as (typeof marketFilters)[number]),
-      PAGE_SIZE,
+      config.pageSize.market,
     );
 
   return (
