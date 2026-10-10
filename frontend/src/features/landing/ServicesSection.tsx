@@ -19,7 +19,7 @@ export function ServicesSection({
     <section className="scroll-mt-20 py-7 pb-20">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
         <h2 className="mb-3 text-2xl font-semibold leading-[1.2] text-text-dark">
-          English Services
+          English-friendly Services
         </h2>
 
         {!apiUrl && <p className="text-red-700">VITE_API_URL is not set</p>}
