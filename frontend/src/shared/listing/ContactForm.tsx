@@ -86,7 +86,7 @@ export function ContactForm({ actionLabel, className, email }: Props) {
 
   return (
     <div
-      className={`rounded border-[1.5px] border-text-dark p-4${
+      className={`rounded border-[1.5px] border-text-dark p-4 ${
         className ? ` ${className}` : ""
       }`}
     >
