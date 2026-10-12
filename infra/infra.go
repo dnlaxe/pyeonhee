@@ -50,7 +50,8 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Runtime:      awslambda.Runtime_PROVIDED_AL2023(),
 		Architecture: awslambda.Architecture_ARM_64(),
 		Environment: &map[string]*string{
-			"TABLE_NAME": table.TableName(),
+			"TABLE_NAME":              table.TableName(),
+			"MOCK_BOT_CHECK_PASSWORD": jsii.String(os.Getenv("MOCK_BOT_CHECK_PASSWORD")),
 		},
 	})
 
@@ -60,8 +61,10 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		ApiName: jsii.String("pyeonhee-jobs"),
 		CorsPreflight: &awsapigatewayv2.CorsPreflightOptions{
 			AllowOrigins: jsii.Strings("*"),
+			AllowHeaders: jsii.Strings("Content-Type"),
 			AllowMethods: &[]awsapigatewayv2.CorsHttpMethod{
 				awsapigatewayv2.CorsHttpMethod_GET,
+				awsapigatewayv2.CorsHttpMethod_POST,
 			},
 		},
 	})
@@ -99,6 +102,12 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
 		Path:        jsii.String("/market/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Integration: integration,
+	})
+
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/mock-bot-check"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
