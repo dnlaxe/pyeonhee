@@ -61,4 +61,6 @@ jobs:
 
       - name: Deploy CDK stack
         working-directory: infra
+        env:
+          MOCK_BOT_CHECK_PASSWORD: ${{ secrets.MOCK_BOT_CHECK_PASSWORD }}
         run: cdk deploy --require-approval never --ci

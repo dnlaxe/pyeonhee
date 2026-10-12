@@ -106,7 +106,6 @@ export function ContactForm({ actionLabel, className, email }: Props) {
             message: String(data.get("message") ?? "").trim(),
           });
           setReady(true);
-          setReady(true);
         }}
         onChange={(e) => {
           if (!submitted) return;
