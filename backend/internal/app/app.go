@@ -16,11 +16,12 @@ import (
 )
 
 type App struct {
-	DB           *dynamodb.Client
-	TableName    string
-	CORSOrigins  []string
-	MediaBaseURL string
-	Payments     payment.Payment
+	DB                   *dynamodb.Client
+	TableName            string
+	CORSOrigins          []string
+	MediaBaseURL         string
+	Payments             payment.Payment
+	MockBotCheckPassword string
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
@@ -35,11 +36,12 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 	}
 
 	return &App{
-		DB:           dynamodb.NewFromConfig(awsCfg),
-		TableName:    cfg.TableName,
-		CORSOrigins:  cfg.CORSOrigins,
-		MediaBaseURL: cfg.MediaBaseURL,
-		Payments:     payment.MockPayment{},
+		DB:                   dynamodb.NewFromConfig(awsCfg),
+		TableName:            cfg.TableName,
+		CORSOrigins:          cfg.CORSOrigins,
+		MediaBaseURL:         cfg.MediaBaseURL,
+		Payments:             payment.MockPayment{},
+		MockBotCheckPassword: cfg.MockBotCheckPassword,
 	}, nil
 }
 
@@ -60,6 +62,7 @@ func (a *App) NewRouter() *chi.Mux {
 	r.Get("/market", a.listMarket)
 	r.Get("/market/{id}", a.getMarket)
 	r.Post("/payments", a.charge)
+	r.Post("/mock-bot-check", a.mockBotCheck)
 
 	return r
 }

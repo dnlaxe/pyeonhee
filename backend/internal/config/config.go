@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Port         string   `yaml:"port"`
-	TableName    string   `yaml:"table_name"`
-	CORSOrigins  []string `yaml:"cors_origins"`
-	MediaBaseURL string   `yaml:"media_base_url"`
+	Port                 string   `yaml:"port"`
+	TableName            string   `yaml:"table_name"`
+	CORSOrigins          []string `yaml:"cors_origins"`
+	MediaBaseURL         string   `yaml:"media_base_url"`
+	MockBotCheckPassword string   `yaml:"mock_bot_check_password"`
 }
 
 func Defaults() Config {
@@ -49,5 +50,9 @@ func applyEnv(cfg *Config) {
 
 	if v := os.Getenv("MEDIA_BASE_URL"); v != "" {
 		cfg.MediaBaseURL = v
+	}
+
+	if v := os.Getenv("MOCK_BOT_CHECK_PASSWORD"); v != "" {
+		cfg.MockBotCheckPassword = v
 	}
 }

@@ -4,6 +4,7 @@ import { Form } from "../components/forms/Form";
 import { FormField } from "../components/forms/FormField";
 import { TextInput } from "../components/forms/TextInput";
 import { TextareaInput } from "../components/forms/TextareaInput";
+import { BotCheck } from "../bot-check/BotCheck";
 
 type Props = {
   actionLabel: string;
@@ -41,6 +42,11 @@ export function ContactForm({ actionLabel, className, email }: Props) {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [ready, setReady] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [fields, setFields] = useState<{ email: string; message: string }>({
+    email: "",
+    message: "",
+  });
 
   if (!open) {
     return (
@@ -66,6 +72,18 @@ export function ContactForm({ actionLabel, className, email }: Props) {
     );
   }
 
+  if (sent) {
+    return (
+      <p
+        className={`text-[15px] leading-normal text-body${
+          className ? ` ${className}` : ""
+        }`}
+      >
+        Message sent.
+      </p>
+    );
+  }
+
   return (
     <div
       className={`rounded border-[1.5px] border-text-dark p-4${
@@ -75,30 +93,29 @@ export function ContactForm({ actionLabel, className, email }: Props) {
       <p className="mb-4 text-[15px] leading-normal text-body">
         Message the poster
       </p>
-      {ready ? (
-        <div className="rounded border-[1.5px] border-dashed border-text-dark p-4">
-          <p className="font-mono text-sm leading-[1.4] text-text-dark">
-            Bot check goes here
-          </p>
-          <p className="mt-2 text-[15px] leading-normal text-body">
-            Nothing was sent. The bot check is not connected yet.
-          </p>
-        </div>
-      ) : (
-        <Form
-          noValidate
-          onSubmit={(e) => {
-            const data = new FormData(e.currentTarget);
-            const next = validateContact(data);
-            setSubmitted(true);
-            setErrors(next);
-            if (Object.keys(next).length > 0) return;
-            setReady(true);
-          }}
-          onChange={(e) => {
-            if (!submitted) return;
-            setErrors(validateContact(new FormData(e.currentTarget)));
-          }}
+      <Form
+        noValidate
+        onSubmit={(e) => {
+          const data = new FormData(e.currentTarget);
+          const next = validateContact(data);
+          setSubmitted(true);
+          setErrors(next);
+          if (Object.keys(next).length > 0) return;
+          setFields({
+            email: String(data.get("email") ?? "").trim(),
+            message: String(data.get("message") ?? "").trim(),
+          });
+          setReady(true);
+          setReady(true);
+        }}
+        onChange={(e) => {
+          if (!submitted) return;
+          setErrors(validateContact(new FormData(e.currentTarget)));
+        }}
+      >
+        <fieldset
+          disabled={ready}
+          className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
         >
           <FormField label="Your email:" error={errors.email}>
             <TextInput
@@ -116,11 +133,16 @@ export function ContactForm({ actionLabel, className, email }: Props) {
               invalid={Boolean(errors.message)}
             />
           </FormField>
+        </fieldset>
+        {!ready ? (
           <Button type="submit" variant="yellow">
             Send
           </Button>
-        </Form>
-      )}
+        ) : null}
+      </Form>
+      {ready ? (
+        <BotCheck fields={fields} onSuccess={() => setSent(true)} />
+      ) : null}
     </div>
   );
 }

@@ -27,3 +27,5 @@ export { formatTimeSince } from "./lib/text";
 export { richText, richParagraphs } from "./lib/richText";
 
 export { PinIcon } from "./icons/PinIcon";
+
+export { BotCheck } from "./bot-check/BotCheck";
