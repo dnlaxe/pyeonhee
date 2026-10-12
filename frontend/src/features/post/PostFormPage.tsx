@@ -11,6 +11,7 @@ import {
   TextareaInput,
   FaqLink,
   FormErrorSummary,
+  BotCheck,
 } from "../../shared";
 import {
   serviceFilters,
@@ -21,7 +22,8 @@ import {
   employmentTypes,
   marketListingTypes,
   marketCategories,
-  kinds, paymentMethodLabels,
+  kinds,
+  paymentMethodLabels,
 } from "./constants";
 import { validateJob, type JobErrors } from "./validation";
 import { config } from "../../config";
@@ -71,9 +73,14 @@ function JobPostForm() {
   const [submitted, setSubmitted] = useState(false);
   const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
 
   const MAX_PHOTOS = config.maxPhotos.job;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+
+  const [fields, setFields] = useState<NonNullable<
+    ReturnType<typeof readJobDraft>
+  > | null>(null);
 
   function readJobDraft(): {
     email: string;
@@ -127,230 +134,244 @@ function JobPostForm() {
   }, []);
 
   return (
-    <Form
-      noValidate
-      onSubmit={(e) => {
-        const data = new FormData(e.currentTarget);
-        const next = validateJob(data);
-        setSubmitted(true);
-        setErrors(next);
-        if (Object.keys(next).length > 0) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-
-        const draft = {
-          email: String(data.get("email") ?? ""),
-          emailOption: String(data.get("emailOption") ?? ""),
-          title: String(data.get("title") ?? ""),
-          location: String(data.get("location") ?? ""),
-          employmentType: String(data.get("employmentType") ?? ""),
-          track: String(data.get("track") ?? ""),
-          area: String(data.get("area") ?? ""),
-          korean: String(data.get("korean") ?? ""),
-          description: String(data.get("description") ?? ""),
-          pinned: data.get("pinned") === "on",
-          method: String(data.get("method") ?? ""),
-        };
-        sessionStorage.setItem("jobDraft", JSON.stringify(draft));
-        navigate("/pay");
-      }}
-
-      onChange={(e) => {
-        if (!submitted) return;
-        const data = new FormData(e.currentTarget);
-        if (e.target instanceof HTMLSelectElement && e.target.name === "track") {
-          data.set("area", "");
-        }
-        setErrors(validateJob(data));
-      }}
-    >
-      <FormErrorSummary count={Object.keys(errors).length} />
-
-      <FormField label="Email address:" error={errors.email}>
-        <TextInput
-          type="email"
-          name="email"
-          required
-          defaultValue={draft?.email ?? ""}
-          invalid={Boolean(errors.email)}
-        />
-      </FormField>
-
-      <RadioGroup
-        legend="Email options:"
-        name="emailOption"
-        options={emailRadioOptions()}
-        defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
-      />
-
-      <FormField label="Post title:" error={errors.title}>
-        <TextInput
-          type="text"
-          name="title"
-          required
-          defaultValue={draft?.title ?? ""}
-          invalid={Boolean(errors.title)}
-        />
-      </FormField>
-
-      <FormField label="Attach photo:">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <label
-              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
-                photos.length >= MAX_PHOTOS
-                  ? "pointer-events-none opacity-50"
-                  : "hover:bg-yellow"
-              }`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                disabled={photos.length >= MAX_PHOTOS}
-                onChange={handlePhotosChange}
-                className="sr-only"
-              />
-              Add photo
-            </label>
-            <span className="text-[15px] text-muted">
-              {photos.length}/{MAX_PHOTOS}
-            </span>
-          </div>
-
-          {photos.length > 0 && (
-            <ul className="flex flex-wrap gap-2">
-              {photos.map((photo) => (
-                <li key={photo.url} className="relative">
-                  <img
-                    src={photo.url}
-                    alt=""
-                    className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(photo.url)}
-                    aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </FormField>
-
-      <FormField label="Location:" error={errors.location}>
-        <TextInput
-          type="text"
-          name="location"
-          required
-          defaultValue={draft?.location ?? ""}
-          invalid={Boolean(errors.location)}
-        />
-      </FormField>
-
-      <FormField label="Employment type:" error={errors.employmentType}>
-        <SelectInput
-          name="employmentType"
-          required
-          defaultValue={draft?.employmentType ?? ""}
-          invalid={Boolean(errors.employmentType)}
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          {employmentTypes.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </SelectInput>
-      </FormField>
-
-      <FormField label="Teaching / non-teaching:" error={errors.track}>
-        <SelectInput
-          name="track"
-          required
-          value={track}
-          invalid={Boolean(errors.track)}
-          onChange={(e) =>
-            setTrack(e.target.value as "teaching" | "non-teaching" | "")
+    <>
+      <Form
+        noValidate
+        onSubmit={(e) => {
+          const data = new FormData(e.currentTarget);
+          const next = validateJob(data);
+          setSubmitted(true);
+          setErrors(next);
+          if (Object.keys(next).length > 0) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
           }
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          <option value="teaching">Teaching</option>
-          <option value="non-teaching">Non-teaching</option>
-        </SelectInput>
-      </FormField>
+          setFields({
+            email: String(data.get("email") ?? ""),
+            emailOption: String(data.get("emailOption") ?? ""),
+            title: String(data.get("title") ?? ""),
+            location: String(data.get("location") ?? ""),
+            employmentType: String(data.get("employmentType") ?? ""),
+            track: String(data.get("track") ?? "") as "teaching" | "non-teaching" | "",
+            area: String(data.get("area") ?? ""),
+            korean: String(data.get("korean") ?? ""),
+            description: String(data.get("description") ?? ""),
+            pinned: data.get("pinned") === "on",
+            method: String(data.get("method") ?? ""),
+          });
+          setReady(true);
+        }}
 
-      <FormField label="Job area:" error={errors.area}>
-        <SelectInput
-          name="area"
-          required
-          disabled={!track}
-          key={track || "none"}
-          defaultValue={draft?.area ?? ""}
-          invalid={Boolean(errors.area)}
-        >
-          <option value="" disabled>
-            {track ? "Select…" : "Select teaching / non-teaching first"}
-          </option>
-          {track &&
-            areas.map((a) => (
-              <option key={a} value={a}>
-                {a}
+        onChange={(e) => {
+          if (!submitted) return;
+          const data = new FormData(e.currentTarget);
+          if (
+            e.target instanceof HTMLSelectElement &&
+            e.target.name === "track"
+          ) {
+            data.set("area", "");
+          }
+          setErrors(validateJob(data));
+        }}
+      >
+        <FormErrorSummary count={Object.keys(errors).length} />
+
+        <FormField label="Email address:" error={errors.email}>
+          <TextInput
+            type="email"
+            name="email"
+            required
+            defaultValue={draft?.email ?? ""}
+            invalid={Boolean(errors.email)}
+          />
+        </FormField>
+
+        <RadioGroup
+          legend="Email options:"
+          name="emailOption"
+          options={emailRadioOptions()}
+          defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
+        />
+
+        <FormField label="Post title:" error={errors.title}>
+          <TextInput
+            type="text"
+            name="title"
+            required
+            defaultValue={draft?.title ?? ""}
+            invalid={Boolean(errors.title)}
+          />
+        </FormField>
+
+        <FormField label="Attach photo:">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <label
+                className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+                  photos.length >= MAX_PHOTOS
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-yellow"
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={photos.length >= MAX_PHOTOS}
+                  onChange={handlePhotosChange}
+                  className="sr-only"
+                />
+                Add photo
+              </label>
+              <span className="text-[15px] text-muted">
+                {photos.length}/{MAX_PHOTOS}
+              </span>
+            </div>
+
+            {photos.length > 0 && (
+              <ul className="flex flex-wrap gap-2">
+                {photos.map((photo) => (
+                  <li key={photo.url} className="relative">
+                    <img
+                      src={photo.url}
+                      alt=""
+                      className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(photo.url)}
+                      aria-label="Remove photo"
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </FormField>
+
+        <FormField label="Location:" error={errors.location}>
+          <TextInput
+            type="text"
+            name="location"
+            required
+            defaultValue={draft?.location ?? ""}
+            invalid={Boolean(errors.location)}
+          />
+        </FormField>
+
+        <FormField label="Employment type:" error={errors.employmentType}>
+          <SelectInput
+            name="employmentType"
+            required
+            defaultValue={draft?.employmentType ?? ""}
+            invalid={Boolean(errors.employmentType)}
+          >
+            <option value="" disabled>
+              Select…
+            </option>
+            {employmentTypes.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
             ))}
-        </SelectInput>
-      </FormField>
+          </SelectInput>
+        </FormField>
 
-      <FormField label="Korean requirement:" error={errors.korean}>
-        <SelectInput
-          name="korean"
-          required
-          defaultValue={draft?.korean ?? ""}
-          invalid={Boolean(errors.korean)}
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          {koreanLevels.map((k) => (
-            <option key={k} value={k}>
-              {k}
+        <FormField label="Teaching / non-teaching:" error={errors.track}>
+          <SelectInput
+            name="track"
+            required
+            value={track}
+            invalid={Boolean(errors.track)}
+            onChange={(e) =>
+              setTrack(e.target.value as "teaching" | "non-teaching" | "")
+            }
+          >
+            <option value="" disabled>
+              Select…
             </option>
-          ))}
-        </SelectInput>
-      </FormField>
+            <option value="teaching">Teaching</option>
+            <option value="non-teaching">Non-teaching</option>
+          </SelectInput>
+        </FormField>
 
-      <FormField label="Post description:" error={errors.description}>
-        <TextareaInput
-          name="description"
-          rows={8}
-          required
-          defaultValue={draft?.description ?? ""}
-          invalid={Boolean(errors.description)}
+        <FormField label="Job area:" error={errors.area}>
+          <SelectInput
+            name="area"
+            required
+            disabled={!track}
+            key={track || "none"}
+            defaultValue={draft?.area ?? ""}
+            invalid={Boolean(errors.area)}
+          >
+            <option value="" disabled>
+              {track ? "Select…" : "Select teaching / non-teaching first"}
+            </option>
+            {track &&
+              areas.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+          </SelectInput>
+        </FormField>
+
+        <FormField label="Korean requirement:" error={errors.korean}>
+          <SelectInput
+            name="korean"
+            required
+            defaultValue={draft?.korean ?? ""}
+            invalid={Boolean(errors.korean)}
+          >
+            <option value="" disabled>
+              Select…
+            </option>
+            {koreanLevels.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </SelectInput>
+        </FormField>
+
+        <FormField label="Post description:" error={errors.description}>
+          <TextareaInput
+            name="description"
+            rows={8}
+            required
+            defaultValue={draft?.description ?? ""}
+            invalid={Boolean(errors.description)}
+          />
+        </FormField>
+
+        <PinField
+          label="Show at the top of the job board"
+          defaultChecked={draft?.pinned ?? false}
         />
-      </FormField>
-
-      <PinField
-        label="Show at the top of the job board"
-        defaultChecked={draft?.pinned ?? false}
-      />
-      <RadioGroup
-        legend="How to pay:"
-        name="method"
-        options={paymentMethodOptions()}
-        defaultValue={draft?.method || "mock"}
-      />
-      <Button type="submit" variant="yellow" className="mt-2">
-        Send
-      </Button>
-    </Form>
+        <RadioGroup
+          legend="How to pay:"
+          name="method"
+          options={paymentMethodOptions()}
+          defaultValue={draft?.method || "mock"}
+        />
+        {!ready ? (
+          <Button type="submit" variant="yellow" className="mt-2">
+            Send
+          </Button>
+        ) : null}
+      </Form>
+      {ready && fields ? (
+        <BotCheck
+          fields={fields}
+          onSuccess={() => {
+            sessionStorage.setItem("jobDraft", JSON.stringify(fields));
+            navigate("/pay");
+          }}
+        />
+      ) : null}
+    </>
   );
 }
 
