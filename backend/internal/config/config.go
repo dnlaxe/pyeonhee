@@ -12,14 +12,18 @@ type Config struct {
 	TableName            string   `yaml:"table_name"`
 	CORSOrigins          []string `yaml:"cors_origins"`
 	MediaBaseURL         string   `yaml:"media_base_url"`
+	BotCheckProvider     string   `yaml:"bot_check_provider"`
 	MockBotCheckPassword string   `yaml:"mock_bot_check_password"`
+	PaymentProvider      string   `yaml:"payment_provider"`
 }
 
 func Defaults() Config {
 	return Config{
-		Port:        "3000",
-		TableName:   "",
-		CORSOrigins: []string{"http://localhost:5173"},
+		Port:             "3000",
+		TableName:        "",
+		CORSOrigins:      []string{"http://localhost:5173"},
+		BotCheckProvider: "mock",
+		PaymentProvider:  "mock",
 	}
 }
 
@@ -52,7 +56,15 @@ func applyEnv(cfg *Config) {
 		cfg.MediaBaseURL = v
 	}
 
+	if v := os.Getenv("BOT_CHECK_PROVIDER"); v != "" {
+		cfg.BotCheckProvider = v
+	}
+
 	if v := os.Getenv("MOCK_BOT_CHECK_PASSWORD"); v != "" {
 		cfg.MockBotCheckPassword = v
+	}
+
+	if v := os.Getenv("PAYMENT_PROVIDER"); v != "" {
+		cfg.PaymentProvider = v
 	}
 }

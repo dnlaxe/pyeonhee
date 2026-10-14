@@ -21,7 +21,7 @@ func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":meta":      &types.AttributeValueMemberS{Value: JobSortKeyMeta},
-			":published": &types.AttributeValueMemberS{Value: "published"},
+			":published": &types.AttributeValueMemberS{Value: JobStatusPublished},
 			":job":       &types.AttributeValueMemberS{Value: JobEntityType},
 		},
 	})
@@ -36,9 +36,9 @@ func (a *App) listJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobs := make([]Job, 0, len(items))
+	jobs := make([]JobResponse, 0, len(items))
 	for _, item := range items {
-		job := item.ToJob()
+		job := item.ToJobResponse()
 		job.Logo = a.MediaURL(job.Logo)
 		jobs = append(jobs, job)
 	}
@@ -66,10 +66,7 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 
 	out, err := a.DB.GetItem(r.Context(), &dynamodb.GetItemInput{
 		TableName: &a.TableName,
-		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: JobPK(id)},
-			"SK": &types.AttributeValueMemberS{Value: JobSortKeyMeta},
-		},
+		Key:       jobKey(id),
 	})
 
 	if err != nil {
@@ -88,13 +85,13 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if item.Status != "published" {
+	if item.Status != JobStatusPublished {
 		http.Error(w, "job not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	job := item.ToJob()
+	job := item.ToJobResponse()
 	job.Logo = a.MediaURL(job.Logo)
 	if err := json.NewEncoder(w).Encode(job); err != nil {
 		writeInternalError(w, "getJob: encode", err)

@@ -12,7 +12,7 @@ import { ServicesPage } from "./features/services";
 import { NotFound } from "./features/not-found/NotFound";
 import { LandingPage } from "./features/landing";
 import { ReportPage } from "./features/report";
-import { PaidPage, PayPage } from "./features/payment/PayPage";
+import { PayFailPage, PayPage, PaySuccessPage } from "./features/payment/PayPage";
 
 export function App() {
   return (
@@ -27,7 +27,9 @@ export function App() {
           <Route path="/post" element={<PostPage />} />
           <Route path="/post/:kind" element={<PostFormPage />} />
           <Route path="/pay" element={<PayPage />} />
-          <Route path="/pay/done" element={<PaidPage />} />
+          <Route path="/pay" element={<PayPage />} />
+          <Route path="/pay/success" element={<PaySuccessPage />} />
+          <Route path="/pay/fail" element={<PayFailPage />} />
           <Route path="/market" element={<MarketPage />} />
           <Route path="/market/:id" element={<MarketItemPage />} />
           <Route path="/services" element={<ServicesPage />} />
