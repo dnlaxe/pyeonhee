@@ -54,6 +54,7 @@ jobs:
         working-directory: frontend
         env:
           VITE_API_URL: ${{ steps.api.outputs.url }}
+          VITE_PAYMENT: ${{ vars.VITE_PAYMENT }}
         run: npm run build
 
       - name: Install CDK CLI
@@ -65,5 +66,4 @@ jobs:
           MOCK_BOT_CHECK_PASSWORD: ${{ secrets.MOCK_BOT_CHECK_PASSWORD }}
           BOT_CHECK_PROVIDER: ${{ vars.BOT_CHECK_PROVIDER }}
           PAYMENT_PROVIDER: ${{ vars.PAYMENT_PROVIDER }}
-          VITE_PAYMENT: ${{ vars.VITE_PAYMENT }}
         run: cdk deploy --require-approval never --ci
