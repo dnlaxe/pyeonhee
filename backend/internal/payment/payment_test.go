@@ -2,57 +2,32 @@ package payment
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"testing"
 )
 
-func TestMockCharge(t *testing.T) {
-	var p Payment = MockPayment{}
-
-	got, err := p.Charge(context.Background(), ChargeRequest{
-		JobID:    "job_1",
-		Amount:   5000,
-		Currency: "KRW",
-		Method:   "mock",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got.ID != "mock_job_1" || got.Status != "paid" {
-		t.Fatalf("got %+v", got)
-	}
-}
-
-func TestMockChargeRejectsNonPositiveAmount(t *testing.T) {
-	var p Payment = MockPayment{}
-
-	_, err := p.Charge(context.Background(), ChargeRequest{
-		JobID:    "job_1",
-		Amount:   0,
-		Currency: "KRW",
-		Method:   "mock",
-	})
-	if err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestChargeJSON(t *testing.T) {
-	var req ChargeRequest
-	err := json.Unmarshal([]byte(`{"jobId":"demo","amount":5000,"currency":"KRW","method":"mock"}`), &req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if req.JobID != "demo" || req.Amount != 5000 || req.Currency != "KRW" || req.Method != "mock" {
-		t.Fatalf("req = %+v", req)
+func TestMockConfirm(t *testing.T) {
+	tests := []struct {
+		name string
+		key  string
+		want error
+	}{
+		{"mock key", "mock_abc123", nil},
+		{"real-looking key", "tgen_20261014abc", ErrDeclined},
+		{"empty key", "", ErrDeclined},
 	}
 
-	got, err := json.Marshal(ChargeResult{ID: "mock_demo", Status: "paid"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := `{"id":"mock_demo","status":"paid"}`
-	if string(got) != want {
-		t.Fatalf("got %s", got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var p Provider = Mock{}
+			err := p.Confirm(context.Background(), ConfirmRequest{
+				PaymentKey: tt.key,
+				OrderID:    "order_1",
+				Amount:     5000,
+			})
+			if !errors.Is(err, tt.want) {
+				t.Fatalf("err = %v, want %v", err, tt.want)
+			}
+		})
 	}
 }

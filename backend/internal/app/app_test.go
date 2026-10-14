@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/dnlaxe/pyeonhee/backend/internal/app/botcheck"
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 )
@@ -35,10 +36,9 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 	if os.Getenv("TABLE_NAME") == "" {
 		t.Skip("TABLE_NAME not set; skipping live DynamoDB check")
 	}
-
-	a, err := New(context.Background(), config.Config{
-		TableName: os.Getenv("TABLE_NAME"),
-	})
+	cfg := config.Defaults()
+	cfg.TableName = os.Getenv("TABLE_NAME")
+	a, err := New(context.Background(), cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,19 +57,30 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 	}
 }
 
-func TestAppChargesThroughPaymentField(t *testing.T) {
-	a := &App{Payments: payment.MockPayment{}}
-
-	got, err := a.Payments.Charge(context.Background(), payment.ChargeRequest{
-		JobID:    "job_1",
-		Amount:   5000,
-		Currency: "KRW",
-		Method:   "mock",
-	})
+func TestNewPaymentProvider(t *testing.T) {
+	p, err := newPaymentProvider(config.Config{PaymentProvider: "mock"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.ID != "mock_job_1" || got.Status != "paid" {
-		t.Fatalf("got %+v", got)
+	if _, ok := p.(payment.Mock); !ok {
+		t.Fatalf("provider = %T, want payment.Mock", p)
+	}
+
+	if _, err := newPaymentProvider(config.Config{PaymentProvider: "tosss"}); err == nil {
+		t.Fatal("expected error for unknown provider")
+	}
+}
+
+func TestNewBotChecker(t *testing.T) {
+	c, err := newBotChecker(config.Config{BotCheckProvider: "mock"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := c.(botcheck.Mock); !ok {
+		t.Fatalf("provider = %T, want botCheck", c)
+	}
+
+	if _, err := newBotChecker(config.Config{BotCheckProvider: "turnstile"}); err == nil {
+		t.Fatal("expected error for unknown provider")
 	}
 }

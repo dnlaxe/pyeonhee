@@ -1,13 +1,15 @@
 import { MockBotCheck } from "./MockBotCheck.tsx";
 
 type Props = {
-  fields: Record<string, unknown>;
-  onSuccess: () => void;
+  onSubmit: (token: string) => void;
+  pending: boolean;
+  error: string;
 };
-export function BotCheck({ fields, onSuccess }: Props) {
+
+export function BotCheck(props: Props) {
   const mode = import.meta.env.VITE_BOT_CHECK || "password";
   if (mode === "password") {
-    return <MockBotCheck fields={fields} onSuccess={onSuccess} />;
+    return <MockBotCheck {...props} />;
   }
 
   return (

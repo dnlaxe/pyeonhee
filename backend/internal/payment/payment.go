@@ -2,34 +2,29 @@ package payment
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"strings"
 )
 
-type ChargeRequest struct {
-	JobID    string `json:"jobId"`
-	Amount   int64  `json:"amount"`
-	Currency string `json:"currency"`
-	Method   string `json:"method"`
+var ErrDeclined = errors.New("payment declined")
+
+const MockKeyPrefix = "mock_"
+
+type ConfirmRequest struct {
+	PaymentKey string
+	OrderID    string
+	Amount     int64
 }
 
-type ChargeResult struct {
-	ID     string `json:"id"`
-	Status string `json:"status"`
+type Provider interface {
+	Confirm(ctx context.Context, req ConfirmRequest) error
 }
 
-type Payment interface {
-	Charge(ctx context.Context, req ChargeRequest) (ChargeResult, error)
-}
+type Mock struct{}
 
-type MockPayment struct{}
-
-func (MockPayment) Charge(ctx context.Context, req ChargeRequest) (ChargeResult, error) {
-	if req.Amount <= 0 {
-		return ChargeResult{}, fmt.Errorf("charge amount must be positive")
+func (Mock) Confirm(_ context.Context, req ConfirmRequest) error {
+	if !strings.HasPrefix(req.PaymentKey, MockKeyPrefix) {
+		return ErrDeclined
 	}
-
-	return ChargeResult{
-		ID:     "mock_" + req.JobID,
-		Status: "paid",
-	}, nil
+	return nil
 }

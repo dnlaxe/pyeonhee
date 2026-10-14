@@ -27,6 +27,8 @@ import {
 } from "./constants";
 import { validateJob, type JobErrors } from "./validation";
 import { config } from "../../config";
+import { useMutation } from "@tanstack/react-query";
+import { createJob, type JobFields } from "./api";
 
 function emailRadioOptions() {
   return Object.entries(emailOptionLabels).map(([value, label]) => ({
@@ -66,21 +68,52 @@ function PinField({
 
 function JobPostForm() {
   const [draft] = useState(readJobDraft);
-  const [track, setTrack] = useState<"teaching" | "non-teaching" | "">(
+  const [track, setTrack] = useState<"Teaching" | "Non-teaching" | "">(
     draft?.track ?? "",
   );
   const [errors, setErrors] = useState<JobErrors>({});
   const [submitted, setSubmitted] = useState(false);
-  const areas = track === "teaching" ? teachingAreas : nonTeachingAreas;
+  const areas = track === "Teaching" ? teachingAreas : nonTeachingAreas;
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
 
   const MAX_PHOTOS = config.maxPhotos.job;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
 
-  const [fields, setFields] = useState<NonNullable<
-    ReturnType<typeof readJobDraft>
-  > | null>(null);
+  const [fields, setFields] = useState<ReturnType<typeof readJobDraft>>(null);
+
+  const [botCheckError, setBotCheckError] = useState("");
+  const mutation = useMutation({
+    mutationFn: ({ fields, password }: { fields: JobFields; password: string }) =>
+      createJob(fields, password),
+  });
+
+  function submitJob(password: string) {
+    if (!fields) return;
+    setBotCheckError("");
+    mutation.mutate(
+      { fields, password },
+      {
+        onSuccess: (result) => {
+          if (result.kind === "botCheckFailed") {
+            setBotCheckError("That password is wrong.");
+            return;
+          }
+          if (result.kind === "invalid") {
+            setErrors(result.errors);
+            setReady(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+          sessionStorage.setItem(
+            "jobDraft",
+            JSON.stringify({ ...fields, jobId: result.id }),
+          );
+          navigate("/pay");
+        },
+      },
+    );
+  }
 
   function readJobDraft(): {
     email: string;
@@ -88,7 +121,7 @@ function JobPostForm() {
     title: string;
     location: string;
     employmentType: string;
-    track: "teaching" | "non-teaching" | "";
+    track: "Teaching" | "Non-teaching" | "";
     area: string;
     korean: string;
     description: string;
@@ -152,7 +185,7 @@ function JobPostForm() {
             title: String(data.get("title") ?? ""),
             location: String(data.get("location") ?? ""),
             employmentType: String(data.get("employmentType") ?? ""),
-            track: String(data.get("track") ?? "") as "teaching" | "non-teaching" | "",
+            track: String(data.get("track") ?? "") as "Teaching" | "Non-teaching" | "",
             area: String(data.get("area") ?? ""),
             korean: String(data.get("korean") ?? ""),
             description: String(data.get("description") ?? ""),
@@ -286,14 +319,14 @@ function JobPostForm() {
             value={track}
             invalid={Boolean(errors.track)}
             onChange={(e) =>
-              setTrack(e.target.value as "teaching" | "non-teaching" | "")
+              setTrack(e.target.value as "Teaching" | "Non-teaching" | "")
             }
           >
             <option value="" disabled>
               Select…
             </option>
-            <option value="teaching">Teaching</option>
-            <option value="non-teaching">Non-teaching</option>
+            <option value="Teaching">Teaching</option>
+            <option value="Non-teaching">Non-teaching</option>
           </SelectInput>
         </FormField>
 
@@ -362,15 +395,13 @@ function JobPostForm() {
           </Button>
         ) : null}
       </Form>
-      {ready && fields ? (
-        <BotCheck
-          fields={fields}
-          onSuccess={() => {
-            sessionStorage.setItem("jobDraft", JSON.stringify(fields));
-            navigate("/pay");
-          }}
-        />
-      ) : null}
+        {ready && fields ? (
+          <BotCheck
+            onSubmit={submitJob}
+            pending={mutation.isPending}
+            error={botCheckError || mutation.error?.message || ""}
+          />
+        ) : null}
     </>
   );
 }

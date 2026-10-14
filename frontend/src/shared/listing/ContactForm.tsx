@@ -43,10 +43,6 @@ export function ContactForm({ actionLabel, className, email }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [ready, setReady] = useState(false);
   const [sent, setSent] = useState(false);
-  const [fields, setFields] = useState<{ email: string; message: string }>({
-    email: "",
-    message: "",
-  });
 
   if (!open) {
     return (
@@ -101,10 +97,6 @@ export function ContactForm({ actionLabel, className, email }: Props) {
           setSubmitted(true);
           setErrors(next);
           if (Object.keys(next).length > 0) return;
-          setFields({
-            email: String(data.get("email") ?? "").trim(),
-            message: String(data.get("message") ?? "").trim(),
-          });
           setReady(true);
         }}
         onChange={(e) => {
@@ -139,9 +131,9 @@ export function ContactForm({ actionLabel, className, email }: Props) {
           </Button>
         ) : null}
       </Form>
-      {ready ? (
-        <BotCheck fields={fields} onSuccess={() => setSent(true)} />
-      ) : null}
+        {ready ? (
+            <BotCheck onSubmit={() => setSent(true)} pending={false} error="" />
+          ) : null}
     </div>
   );
 }

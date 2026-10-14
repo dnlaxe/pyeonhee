@@ -52,10 +52,12 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Environment: &map[string]*string{
 			"TABLE_NAME":              table.TableName(),
 			"MOCK_BOT_CHECK_PASSWORD": jsii.String(os.Getenv("MOCK_BOT_CHECK_PASSWORD")),
+			"BOT_CHECK_PROVIDER":      jsii.String(envOr("BOT_CHECK_PROVIDER", "mock")),
+			"PAYMENT_PROVIDER":        jsii.String(envOr("PAYMENT_PROVIDER", "mock")),
 		},
 	})
 
-	table.GrantReadData(fn)
+	table.GrantReadWriteData(fn)
 
 	httpApi := awsapigatewayv2.NewHttpApi(stack, jsii.String("JobsApi"), &awsapigatewayv2.HttpApiProps{
 		ApiName: jsii.String("pyeonhee-jobs"),
@@ -77,7 +79,7 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
 		Path:        jsii.String("/jobs"),
-		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET, awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
@@ -106,7 +108,13 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/mock-bot-check"),
+		Path:        jsii.String("/payments/checkout"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
+		Integration: integration,
+	})
+
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/payments/confirm"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
@@ -248,4 +256,11 @@ func env() *awscdk.Environment {
 	//  Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
 	//  Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
 	// }
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
