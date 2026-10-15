@@ -6,6 +6,20 @@ import (
 	"testing"
 )
 
+func TestNew(t *testing.T) {
+	c, err := New("mock", "test-phrase")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m, ok := c.(Mock); !ok || m.Password != "test-phrase" {
+		t.Fatalf("checker = %#v, want Mock with password", c)
+	}
+
+	if _, err := New("turnstile", ""); err == nil {
+		t.Fatal("expected error for unknown provider")
+	}
+}
+
 func TestMockVerify(t *testing.T) {
 	tests := []struct {
 		name     string

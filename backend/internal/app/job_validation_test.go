@@ -43,7 +43,7 @@ func TestCreateJobRequestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := validCreateJobRequest()
 			tt.modify(&req)
-			errs := req.Validate()
+			errs := req.validate()
 
 			if tt.wantField == "" {
 				if len(errs) != 0 {
@@ -63,8 +63,8 @@ func TestCreateJobRequestNormalizeTrimsBeforeValidate(t *testing.T) {
 	req.Title = "   "
 	req.Email = "  poster@example.com  "
 
-	req.Normalize()
-	errs := req.Validate()
+	req.normalize()
+	errs := req.validate()
 
 	if _, ok := errs["title"]; !ok {
 		t.Fatalf("whitespace-only title should fail, got %v", errs)

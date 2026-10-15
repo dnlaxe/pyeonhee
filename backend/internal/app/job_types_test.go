@@ -6,17 +6,19 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
 
 func TestJobJSONOmitsPosterEmail(t *testing.T) {
-	item := JobItem{
+	item := store.JobItem{
 		ID:          "job_1",
 		Title:       "Teacher",
 		PosterEmail: "poster@example.com",
 		EmailOption: "hide",
 	}
 
-	job := item.ToJobResponse()
+	job := toJobResponse(item)
 	if job.Email != "" {
 		t.Fatalf("hide job has email %q", job.Email)
 	}
@@ -32,14 +34,14 @@ func TestJobJSONOmitsPosterEmail(t *testing.T) {
 }
 
 func TestJobJSONIncludesEmailWhenShown(t *testing.T) {
-	item := JobItem{
+	item := store.JobItem{
 		ID:          "job_1",
 		Title:       "Teacher",
 		PosterEmail: "poster@example.com",
 		EmailOption: "show",
 	}
 
-	job := item.ToJobResponse()
+	job := toJobResponse(item)
 	if job.Email != "poster@example.com" {
 		t.Fatalf("email = %q", job.Email)
 	}
@@ -57,15 +59,15 @@ func TestCreateJobRequestToItem(t *testing.T) {
 	req := validCreateJobRequest()
 	now := time.Date(2026, 10, 13, 12, 0, 0, 0, time.FixedZone("KST", 9*60*60))
 
-	item := req.ToJobItem("TESTID", now)
+	item := req.toJobItem("TESTID", now)
 
-	if item.PK != "JOB#TESTID" || item.SK != JobSortKeyMeta || item.ID != "TESTID" {
+	if item.PK != "JOB#TESTID" || item.SK != store.SortKeyMeta || item.ID != "TESTID" {
 		t.Fatalf("keys = %q %q %q", item.PK, item.SK, item.ID)
 	}
-	if item.EntityType != JobEntityType {
+	if item.EntityType != store.EntityJob {
 		t.Fatalf("entityType = %q", item.EntityType)
 	}
-	if item.Status != JobStatusPending {
+	if item.Status != store.StatusPending {
 		t.Fatalf("status = %q, want pending", item.Status)
 	}
 	if item.CreatedAt != "2026-10-13T03:00:00Z" {

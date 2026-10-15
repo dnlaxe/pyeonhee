@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
 
 func TestMarketJSONOmitsPosterEmail(t *testing.T) {
-	item := MarketItem{
+	item := store.MarketItem{
 		ID:          "market_1",
 		Title:       "Sofa",
 		PosterEmail: "poster@example.com",
 		EmailOption: "hide",
 	}
 
-	market := item.ToMarket()
+	market := toMarketResponse(item)
 	if market.Email != "" {
 		t.Fatalf("hide market item has email %q", market.Email)
 	}
@@ -30,14 +32,14 @@ func TestMarketJSONOmitsPosterEmail(t *testing.T) {
 }
 
 func TestMarketJSONIncludesEmailWhenShown(t *testing.T) {
-	item := MarketItem{
+	item := store.MarketItem{
 		ID:          "market_1",
 		Title:       "Sofa",
 		PosterEmail: "poster@example.com",
 		EmailOption: "show",
 	}
 
-	market := item.ToMarket()
+	market := toMarketResponse(item)
 	if market.Email != "poster@example.com" {
 		t.Fatalf("email = %q", market.Email)
 	}

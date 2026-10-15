@@ -2,7 +2,7 @@ package app
 
 import "strings"
 
-func (a *App) MediaURL(key string) string {
+func (a *App) mediaURL(key string) string {
 	key = strings.TrimSpace(key)
 	if key == "" {
 		return ""
@@ -20,10 +20,10 @@ func (a *App) MediaURL(key string) string {
 	return base + "/" + strings.TrimLeft(key, "/")
 }
 
-func (a *App) MediaURLs(keys []string) []string {
+func (a *App) mediaURLs(keys []string) []string {
 	out := make([]string, 0, len(keys))
 	for _, key := range keys {
-		if u := a.MediaURL(key); u != "" {
+		if u := a.mediaURL(key); u != "" {
 			out = append(out, u)
 		}
 	}
