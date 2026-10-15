@@ -6,8 +6,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dnlaxe/pyeonhee/backend/internal/app/botcheck"
+	"github.com/dnlaxe/pyeonhee/backend/internal/botcheck"
 )
+
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("write response: %v", err)
+	}
+}
 
 func writeInternalError(w http.ResponseWriter, where string, err error) {
 	if err != nil {

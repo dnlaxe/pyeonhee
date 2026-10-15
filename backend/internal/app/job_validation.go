@@ -25,7 +25,7 @@ var (
 
 var emailPattern = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 
-func (r *CreateJobRequest) Normalize() {
+func (r *CreateJobRequest) normalize() {
 	r.Email = strings.TrimSpace(r.Email)
 	r.EmailOption = strings.TrimSpace(r.EmailOption)
 	r.Title = strings.TrimSpace(r.Title)
@@ -37,7 +37,7 @@ func (r *CreateJobRequest) Normalize() {
 	r.Description = strings.TrimSpace(r.Description)
 }
 
-func (r CreateJobRequest) Validate() map[string]string {
+func (r CreateJobRequest) validate() map[string]string {
 	errs := map[string]string{}
 
 	if r.Email == "" {

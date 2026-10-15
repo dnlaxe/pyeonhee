@@ -3,6 +3,7 @@ package payment
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -18,6 +19,15 @@ type ConfirmRequest struct {
 
 type Provider interface {
 	Confirm(ctx context.Context, req ConfirmRequest) error
+}
+
+func New(provider string) (Provider, error) {
+	switch provider {
+	case "mock":
+		return Mock{}, nil
+	default:
+		return nil, fmt.Errorf("unknown PAYMENT_PROVIDER %q", provider)
+	}
 }
 
 type Mock struct{}

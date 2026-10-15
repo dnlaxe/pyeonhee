@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
+	"fmt"
 )
 
 var (
@@ -13,6 +14,15 @@ var (
 
 type Checker interface {
 	Verify(ctx context.Context, token string) error
+}
+
+func New(provider, mockPassword string) (Checker, error) {
+	switch provider {
+	case "mock":
+		return Mock{Password: mockPassword}, nil
+	default:
+		return nil, fmt.Errorf("unknown BOT_CHECK_PROVIDER %q", provider)
+	}
 }
 
 type Mock struct {

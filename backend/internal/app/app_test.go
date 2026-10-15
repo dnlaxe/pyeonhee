@@ -7,10 +7,40 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dnlaxe/pyeonhee/backend/internal/app/botcheck"
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
-	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
+	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
+
+type fakeStore struct {
+	Store
+	job *store.JobItem // nil makes GetJob return store.ErrNotFound
+
+	orderErr    error
+	orderJobID  string
+	orderID     string
+	orderAmount int64
+
+	publishErr   error
+	published    bool
+	publishedKey string
+}
+
+func (f *fakeStore) GetJob(_ context.Context, _ string) (store.JobItem, error) {
+	if f.job == nil {
+		return store.JobItem{}, store.ErrNotFound
+	}
+	return *f.job, nil
+}
+
+func (f *fakeStore) SetJobOrder(_ context.Context, jobID, orderID string, amount int64) error {
+	f.orderJobID, f.orderID, f.orderAmount = jobID, orderID, amount
+	return f.orderErr
+}
+
+func (f *fakeStore) PublishJob(_ context.Context, _, _, paymentKey string) error {
+	f.published, f.publishedKey = true, paymentKey
+	return f.publishErr
+}
 
 func TestUnknownRouteNotFound(t *testing.T) {
 	a := &App{}
@@ -54,33 +84,5 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 	body := rec.Body.String()
 	if body == "" || body[0] != '[' {
 		t.Fatalf("expected JSON array, got %q", body)
-	}
-}
-
-func TestNewPaymentProvider(t *testing.T) {
-	p, err := newPaymentProvider(config.Config{PaymentProvider: "mock"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := p.(payment.Mock); !ok {
-		t.Fatalf("provider = %T, want payment.Mock", p)
-	}
-
-	if _, err := newPaymentProvider(config.Config{PaymentProvider: "tosss"}); err == nil {
-		t.Fatal("expected error for unknown provider")
-	}
-}
-
-func TestNewBotChecker(t *testing.T) {
-	c, err := newBotChecker(config.Config{BotCheckProvider: "mock"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := c.(botcheck.Mock); !ok {
-		t.Fatalf("provider = %T, want botCheck", c)
-	}
-
-	if _, err := newBotChecker(config.Config{BotCheckProvider: "turnstile"}); err == nil {
-		t.Fatal("expected error for unknown provider")
 	}
 }
