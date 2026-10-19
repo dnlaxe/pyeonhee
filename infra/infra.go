@@ -84,6 +84,12 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/jobs/photos"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
+		Integration: integration,
+	})
+
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
 		Path:        jsii.String("/jobs/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
@@ -132,7 +138,19 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Encryption:        awss3.BucketEncryption_S3_MANAGED,
 		EnforceSSL:        jsii.Bool(true),
 		RemovalPolicy:     awscdk.RemovalPolicy_RETAIN,
+		Cors: &[]*awss3.CorsRule{
+			{
+				AllowedMethods: &[]awss3.HttpMethods{awss3.HttpMethods_PUT},
+				AllowedOrigins: jsii.Strings("*"),
+				AllowedHeaders: jsii.Strings("Content-Type"),
+				MaxAge:         jsii.Number(3000),
+			},
+		},
 	})
+
+	uploadsBucket.GrantPut(fn, jsii.String("media/jobs/*"))
+	uploadsBucket.GrantRead(fn, jsii.String("media/jobs/*"))
+	fn.AddEnvironment(jsii.String("UPLOADS_BUCKET"), uploadsBucket.BucketName(), nil)
 
 	distribution := awscloudfront.NewDistribution(stack, jsii.String("SiteDistribution"), &awscloudfront.DistributionProps{
 		DefaultRootObject: jsii.String("index.html"),

@@ -25,6 +25,7 @@ type CreateJobRequest struct {
 	Title          string `json:"title"`
 	Location       string `json:"location"`
 	EmploymentType string `json:"employmentType"`
+	Logo           string `json:"logo,omitempty"`
 	Track          string `json:"track"`
 	Area           string `json:"area"`
 	Korean         string `json:"korean"`
@@ -66,6 +67,7 @@ func (r CreateJobRequest) toJobItem(id string, now time.Time) store.JobItem {
 		EmploymentType: r.EmploymentType,
 		Track:          r.Track,
 		Area:           r.Area,
+		Logo:           r.Logo,
 		Korean:         r.Korean,
 		Description:    r.Description,
 		Tags:           []string{r.EmploymentType, r.Track, r.Area, r.Korean},

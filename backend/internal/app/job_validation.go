@@ -35,6 +35,7 @@ func (r *CreateJobRequest) normalize() {
 	r.Area = strings.TrimSpace(r.Area)
 	r.Korean = strings.TrimSpace(r.Korean)
 	r.Description = strings.TrimSpace(r.Description)
+	r.Logo = strings.TrimSpace(r.Logo)
 }
 
 func (r CreateJobRequest) validate() map[string]string {

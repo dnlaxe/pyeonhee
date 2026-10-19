@@ -28,7 +28,7 @@ import {
 import { validateJob, type JobErrors } from "./validation";
 import { config } from "../../config";
 import { useMutation } from "@tanstack/react-query";
-import { createJob, type JobFields } from "./api";
+import { createJob, uploadJobPhoto, type JobFields } from "./api";
 
 function emailRadioOptions() {
   return Object.entries(emailOptionLabels).map(([value, label]) => ({
@@ -83,16 +83,32 @@ function JobPostForm() {
   const [fields, setFields] = useState<ReturnType<typeof readJobDraft>>(null);
 
   const [botCheckError, setBotCheckError] = useState("");
+
   const mutation = useMutation({
-    mutationFn: ({ fields, password }: { fields: JobFields; password: string }) =>
-      createJob(fields, password),
+    mutationFn: async ({
+      fields,
+      password,
+      file,
+    }: {
+      fields: JobFields;
+      password: string;
+      file?: File;
+    }) => {
+      let logo: string | undefined;
+      if (file) {
+        const uploaded = await uploadJobPhoto(file, password);
+        if (uploaded.kind !== "uploaded") return uploaded;
+        logo = uploaded.key;
+      }
+      return createJob({ ...fields, logo }, password);
+    },
   });
 
   function submitJob(password: string) {
     if (!fields) return;
     setBotCheckError("");
     mutation.mutate(
-      { fields, password },
+      { fields, password, file: photos[0]?.file },
       {
         onSuccess: (result) => {
           if (result.kind === "botCheckFailed") {
@@ -185,7 +201,8 @@ function JobPostForm() {
             title: String(data.get("title") ?? ""),
             location: String(data.get("location") ?? ""),
             employmentType: String(data.get("employmentType") ?? ""),
-            track: String(data.get("track") ?? "") as "Teaching" | "Non-teaching" | "",
+            track: String(data.get("track") ?? "") as
+              "Teaching" | "Non-teaching" | "",
             area: String(data.get("area") ?? ""),
             korean: String(data.get("korean") ?? ""),
             description: String(data.get("description") ?? ""),
@@ -236,7 +253,7 @@ function JobPostForm() {
           />
         </FormField>
 
-        <FormField label="Attach photo:">
+        <FormField label="Attach photo:" error={errors.logo}>
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3">
               <label
@@ -395,13 +412,13 @@ function JobPostForm() {
           </Button>
         ) : null}
       </Form>
-        {ready && fields ? (
-          <BotCheck
-            onSubmit={submitJob}
-            pending={mutation.isPending}
-            error={botCheckError || mutation.error?.message || ""}
-          />
-        ) : null}
+      {ready && fields ? (
+        <BotCheck
+          onSubmit={submitJob}
+          pending={mutation.isPending}
+          error={botCheckError || mutation.error?.message || ""}
+        />
+      ) : null}
     </>
   );
 }

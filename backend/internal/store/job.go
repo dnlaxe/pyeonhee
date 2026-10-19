@@ -64,7 +64,6 @@ func (s *Store) PutJob(ctx context.Context, item JobItem) error {
 	return nil
 }
 
-// SetJobOrder returns ErrNotPending if the job is missing or not awaiting payment.
 func (s *Store) SetJobOrder(ctx context.Context, jobID, orderID string, amount int64) error {
 	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           &s.table,
