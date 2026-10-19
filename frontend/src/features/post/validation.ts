@@ -9,6 +9,7 @@ export type JobErrors = {
   area?: string;
   korean?: string;
   description?: string;
+  logo?: string,
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

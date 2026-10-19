@@ -11,6 +11,7 @@ export type JobFields = {
   area: string;
   korean: string;
   description: string;
+  logo?: string,
   pinned: boolean;
 };
 
@@ -36,6 +37,7 @@ export async function createJob(
       area: fields.area,
       korean: fields.korean,
       description: fields.description,
+      logo: fields.logo,
       pinned: fields.pinned,
       password,
     }),
@@ -51,4 +53,31 @@ export async function createJob(
 
   const { id } = (await res.json()) as { id: string };
   return { kind: "created", id };
+}
+
+export async function uploadJobPhoto(
+  file: File,
+  password: string,
+): Promise<{ kind: "uploaded"; key: string } | { kind: "botCheckFailed" }> {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/jobs/photos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contentType: file.type,
+      contentLength: file.size,
+      password,
+    }),
+  });
+
+  if (res.status === 401) return { kind: "botCheckFailed" };
+  throwIfNotOk(res);
+
+  const { key, uploadUrl } = (await res.json()) as { key: string; uploadUrl: string };
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  throwIfNotOk(put);
+  return { kind: "uploaded", key };
 }

@@ -79,6 +79,17 @@ func (a *App) createJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Logo != "" {
+		if err := a.checkJobLogo(r.Context(), req.Logo); err != nil {
+			if errors.Is(err, errBadLogo) {
+				writeValidationErrors(w, map[string]string{"logo": "Upload the photo again."})
+				return
+			}
+			writeInternalError(w, "createJob", err)
+			return
+		}
+	}
+
 	id := rand.Text()
 	if err := a.Store.PutJob(r.Context(), req.toJobItem(id, time.Now())); err != nil {
 		writeInternalError(w, "createJob", err)
