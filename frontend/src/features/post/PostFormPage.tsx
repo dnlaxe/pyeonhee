@@ -25,10 +25,17 @@ import {
   kinds,
   paymentMethodLabels,
 } from "./constants";
-import { validateJob, type JobErrors } from "./validation";
+import { validateJob, type JobErrors, validateMarket, type MarketErrors } from "./validation";
 import { config } from "../../config";
 import { useMutation } from "@tanstack/react-query";
-import { createJob, uploadJobPhoto, type JobFields } from "./api";
+import {
+  createJob,
+  uploadJobPhoto,
+  type JobFields,
+  createMarket,
+  uploadMarketPhoto,
+  type MarketFields,
+} from "./api";
 
 function emailRadioOptions() {
   return Object.entries(emailOptionLabels).map(([value, label]) => ({
@@ -425,8 +432,99 @@ function JobPostForm() {
 
 function MarketPostForm() {
   const MAX_PHOTOS = config.maxPhotos.market;
-  const [listingType, setListingType] = useState<string>("");
+  const [draft] = useState(readMarketDraft);
+  const [listingType, setListingType] = useState(draft?.listingType ?? "");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const [errors, setErrors] = useState<MarketErrors>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [fields, setFields] = useState<{
+    email: string;
+    emailOption: string;
+    title: string;
+    location: string;
+    listingType: string;
+    category: string;
+    price: string;
+    description: string;
+    pinned: boolean;
+  } | null>(null);
+  const [ready, setReady] = useState(false);
+  const [botCheckError, setBotCheckError] = useState("");
+  const navigate = useNavigate();
+
+  function readMarketDraft(): {
+    email: string;
+    emailOption: string;
+    title: string;
+    location: string;
+    listingType: string;
+    category: string;
+    price: string;
+    description: string;
+    pinned: boolean;
+  } | null {
+    const raw = sessionStorage.getItem("marketDraft");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  const mutation = useMutation({
+    mutationFn: async ({
+                         fields,
+                         password,
+                         files,
+                       }: {
+      fields: MarketFields;
+      password: string;
+      files: File[];
+    }) => {
+      const images: string[] = [];
+      for (const file of files) {
+        const uploaded = await uploadMarketPhoto(file, password);
+        if (uploaded.kind !== "uploaded") return uploaded;
+        images.push(uploaded.key);
+      }
+      return createMarket(
+        { ...fields, images: images.length ? images : undefined },
+        password,
+      );
+    },
+  });
+
+  function submitMarket(password: string) {
+    if (!fields) return;
+    setBotCheckError("");
+    mutation.mutate(
+      {
+        fields,
+        password,
+        files: photos.map((p) => p.file),
+      },
+      {
+        onSuccess: (result) => {
+          if (result.kind === "botCheckFailed") {
+            setBotCheckError("That password is wrong.");
+            return;
+          }
+          if (result.kind === "invalid") {
+            setErrors(result.errors);
+            setReady(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+          sessionStorage.setItem(
+            "marketDraft",
+            JSON.stringify({ ...fields, marketId: result.id }),
+          );
+          navigate("/pay");
+        },
+      },
+    );
+  }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
@@ -458,31 +556,85 @@ function MarketPostForm() {
   }, []);
 
   return (
-    <Form>
-      <FormField label="Email address:">
-        <TextInput type="email" name="email" required />
+    <>
+    <Form
+      noValidate
+      onSubmit={(e) => {
+        const data = new FormData(e.currentTarget);
+        const next = validateMarket(data);
+        setSubmitted(true);
+        setErrors(next);
+        if (Object.keys(next).length > 0) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        setFields({
+          email: String(data.get("email") ?? ""),
+          emailOption: String(data.get("emailOption") ?? ""),
+          title: String(data.get("title") ?? ""),
+          location: String(data.get("location") ?? ""),
+          listingType: String(data.get("listingType") ?? ""),
+          category: String(data.get("category") ?? ""),
+          price: String(data.get("price") ?? ""),
+          description: String(data.get("description") ?? ""),
+          pinned: data.get("pinned") === "on",
+        });
+        setReady(true);
+      }}
+      onChange={(e) => {
+        if (!submitted) return;
+        const data = new FormData(e.currentTarget);
+        if (
+          e.target instanceof HTMLSelectElement &&
+          e.target.name === "listingType"
+        ) {
+          data.set("category", "");
+        }
+        setErrors(validateMarket(data));
+      }}
+    >
+      <FormErrorSummary count={Object.keys(errors).length} />
+      <FormField label="Email address:" error={errors.email}>
+        <TextInput
+          type="email"
+          name="email"
+          required
+          defaultValue={draft?.email ?? ""}
+          invalid={Boolean(errors.email)}
+        />
       </FormField>
 
       <RadioGroup
         legend="Email options:"
         name="emailOption"
         options={emailRadioOptions()}
-        defaultValue="hide"
+        defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
       />
 
-      <FormField label="Post title:">
-        <TextInput type="text" name="title" required />
+      <FormField label="Post title:" error={errors.title}>
+        <TextInput
+          type="text"
+          name="title"
+          required
+          defaultValue={draft?.title ?? ""}
+          invalid={Boolean(errors.title)}
+        />
       </FormField>
-
-      <FormField label="Location:">
-        <TextInput type="text" name="location" required />
+      <FormField label="Location:" error={errors.location}>
+        <TextInput
+          type="text"
+          name="location"
+          required
+          defaultValue={draft?.location ?? ""}
+          invalid={Boolean(errors.location)}
+        />
       </FormField>
-
-      <FormField label="Listing type:">
+      <FormField label="Listing type:" error={errors.listingType}>
         <SelectInput
           name="listingType"
           required
           value={listingType}
+          invalid={Boolean(errors.listingType)}
           onChange={(e) => setListingType(e.target.value)}
         >
           <option value="" disabled>
@@ -496,13 +648,14 @@ function MarketPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Category:">
+      <FormField label="Category:" error={errors.category}>
         <SelectInput
           name="category"
           required
           disabled={!listingType}
           key={listingType || "none"}
-          defaultValue=""
+          defaultValue={draft?.category ?? ""}
+          invalid={Boolean(errors.category)}
         >
           <option value="" disabled>
             {listingType ? "Select…" : "Select listing type first"}
@@ -516,12 +669,14 @@ function MarketPostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Price:">
+      <FormField label="Price:" error={errors.price}>
         <TextInput
           type="text"
           name="price"
           required
           placeholder="e.g. ₩50,000 or Negotiable"
+          defaultValue={draft?.price ?? ""}
+          invalid={Boolean(errors.price)}
         />
       </FormField>
 
@@ -574,16 +729,35 @@ function MarketPostForm() {
         </div>
       </FormField>
 
-      <FormField label="Description:">
-        <TextareaInput name="description" rows={8} required />
+      <FormField label="Description:" error={errors.description}>
+        <TextareaInput
+          name="description"
+          rows={8}
+          required
+          defaultValue={draft?.description ?? ""}
+          invalid={Boolean(errors.description)}
+        />
       </FormField>
 
-      <PinField label="Show at the top of the market" />
+      <PinField
+        label="Show at the top of the market"
+        defaultChecked={draft?.pinned ?? false}
+      />
 
-      <Button type="submit" variant="yellow" className="mt-2">
-        Send
-      </Button>
+      {!ready ? (
+        <Button type="submit" variant="yellow" className="mt-2">
+          Send
+        </Button>
+      ) : null}
     </Form>
+      {ready && fields ? (
+        <BotCheck
+          onSubmit={submitMarket}
+          pending={mutation.isPending}
+          error={botCheckError || mutation.error?.message || ""}
+        />
+      ) : null}
+  </>
   );
 }
 
