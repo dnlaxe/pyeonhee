@@ -63,3 +63,58 @@ export function validateJob(data: FormData): JobErrors {
 
   return errors;
 }
+
+export type MarketErrors = {
+  email?: string;
+  title?: string;
+  location?: string;
+  listingType?: string;
+  category?: string;
+  price?: string;
+  description?: string;
+  images?: string;
+};
+
+export function validateMarket(data: FormData): MarketErrors {
+  const errors: MarketErrors = {};
+
+  const email = String(data.get("email") ?? "").trim();
+  const title = String(data.get("title") ?? "").trim();
+  const location = String(data.get("location") ?? "").trim();
+  const listingType = String(data.get("listingType") ?? "").trim();
+  const category = String(data.get("category") ?? "").trim();
+  const price = String(data.get("price") ?? "").trim();
+  const description = String(data.get("description") ?? "").trim();
+
+  if (email === "") {
+    errors.email = "Enter an email address.";
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (title === "") {
+    errors.title = "Add a post title.";
+  }
+
+  if (location === "") {
+    errors.location = "Add a location.";
+  }
+
+  if (listingType === "") {
+    errors.listingType = "Choose a listing type.";
+  } else if (category === "") {
+    errors.category = "Choose a category.";
+  }
+
+  if (price === "") {
+    errors.price = "Add a price.";
+  }
+
+  if (description === "") {
+    errors.description = "Add a description.";
+  } else if (description.length < MIN_DESCRIPTION_LENGTH) {
+    errors.description = "Add a little more detail about the item.";
+  }
+
+  return errors;
+}

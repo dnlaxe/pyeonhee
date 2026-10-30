@@ -8,34 +8,86 @@ import type { Order } from "./types";
 
 const API = import.meta.env.VITE_API_URL;
 
-type JobDraft = {
+type PayKind = "job" | "market";
+
+type PayDraft = {
+  kind: PayKind;
   title: string;
-  jobId?: string;
+  id: string;
+  cancelTo: string;
+  successViewTo: (id: string) => string;
+  liveLabel: string;
 };
 
-function readDraft(): JobDraft | null {
+function readJobDraft(): PayDraft | null {
   const raw = sessionStorage.getItem("jobDraft");
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as JobDraft;
+    const d = JSON.parse(raw) as { title?: string; jobId?: string };
+    if (!d.jobId) return null;
+    return {
+      kind: "job",
+      title: d.title ?? "",
+      id: d.jobId,
+      cancelTo: "/post/job",
+      successViewTo: (id) => `/jobs/${id}`,
+      liveLabel: "job",
+    };
   } catch {
     return null;
   }
 }
 
-function payUrl(path: string, jobId: string) {
-  return `${window.location.origin}${path}?jobId=${encodeURIComponent(jobId)}`;
+function readMarketDraft(): PayDraft | null {
+  const raw = sessionStorage.getItem("marketDraft");
+  if (!raw) return null;
+  try {
+    const d = JSON.parse(raw) as { title?: string; marketId?: string };
+    if (!d.marketId) return null;
+    return {
+      kind: "market",
+      title: d.title ?? "",
+      id: d.marketId,
+      cancelTo: "/post/market",
+      successViewTo: (id) => `/market/${id}`,
+      liveLabel: "item",
+    };
+  } catch {
+    return null;
+  }
 }
 
-async function checkout(jobId: string): Promise<Order> {
+function readDraft(): PayDraft | null {
+  return readMarketDraft() ?? readJobDraft();
+}
+
+function payUrl(path: string, kind: PayKind, id: string) {
+  const key = kind === "job" ? "jobId" : "marketId";
+  return `${window.location.origin}${path}?${key}=${encodeURIComponent(id)}`;
+}
+
+const MOCK_MARKET_CHECKOUT = true;
+
+async function checkout(draft: PayDraft): Promise<Order> {
+  if (draft.kind === "market" && MOCK_MARKET_CHECKOUT) {
+    return {
+      orderId: crypto.randomUUID(),
+      amount: 5000,
+      orderName: "pyeonhee market post",
+    };
+  }
+
   const res = await fetch(`${API}/payments/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jobId }),
+    body: JSON.stringify(
+      draft.kind === "job" ? { jobId: draft.id } : { marketId: draft.id },
+    ),
   });
   throwIfNotOk(res);
   return res.json() as Promise<Order>;
 }
+
 
 function PayLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -57,12 +109,11 @@ const textClass = "text-[15px] leading-normal text-body";
 export function PayPage() {
   const [draft] = useState(readDraft);
   const start = useMutation({ mutationFn: checkout });
-  const jobId = draft?.jobId;
 
-  if (!jobId) {
+  if (!draft) {
     return (
       <PayLayout title="Payment">
-        <p className={textClass}>Start from the job form.</p>
+        <p className={textClass}>Start from the job or market form.</p>
       </PayLayout>
     );
   }
@@ -72,8 +123,8 @@ export function PayPage() {
       <PayLayout title="Payment">
         <PaymentStep
           order={start.data}
-          successUrl={payUrl("/pay/success", jobId)}
-          failUrl={payUrl("/pay/fail", jobId)}
+          successUrl={payUrl("/pay/success", draft.kind, draft.id)}
+          failUrl={payUrl("/pay/fail", draft.kind, draft.id)}
         />
       </PayLayout>
     );
@@ -81,17 +132,17 @@ export function PayPage() {
 
   return (
     <PayLayout title="Payment">
-      <p className={textClass}>Pay for {draft?.title}.</p>
+      <p className={textClass}>Pay for {draft.title}.</p>
       {start.error && <ErrorMessage error={start.error} />}
       <div className="flex flex-wrap gap-3">
         <Button
           variant="yellow"
           disabled={start.isPending}
-          onClick={() => start.mutate(jobId)}
+          onClick={() => start.mutate(draft)}
         >
           {start.isPending ? "Starting…" : "Continue to payment"}
         </Button>
-        <Button variant="outline" to="/post/job">
+        <Button variant="outline" to={draft.cancelTo}>
           Cancel
         </Button>
       </div>
@@ -102,26 +153,42 @@ export function PayPage() {
 export function PaySuccessPage() {
   const [params] = useSearchParams();
   const jobId = params.get("jobId") ?? "";
+  const marketId = params.get("marketId") ?? "";
   const orderId = params.get("orderId") ?? "";
   const paymentKey = params.get("paymentKey") ?? "";
   const amount = Number(params.get("amount"));
-  const complete = Boolean(jobId && orderId && paymentKey && amount);
+
+  const kind: PayKind | null = jobId ? "job" : marketId ? "market" : null;
+  const id = jobId || marketId;
+  const complete = Boolean(kind && id && orderId && paymentKey && amount);
 
   const confirm = useQuery({
-    queryKey: ["payment-confirm", orderId, paymentKey],
+    queryKey: ["payment-confirm", kind, orderId, paymentKey],
     enabled: complete,
     retry: false,
     queryFn: async () => {
+      if (kind === "market" && MOCK_MARKET_CHECKOUT) {
+        sessionStorage.removeItem("marketDraft");
+        return true;
+      }
+
       const res = await fetch(`${API}/payments/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId, orderId, paymentKey, amount }),
+        body: JSON.stringify(
+          kind === "job"
+            ? { jobId: id, orderId, paymentKey, amount }
+            : { marketId: id, orderId, paymentKey, amount },
+        ),
       });
       if (res.status === 402) {
-        throw new AppError("Your payment was declined. Please try again.", "warning");
+        throw new AppError(
+          "Your payment was declined. Please try again.",
+          "warning",
+        );
       }
       throwIfNotOk(res);
-      sessionStorage.removeItem("jobDraft");
+      sessionStorage.removeItem(kind === "job" ? "jobDraft" : "marketDraft");
       return true;
     },
   });
@@ -155,12 +222,17 @@ export function PaySuccessPage() {
     );
   }
 
+  const viewTo = kind === "job" ? `/jobs/${id}` : `/market/${id}`;
+  const liveLabel = kind === "job" ? "job" : "item";
+
   return (
     <PayLayout title="Thank you">
-      <p className={textClass}>Payment received. Your job is now live.</p>
+      <p className={textClass}>
+        Payment received. Your {liveLabel} is now live.
+      </p>
       <div>
-        <Button variant="yellow" to={`/jobs/${jobId}`}>
-          View your job
+        <Button variant="yellow" to={viewTo}>
+          View your {liveLabel}
         </Button>
       </div>
     </PayLayout>

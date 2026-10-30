@@ -63,7 +63,7 @@ export function Hero() {
     <section className="py-12 pb-8">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
         <div className="bg-yellow px-7 py-10 md:px-10 md:py-[54px] rounded-lg">
-          <h1 className="m-0 text-[clamp(40px,6vw,72px)] font-bold leading-[1.3] tracking-[-1.6px] text-text">
+          <h1 className="m-0 text-[clamp(28px,8vw,48px)] md:text-[clamp(40px,6vw,72px)] font-bold leading-[1.3] tracking-[-1.6px] text-text">
             Foreign in Korea?
             <br />
             <span
