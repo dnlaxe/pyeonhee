@@ -10,12 +10,26 @@ export function JobRow({ job }: { job: Job }) {
       className={`${styles.row} group cursor-pointer py-7 text-inherit no-underline`}
     >
       <div
-        className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"
+        className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-yellow"
         aria-hidden
       >
         {job.logo ? (
           <img src={job.logo} alt="" className="size-full object-cover" />
-        ) : null}
+        ) : (
+          <svg
+            className="absolute -inset-0.5 size-[calc(100%+4px)] text-bg"
+            viewBox="0 0 22 22"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M1 11C1 16.5 11 16.5 11 11C11 5.5 21 5.5 21 11"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
       </div>
       <div className="min-w-0">
         <div className="mb-2 flex flex-wrap items-baseline gap-x-2.5 gap-y-2">

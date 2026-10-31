@@ -1,6 +1,7 @@
-import { Button, ErrorMessage } from "../../shared";
+import { ArrowRightIcon, Button, ErrorMessage } from "../../shared";
 import { JobRow } from "../jobs/JobRow";
 import type { Job } from "../jobs/types";
+import { Link } from "react-router";
 
 type JobsSectionProps = {
   jobs: Job[];
@@ -18,8 +19,14 @@ export function JobsSection({
   return (
     <section className="scroll-mt-20 py-20 pb-7">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h2 className="mb-3 text-2xl font-semibold leading-[1.2] text-text-dark">
-          Work Opportunities
+        <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
+          <Link
+            to="/jobs"
+            className="flex cursor-pointer items-center justify-between"
+          >
+            Work Opportunities
+            <ArrowRightIcon />
+          </Link>
         </h2>
 
         {!apiUrl && <p className="text-red-700">VITE_API_URL is not set</p>}
@@ -28,7 +35,7 @@ export function JobsSection({
 
         {!isPending && !error && apiUrl && (
           <>
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden border-t-4 border-yellow-accent">
               {jobs.map((job) => (
                 <JobRow key={job.id} job={job} />
               ))}

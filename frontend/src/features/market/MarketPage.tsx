@@ -40,7 +40,7 @@ export function MarketPage() {
     <main>
       <section className="scroll-mt-20 py-20 max-md:py-14">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-          <h2 className="mb-3 text-2xl font-semibold leading-[1.2] text-text-dark">
+          <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
             Market
           </h2>
 

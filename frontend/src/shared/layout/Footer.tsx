@@ -4,12 +4,9 @@ import { Logo } from "./Logo";
 
 export function Footer() {
   return (
-    <footer className="mt-auto bg-zinc-200 px-0 py-12 border-y border-text-dark">
+    <footer className="mt-auto bg-[var(--color-surface)] px-0 py-12">
       <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-center gap-4 text-center max-md:w-[min(100%-32px,1120px)]">
         <Logo to="/" />
-        <p className="m-0 max-w-[36ch] text-[15px] leading-normal text-body">
-          {footerTagline}
-        </p>
         <nav
           className="mt-2 flex flex-wrap items-center justify-center md:gap-x-[18px] gap-y-2"
           aria-label="Footer"
@@ -28,6 +25,9 @@ export function Footer() {
             </Link>
           ))}
         </nav>
+        <p className="m-0 max-w-[36ch] text-[15px] leading-normal text-body">
+          {footerTagline}
+        </p>
       </div>
     </footer>
   );

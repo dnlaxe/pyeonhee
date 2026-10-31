@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { ArrowLeftIcon } from "../icons/ArrowLeftIcon";
 
 type Props = {
   to: string;
@@ -10,11 +11,12 @@ export function BackLink({ to, children, className }: Props) {
   return (
     <Link
       to={to}
-      className={`mb-7 inline-block font-mono text-sm leading-[1.2] text-muted hover:text-text-dark${
+      className={`mb-7 inline-flex text-text-dark${
         className ? ` ${className}` : ""
       }`}
     >
-      {children}
+      <ArrowLeftIcon />
+      <span className="sr-only">{children}</span>
     </Link>
   );
 }
