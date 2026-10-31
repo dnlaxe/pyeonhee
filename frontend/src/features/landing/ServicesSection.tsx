@@ -1,6 +1,7 @@
-import { Button, ErrorMessage } from "../../shared";
+import { ArrowRightIcon, Button, ErrorMessage } from "../../shared";
 import { ServiceCard } from "../services/ServiceCard";
 import type { Service } from "../services/types";
+import { Link } from "react-router";
 
 type ServicesSectionProps = {
   services: Service[];
@@ -18,8 +19,14 @@ export function ServicesSection({
   return (
     <section className="scroll-mt-20 py-7 pb-20">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h2 className="mb-3 text-2xl font-semibold leading-[1.2] text-text-dark">
-          English-friendly Services
+        <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
+          <Link
+            to="/services"
+            className="flex cursor-pointer items-center justify-between"
+          >
+            English-friendly Services
+            <ArrowRightIcon />
+          </Link>
         </h2>
 
         {!apiUrl && <p className="text-red-700">VITE_API_URL is not set</p>}
@@ -27,7 +34,7 @@ export function ServicesSection({
         {error && <ErrorMessage error={error} />}
 
         {!isPending && !error && apiUrl && (
-          <div className="relative pt-2.5 overflow-hidden">
+          <div className="relative pt-2.5 overflow-hidden border-t-4 border-yellow-accent">
             <div className="grid grid-cols-3 items-stretch gap-5 max-[1040px]:grid-cols-2 max-[720px]:grid-cols-1">
               {services.map((service) => (
                 <ServiceCard key={service.id} service={service} />

@@ -1,4 +1,5 @@
-import { Button, ErrorMessage } from "../../shared";
+import { Link } from "react-router";
+import { ArrowRightIcon, Button, ErrorMessage } from "../../shared";
 import { MarketCard } from "../market/MarketCard";
 import type { MarketItem } from "../market/types";
 
@@ -18,19 +19,25 @@ export function MarketSection({
   return (
     <section className="scroll-mt-20 py-7">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h2 className="mb-3 text-2xl font-semibold leading-[1.2] text-text-dark">
-          For Sale
+        <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
+          <Link
+            to="/market"
+            className="flex cursor-pointer items-center justify-between"
+          >
+            For Sale
+            <ArrowRightIcon/>
+          </Link>
         </h2>
 
         {!apiUrl && <p className="text-red-700">VITE_API_URL is not set</p>}
         {isPending && <p className="text-muted">Loading…</p>}
-        {error && <ErrorMessage error={error} />}
+        {error && <ErrorMessage error={error}/>}
 
         {!isPending && !error && apiUrl && (
-          <div className="relative pt-2.5 overflow-hidden">
+          <div className="relative pt-2.5 overflow-hidden border-t-4 border-yellow-accent">
             <div className="grid grid-cols-3 gap-x-[22px] gap-y-7 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
               {items.map((item) => (
-                <MarketCard key={item.id} item={item} />
+                <MarketCard key={item.id} item={item}/>
               ))}
             </div>
             <div
@@ -46,4 +53,5 @@ export function MarketSection({
       </div>
     </section>
   );
+
 }

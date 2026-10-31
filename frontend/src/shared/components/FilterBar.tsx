@@ -8,7 +8,7 @@ type Props = {
 export function FilterBar({ filters, active, onChange, className }: Props) {
   return (
     <div
-      className={`flex flex-wrap gap-2 mb-3 mt-5${className ? ` ${className}` : ""}`}
+      className={`flex flex-wrap gap-2 mb-3 border-t-4 border-yellow-accent pt-4 ${className ? ` ${className}` : ""}`}
     >
       {filters.map((tag) => (
         <button

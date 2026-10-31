@@ -3,12 +3,12 @@ import { Link, type LinkProps } from "react-router";
 
 const variants = {
   yellow:
-    "inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-yellow px-7 py-3 font-mono text-base leading-[1.2] text-text-dark hover:bg-yellow-accent",
+    "inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-yellow px-7 py-3 text-base leading-[1.2] text-text-dark hover:bg-yellow-accent tracking-wider",
   "yellow-lg":
     "inline-flex min-w-[140px] items-center justify-center rounded border-[1.5px] border-text-dark bg-yellow px-7 py-3.5 font-mono text-base leading-[1.2] text-text-dark no-underline hover:bg-yellow-accent",
   outline:
     "inline-flex items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3 font-mono text-base leading-[1.2] text-text-dark no-underline hover:bg-yellow",
-  more: "mx-auto mt-3 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 font-mono text-lg leading-[1.2] text-text-dark no-underline hover:bg-yellow",
+  more: "mx-auto mt-3 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 text-lg leading-[1.2] text-text-dark no-underline hover:bg-yellow tracking-wider",
   "more-lg":
     "mx-auto mt-7 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 font-mono text-lg leading-[1.2] text-text-dark hover:bg-yellow",
 } as const;
