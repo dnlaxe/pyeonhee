@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
+import {
+  ArrowRightIcon,
+  BagIcon,
+  BriefcaseIcon,
+  UsersIcon,
+} from "../../shared";
 import styles from "./Hero.module.css";
 
 const part1Words = ["Looking for", "Want to share"];
@@ -14,6 +21,12 @@ function motionClass(phase: Phase, outClass: string, inClass: string) {
   if (phase === "in") return inClass;
   return "";
 }
+
+const jumps = [
+  { to: "/jobs", label: "Jobs", Icon: BriefcaseIcon },
+  { to: "/market", label: "Market", Icon: BagIcon },
+  { to: "/services", label: "Services", Icon: UsersIcon },
+] as const;
 
 export function Hero() {
   const [part1Index, setPart1Index] = useState(0);
@@ -60,27 +73,44 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="py-12 pb-8">
+    <section className="pt-6 pb-4 md:pt-8">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <div className="bg-yellow px-7 py-10 md:px-10 md:py-[54px] rounded-lg">
-          <h1 className="m-0 text-[clamp(28px,8vw,48px)] md:text-[clamp(40px,6vw,72px)] font-bold leading-[1.5] lg:leading-[1.3] tracking-[-1.6px] text-text">
-            Foreign in Korea?
-            <br />
-            <span
-              className={`inline-block ${styles.darkBg} ${motionClass(part1Phase, styles.outUp, styles.inUp)}`}
-                        >
-              {part1Words[part1Index]}
-            </span>
-            <br />
-            <span
-              className={`inline-block ${styles.underline} ${motionClass(part2Phase, styles.outDown, styles.inDown)}`}
-                      >
-            {part2Words[part2Index]}?
+        <h1 className="m-0 mb-5 text-[clamp(20px,3vw,28px)] font-semibold leading-[1.35] tracking-[-0.4px] text-text-dark">
+          Foreign in Korea?{" "}
+          <span
+            className={`inline-block ${motionClass(part1Phase, styles.outUp, styles.inUp)}`}
+          >
+            {part1Words[part1Index]}
+          </span>{" "}
+          <span
+            className={`inline-block ${motionClass(part2Phase, styles.outDown, styles.inDown)}`}
+          >
+            {part2Words[part2Index]}
           </span>
-            <br />
-            Join the community.
-          </h1>
-        </div>
+          ?
+        </h1>
+
+        <nav
+          className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1"
+          aria-label="Browse"
+        >
+          {jumps.map(({ to, label, Icon }) => (
+            <Link
+              key={to}
+              to={to}
+              className="group flex items-center gap-3 rounded-lg bg-yellow px-5 py-5 text-text-dark transition-colors hover:bg-yellow-accent"
+            >
+              <Icon className="shrink-0" />
+              <span className="min-w-0 flex-1 font-semibold leading-tight">
+                {label}
+              </span>
+              <ArrowRightIcon
+                size={18}
+                className="shrink-0 transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          ))}
+        </nav>
       </div>
     </section>
   );

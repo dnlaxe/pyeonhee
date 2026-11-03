@@ -38,7 +38,7 @@ export function LandingPage() {
     queryFn: async () => {
       const res = await fetch(`${apiUrl}/market`);
       throwIfNotOk(res);
-      return res.json() as Promise<MarketItem[]>; // import type
+      return res.json() as Promise<MarketItem[]>;
     },
   });
 
