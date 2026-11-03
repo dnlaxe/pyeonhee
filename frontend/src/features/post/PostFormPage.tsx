@@ -25,7 +25,14 @@ import {
   kinds,
   paymentMethodLabels,
 } from "./constants";
-import { validateJob, type JobErrors, validateMarket, type MarketErrors } from "./validation";
+import {
+  validateJob,
+  type JobErrors,
+  validateMarket,
+  type MarketErrors,
+  validateService,
+  type ServiceErrors,
+} from "./validation";
 import { config } from "../../config";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -35,6 +42,9 @@ import {
   createMarket,
   uploadMarketPhoto,
   type MarketFields,
+  createService,
+  uploadServicePhoto,
+  type ServiceFields,
 } from "./api";
 
 function emailRadioOptions() {
@@ -447,6 +457,7 @@ function MarketPostForm() {
     price: string;
     description: string;
     pinned: boolean;
+    method: string;
   } | null>(null);
   const [ready, setReady] = useState(false);
   const [botCheckError, setBotCheckError] = useState("");
@@ -462,6 +473,7 @@ function MarketPostForm() {
     price: string;
     description: string;
     pinned: boolean;
+    method: string;
   } | null {
     const raw = sessionStorage.getItem("marketDraft");
     if (!raw) return null;
@@ -578,6 +590,7 @@ function MarketPostForm() {
           price: String(data.get("price") ?? ""),
           description: String(data.get("description") ?? ""),
           pinned: data.get("pinned") === "on",
+          method: String(data.get("method") ?? ""),
         });
         setReady(true);
       }}
@@ -744,6 +757,13 @@ function MarketPostForm() {
         defaultChecked={draft?.pinned ?? false}
       />
 
+      <RadioGroup
+        legend="How to pay:"
+        name="method"
+        options={paymentMethodOptions()}
+        defaultValue={draft?.method || "mock"}
+      />
+
       {!ready ? (
         <Button type="submit" variant="yellow" className="mt-2">
           Send
@@ -763,7 +783,87 @@ function MarketPostForm() {
 
 function ServicePostForm() {
   const MAX_PHOTOS = config.maxPhotos.service;
+  const [draft] = useState(readServiceDraft);
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const [errors, setErrors] = useState<ServiceErrors>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [fields, setFields] = useState<{
+    company: string;
+    category: string;
+    location: string;
+    email: string;
+    webpage: string;
+    message: string;
+    method: string;
+  } | null>(null);
+  const [ready, setReady] = useState(false);
+  const [botCheckError, setBotCheckError] = useState("");
+  const navigate = useNavigate();
+
+  const mutation = useMutation({
+    mutationFn: async ({ fields, password, file }: {
+      fields: ServiceFields;
+      password: string;
+      file?: File;
+    }) => {
+      let logo: string | undefined;
+      if (file) {
+        const uploaded = await uploadServicePhoto(file, password);
+        if (uploaded.kind !== "uploaded") return uploaded;
+        logo = uploaded.key;
+      }
+      return createService({ ...fields, logo }, password);
+    },
+  });
+
+  function readServiceDraft(): {
+    company: string;
+    category: string;
+    location: string;
+    email: string;
+    webpage: string;
+    message: string;
+    method: string;
+  } | null {
+    const raw = sessionStorage.getItem("serviceDraft");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function submitService(password: string) {
+    if (!fields) return;
+    setBotCheckError("");
+    mutation.mutate(
+      {
+        fields,
+        password,
+        file: photos[0]?.file,
+      },
+      {
+        onSuccess: (result) => {
+          if (result.kind === "botCheckFailed") {
+            setBotCheckError("That password is wrong.");
+            return;
+          }
+          if (result.kind === "invalid") {
+            setErrors(result.errors);
+            setReady(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+          sessionStorage.setItem(
+            "serviceDraft",
+            JSON.stringify({ ...fields, serviceId: result.id }),
+          );
+          navigate("/pay");
+        },
+      },
+    );
+  }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
@@ -795,13 +895,52 @@ function ServicePostForm() {
   }, []);
 
   return (
-    <Form>
-      <FormField label="Company name:">
-        <TextInput type="text" name="company" required />
+    <>
+    <Form
+      noValidate
+      onSubmit={(e) => {
+        const data = new FormData(e.currentTarget);
+        const next = validateService(data);
+        setSubmitted(true);
+        setErrors(next);
+        if (Object.keys(next).length > 0) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        setFields({
+          company: String(data.get("company") ?? ""),
+          category: String(data.get("category") ?? ""),
+          location: String(data.get("location") ?? ""),
+          email: String(data.get("email") ?? ""),
+          webpage: String(data.get("webpage") ?? ""),
+          message: String(data.get("message") ?? ""),
+          method: String(data.get("method") ?? ""),
+        });
+        setReady(true);
+      }}
+      onChange={(e) => {
+        if (!submitted) return;
+        const data = new FormData(e.currentTarget);
+        setErrors(validateService(data));
+      }}
+    >
+      <FormErrorSummary count={Object.keys(errors).length} />
+      <FormField label="Company name:" error={errors.company}>
+        <TextInput
+          type="text"
+          name="company"
+          required
+          defaultValue={draft?.company ?? ""}
+          invalid={Boolean(errors.company)}
+        />
       </FormField>
-
-      <FormField label="Service:">
-        <SelectInput name="category" required defaultValue="">
+      <FormField label="Service:" error={errors.category}>
+        <SelectInput
+          name="category"
+          required
+          defaultValue={draft?.category ?? ""}
+          invalid={Boolean(errors.category)}
+        >
           <option value="" disabled>
             Select…
           </option>
@@ -861,26 +1000,64 @@ function ServicePostForm() {
         </div>
       </FormField>
 
-      <FormField label="Location:">
-        <TextInput type="text" name="location" required />
+      <FormField label="Location:" error={errors.location}>
+        <TextInput
+          type="text"
+          name="location"
+          required
+          invalid={Boolean(errors.location)}
+          defaultValue={draft?.location ?? ""}
+        />
+      </FormField>
+      <FormField label="Email address:" error={errors.email}>
+        <TextInput
+          type="email"
+          name="email"
+          required
+          invalid={Boolean(errors.email)}
+          defaultValue={draft?.email ?? ""}
+        />
+      </FormField>
+      <FormField label="Webpage link:" error={errors.webpage}>
+        <TextInput
+          type="url"
+          name="webpage"
+          placeholder="https://"
+          invalid={Boolean(errors.webpage)}
+          defaultValue={draft?.webpage ?? ""}
+        />
+      </FormField>
+      <FormField label="Message:" error={errors.message}>
+        <TextareaInput
+          name="message"
+          rows={8}
+          required
+          invalid={Boolean(errors.message)}
+          defaultValue={draft?.message ?? ""}
+        />
       </FormField>
 
-      <FormField label="Email address:">
-        <TextInput type="email" name="email" required />
-      </FormField>
+      <RadioGroup
+        legend="How to pay:"
+        name="method"
+        options={paymentMethodOptions()}
+        defaultValue={draft?.method || "mock"}
+      />
 
-      <FormField label="Webpage link:">
-        <TextInput type="url" name="webpage" placeholder="https://" />
-      </FormField>
-
-      <FormField label="Message:">
-        <TextareaInput name="message" rows={8} required />
-      </FormField>
-
-      <Button type="submit" variant="yellow" className="mt-2">
-        Send
-      </Button>
+      {!ready ? (
+        <Button type="submit" variant="yellow" className="mt-2">
+          Send
+        </Button>
+      ) : null}
     </Form>
+      {ready && fields ? (
+        <BotCheck
+          onSubmit={submitService}
+          pending={mutation.isPending}
+          error={botCheckError || mutation.error?.message || ""}
+        />
+      ) : null}
+    </>
   );
 }
 
