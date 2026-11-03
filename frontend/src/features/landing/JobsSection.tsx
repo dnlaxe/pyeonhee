@@ -17,7 +17,7 @@ export function JobsSection({
   apiUrl,
 }: JobsSectionProps) {
   return (
-    <section className="scroll-mt-20 py-20 pb-7">
+    <section className="pt-8 pb-7">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
         <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
           <Link

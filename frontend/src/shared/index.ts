@@ -29,5 +29,8 @@ export { richText, richParagraphs } from "./lib/richText";
 export { PinIcon } from "./icons/PinIcon";
 export { ArrowRightIcon } from "./icons/ArrowRightIcon";
 export { ArrowLeftIcon } from "./icons/ArrowLeftIcon";
+export { BriefcaseIcon } from "./icons/BriefcaseIcon";
+export { BagIcon } from "./icons/BagIcon";
+export { UsersIcon } from "./icons/UsersIcon";
 
 export { BotCheck } from "./bot-check/BotCheck";
