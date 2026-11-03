@@ -118,3 +118,54 @@ export function validateMarket(data: FormData): MarketErrors {
 
   return errors;
 }
+
+export type ServiceErrors = {
+  company?: string;
+  category?: string;
+  location?: string;
+  email?: string;
+  webpage?: string;
+  message?: string;
+  logo?: string;
+};
+
+export function validateService(data: FormData): ServiceErrors {
+  const errors: ServiceErrors = {};
+
+  const company = String(data.get("company") ?? "").trim();
+  const category = String(data.get("category") ?? "").trim();
+  const location = String(data.get("location") ?? "").trim();
+  const email = String(data.get("email") ?? "").trim();
+  const webpage = String(data.get("webpage") ?? "").trim();
+  const message = String(data.get("message") ?? "").trim();
+
+  if (company === "") {
+    errors.company = "Add a company name.";
+  }
+
+  if (category === "") {
+    errors.category = "Choose a service.";
+  }
+
+  if (location === "") {
+    errors.location = "Add a location.";
+  }
+
+  if (email === "") {
+    errors.email = "Enter an email address.";
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (webpage !== "" && !/^https?:\/\/.+/i.test(webpage)) {
+    errors.webpage = "Enter a full link, like https://example.com.";
+  }
+
+  if (message === "") {
+    errors.message = "Add a message.";
+  } else if (message.length < MIN_DESCRIPTION_LENGTH) {
+    errors.message = "Add a little more detail about the service.";
+  }
+
+  return errors;
+}

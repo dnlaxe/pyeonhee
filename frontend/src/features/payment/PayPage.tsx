@@ -8,7 +8,7 @@ import type { Order } from "./types";
 
 const API = import.meta.env.VITE_API_URL;
 
-type PayKind = "job" | "market";
+type PayKind = "job" | "market" | "service";
 
 type PayDraft = {
   kind: PayKind;
@@ -57,16 +57,37 @@ function readMarketDraft(): PayDraft | null {
   }
 }
 
+function readServiceDraft(): PayDraft | null {
+  const raw = sessionStorage.getItem("serviceDraft");
+  if (!raw) return null;
+  try {
+    const d = JSON.parse(raw) as { company?: string; serviceId?: string };
+    if (!d.serviceId) return null;
+    return {
+      kind: "service",
+      title: d.company ?? "",
+      id: d.serviceId,
+      cancelTo: "/post/service",
+      successViewTo: () => "/services",
+      liveLabel: "service",
+    };
+  } catch {
+    return null;
+  }
+}
+
 function readDraft(): PayDraft | null {
-  return readMarketDraft() ?? readJobDraft();
+  return readServiceDraft() ?? readMarketDraft() ?? readJobDraft();
 }
 
 function payUrl(path: string, kind: PayKind, id: string) {
-  const key = kind === "job" ? "jobId" : "marketId";
+  const key =
+    kind === "job" ? "jobId" : kind === "market" ? "marketId" : "serviceId";
   return `${window.location.origin}${path}?${key}=${encodeURIComponent(id)}`;
 }
 
 const MOCK_MARKET_CHECKOUT = true;
+const MOCK_SERVICE_CHECKOUT = true;
 
 async function checkout(draft: PayDraft): Promise<Order> {
   if (draft.kind === "market" && MOCK_MARKET_CHECKOUT) {
@@ -76,12 +97,23 @@ async function checkout(draft: PayDraft): Promise<Order> {
       orderName: "pyeonhee market post",
     };
   }
+  if (draft.kind === "service" && MOCK_SERVICE_CHECKOUT) {
+    return {
+      orderId: crypto.randomUUID(),
+      amount: 5000,
+      orderName: "pyeonhee service post",
+    };
+  }
 
   const res = await fetch(`${API}/payments/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(
-      draft.kind === "job" ? { jobId: draft.id } : { marketId: draft.id },
+      draft.kind === "job"
+        ? { jobId: draft.id }
+        : draft.kind === "market"
+          ? { marketId: draft.id }
+          : { serviceId: draft.id },
     ),
   });
   throwIfNotOk(res);
@@ -113,7 +145,7 @@ export function PayPage() {
   if (!draft) {
     return (
       <PayLayout title="Payment">
-        <p className={textClass}>Start from the job or market form.</p>
+        <p className={textClass}>Start from the job, market, or service form.</p>
       </PayLayout>
     );
   }
@@ -154,14 +186,20 @@ export function PaySuccessPage() {
   const [params] = useSearchParams();
   const jobId = params.get("jobId") ?? "";
   const marketId = params.get("marketId") ?? "";
+  const serviceId = params.get("serviceId") ?? "";
   const orderId = params.get("orderId") ?? "";
   const paymentKey = params.get("paymentKey") ?? "";
   const amount = Number(params.get("amount"));
 
-  const kind: PayKind | null = jobId ? "job" : marketId ? "market" : null;
-  const id = jobId || marketId;
+  const kind: PayKind | null = jobId
+    ? "job"
+    : marketId
+      ? "market"
+      : serviceId
+        ? "service"
+        : null;
+  const id = jobId || marketId || serviceId;
   const complete = Boolean(kind && id && orderId && paymentKey && amount);
-
   const confirm = useQuery({
     queryKey: ["payment-confirm", kind, orderId, paymentKey],
     enabled: complete,
@@ -171,6 +209,10 @@ export function PaySuccessPage() {
         sessionStorage.removeItem("marketDraft");
         return true;
       }
+      if (kind === "service" && MOCK_SERVICE_CHECKOUT) {
+        sessionStorage.removeItem("serviceDraft");
+        return true;
+      }
 
       const res = await fetch(`${API}/payments/confirm`, {
         method: "POST",
@@ -178,7 +220,9 @@ export function PaySuccessPage() {
         body: JSON.stringify(
           kind === "job"
             ? { jobId: id, orderId, paymentKey, amount }
-            : { marketId: id, orderId, paymentKey, amount },
+            : kind === "market"
+              ? { marketId: id, orderId, paymentKey, amount }
+              : { serviceId: id, orderId, paymentKey, amount },
         ),
       });
       if (res.status === 402) {
@@ -188,7 +232,13 @@ export function PaySuccessPage() {
         );
       }
       throwIfNotOk(res);
-      sessionStorage.removeItem(kind === "job" ? "jobDraft" : "marketDraft");
+      sessionStorage.removeItem(
+        kind === "job"
+          ? "jobDraft"
+          : kind === "market"
+            ? "marketDraft"
+            : "serviceDraft",
+      );
       return true;
     },
   });
@@ -222,8 +272,10 @@ export function PaySuccessPage() {
     );
   }
 
-  const viewTo = kind === "job" ? `/jobs/${id}` : `/market/${id}`;
-  const liveLabel = kind === "job" ? "job" : "item";
+  const viewTo =
+    kind === "job" ? `/jobs/${id}` : kind === "market" ? `/market/${id}` : "/services";
+  const liveLabel =
+    kind === "job" ? "job" : kind === "market" ? "item" : "service";
 
   return (
     <PayLayout title="Thank you">
