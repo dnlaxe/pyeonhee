@@ -36,14 +36,10 @@ import {
 import { config } from "../../config";
 import { useMutation } from "@tanstack/react-query";
 import {
-  createJob,
-  uploadJobPhoto,
+  createListing,
+  uploadPhoto,
   type JobFields,
-  createMarket,
-  uploadMarketPhoto,
   type MarketFields,
-  createService,
-  uploadServicePhoto,
   type ServiceFields,
 } from "./api";
 
@@ -113,11 +109,23 @@ function JobPostForm() {
     }) => {
       let logo: string | undefined;
       if (file) {
-        const uploaded = await uploadJobPhoto(file, password);
+        const uploaded = await uploadPhoto("/jobs/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         logo = uploaded.key;
       }
-      return createJob({ ...fields, logo }, password);
+      return createListing<JobErrors>("/jobs", {
+        email: fields.email,
+        emailOption: fields.emailOption,
+        title: fields.title,
+        location: fields.location,
+        employmentType: fields.employmentType,
+        track: fields.track,
+        area: fields.area,
+        korean: fields.korean,
+        description: fields.description,
+        pinned: fields.pinned,
+        logo,
+      }, password);
     },
   });
 
@@ -142,6 +150,7 @@ function JobPostForm() {
             "jobDraft",
             JSON.stringify({ ...fields, jobId: result.id }),
           );
+          sessionStorage.setItem("payTarget", "job");
           navigate("/pay");
         },
       },
@@ -496,14 +505,22 @@ function MarketPostForm() {
     }) => {
       const images: string[] = [];
       for (const file of files) {
-        const uploaded = await uploadMarketPhoto(file, password);
+        const uploaded = await uploadPhoto("/market/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         images.push(uploaded.key);
       }
-      return createMarket(
-        { ...fields, images: images.length ? images : undefined },
-        password,
-      );
+      return createListing<MarketErrors>("/market", {
+        email: fields.email,
+        emailOption: fields.emailOption,
+        title: fields.title,
+        location: fields.location,
+        listingType: fields.listingType,
+        category: fields.category,
+        price: fields.price,
+        description: fields.description,
+        pinned: fields.pinned,
+        images: images.length ? images : undefined,
+      }, password);
     },
   });
 
@@ -532,6 +549,7 @@ function MarketPostForm() {
             "marketDraft",
             JSON.stringify({ ...fields, marketId: result.id }),
           );
+          sessionStorage.setItem("payTarget", "market");
           navigate("/pay");
         },
       },
@@ -808,11 +826,19 @@ function ServicePostForm() {
     }) => {
       let logo: string | undefined;
       if (file) {
-        const uploaded = await uploadServicePhoto(file, password);
+        const uploaded = await uploadPhoto("/services/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         logo = uploaded.key;
       }
-      return createService({ ...fields, logo }, password);
+      return createListing<ServiceErrors>("/services", {
+        company: fields.company,
+        category: fields.category,
+        location: fields.location,
+        email: fields.email,
+        webpage: fields.webpage || undefined,
+        message: fields.message,
+        logo,
+      }, password);
     },
   });
 
@@ -859,6 +885,7 @@ function ServicePostForm() {
             "serviceDraft",
             JSON.stringify({ ...fields, serviceId: result.id }),
           );
+          sessionStorage.setItem("payTarget", "service");
           navigate("/pay");
         },
       },
