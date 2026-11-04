@@ -4,12 +4,15 @@ import {
   ArrowRightIcon,
   BagIcon,
   BriefcaseIcon,
+  CalendarIcon,
+  PenIcon,
+  SquareIcon,
   UsersIcon,
 } from "../../shared";
 import styles from "./Hero.module.css";
 
 const part1Words = ["Looking for", "Want to share"];
-const part2Words = ["work", "things to do", "unwanted items", "english help"];
+const part2Words = ["work", "things to do", "used items", "help in English"];
 
 const INTERVAL_MS = 2500;
 const EXIT_MS = 200;
@@ -26,6 +29,9 @@ const jumps = [
   { to: "/jobs", label: "Jobs", Icon: BriefcaseIcon },
   { to: "/market", label: "Market", Icon: BagIcon },
   { to: "/services", label: "Services", Icon: UsersIcon },
+  { to: "/events", label: "Events", Icon: CalendarIcon },
+  { to: "/placeholder", label: "Placeholder", Icon: SquareIcon },
+  { to: "/post", label: "Post", Icon: PenIcon },
 ] as const;
 
 export function Hero() {
@@ -75,23 +81,26 @@ export function Hero() {
   return (
     <section className="pt-6 pb-4 md:pt-8">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h1 className="m-0 mb-5 text-[clamp(20px,3vw,28px)] font-semibold leading-[1.35] tracking-[-0.4px] text-text-dark">
-          Foreign in Korea?{" "}
+        <h1 className="m-0 mb-5 text-[28px] font-semibold leading-[1.35] tracking-[-0.4px] text-text-dark">
+          <span className="block min-[721px]:inline-block">Foreign in Korea?</span>{" "}
+          <span className="block min-[721px]:inline-block">
           <span
             className={`inline-block ${motionClass(part1Phase, styles.outUp, styles.inUp)}`}
           >
             {part1Words[part1Index]}
           </span>{" "}
-          <span
-            className={`inline-block ${motionClass(part2Phase, styles.outDown, styles.inDown)}`}
-          >
+                  <span
+                    className={`inline-block ${motionClass(part2Phase, styles.outDown, styles.inDown)}`}
+                  >
             {part2Words[part2Index]}
           </span>
           ?
+        </span>{" "}
+          <span className="block min-[721px]:inline-block">Join the community!</span>
         </h1>
 
         <nav
-          className="grid grid-cols-3 gap-3 max-[720px]:grid-cols-1"
+          className="grid grid-cols-3 gap-3 max-[1040px]:grid-cols-2 max-[720px]:grid-cols-1"
           aria-label="Browse"
         >
           {jumps.map(({ to, label, Icon }) => (
