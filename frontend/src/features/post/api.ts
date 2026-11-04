@@ -1,7 +1,4 @@
 import { throwIfNotOk } from "../../lib/httpError";
-import type { JobErrors, MarketErrors, ServiceErrors } from "./validation";
-
-const MOCK_MARKET_API = true;
 
 export type JobFields = {
   email: string;
@@ -17,73 +14,6 @@ export type JobFields = {
   pinned: boolean;
 };
 
-export type CreateJobResult =
-  | { kind: "created"; id: string }
-  | { kind: "invalid"; errors: JobErrors }
-  | { kind: "botCheckFailed" };
-
-export async function createJob(
-  fields: JobFields,
-  password: string,
-): Promise<CreateJobResult> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/jobs`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: fields.email,
-      emailOption: fields.emailOption,
-      title: fields.title,
-      location: fields.location,
-      employmentType: fields.employmentType,
-      track: fields.track,
-      area: fields.area,
-      korean: fields.korean,
-      description: fields.description,
-      logo: fields.logo,
-      pinned: fields.pinned,
-      password,
-    }),
-  });
-
-  if (res.status === 400 && res.headers.get("Content-Type") === "application/json") {
-    const { errors } = (await res.json()) as { errors: JobErrors };
-    return { kind: "invalid", errors };
-  }
-
-  if (res.status === 401) return { kind: "botCheckFailed" };
-  throwIfNotOk(res);
-
-  const { id } = (await res.json()) as { id: string };
-  return { kind: "created", id };
-}
-
-export async function uploadJobPhoto(
-  file: File,
-  password: string,
-): Promise<{ kind: "uploaded"; key: string } | { kind: "botCheckFailed" }> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/jobs/photos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contentType: file.type,
-      contentLength: file.size,
-      password,
-    }),
-  });
-
-  if (res.status === 401) return { kind: "botCheckFailed" };
-  throwIfNotOk(res);
-
-  const { key, uploadUrl } = (await res.json()) as { key: string; uploadUrl: string };
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  throwIfNotOk(put);
-  return { kind: "uploaded", key };
-}
-
 export type MarketFields = {
   email: string;
   emailOption: string;
@@ -97,90 +27,6 @@ export type MarketFields = {
   pinned: boolean;
 };
 
-export type CreateMarketResult =
-  | { kind: "created"; id: string }
-  | { kind: "invalid"; errors: MarketErrors }
-  | { kind: "botCheckFailed" };
-
-export async function createMarket(
-  fields: MarketFields,
-  password: string,
-): Promise<CreateMarketResult> {
-
-  if (MOCK_MARKET_API) {
-    return { kind: "created", id: crypto.randomUUID() };
-  }
-
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/market`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: fields.email,
-      emailOption: fields.emailOption,
-      title: fields.title,
-      location: fields.location,
-      listingType: fields.listingType,
-      category: fields.category,
-      price: fields.price,
-      description: fields.description,
-      images: fields.images,
-      pinned: fields.pinned,
-      password,
-    }),
-  });
-
-  if (res.status === 400 && res.headers.get("Content-Type") === "application/json") {
-    const { errors } = (await res.json()) as { errors: MarketErrors };
-    return { kind: "invalid", errors };
-  }
-
-  if (res.status === 401) return { kind: "botCheckFailed" };
-  throwIfNotOk(res);
-
-  const { id } = (await res.json()) as { id: string };
-  return { kind: "created", id };
-}
-
-export async function uploadMarketPhoto(
-  file: File,
-  password: string,
-): Promise<{ kind: "uploaded"; key: string } | { kind: "botCheckFailed" }> {
-
-  if (MOCK_MARKET_API) {
-    return {
-      kind: "uploaded" as const,
-      key: `mock/market/${crypto.randomUUID()}.jpg`,
-    };
-  }
-
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/market/photos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contentType: file.type,
-      contentLength: file.size,
-      password,
-    }),
-  });
-
-  if (res.status === 401) return { kind: "botCheckFailed" };
-  throwIfNotOk(res);
-
-  const { key, uploadUrl } = (await res.json()) as {
-    key: string;
-    uploadUrl: string;
-  };
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  throwIfNotOk(put);
-  return { kind: "uploaded", key };
-}
-
-const MOCK_SERVICE_API = true;
-
 export type ServiceFields = {
   company: string;
   category: string;
@@ -191,36 +37,26 @@ export type ServiceFields = {
   logo?: string;
 };
 
-export type CreateServiceResult =
+type CreateResult<Errors> =
   | { kind: "created"; id: string }
-  | { kind: "invalid"; errors: ServiceErrors }
+  | { kind: "invalid"; errors: Errors }
   | { kind: "botCheckFailed" };
 
-export async function createService(
-  fields: ServiceFields,
-  password: string,
-): Promise<CreateServiceResult> {
-  if (MOCK_SERVICE_API) {
-    return { kind: "created", id: crypto.randomUUID() };
-  }
+type UploadResult = { kind: "uploaded"; key: string } | { kind: "botCheckFailed" };
 
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/services`, {
+export async function createListing<Errors>(
+  path: string,
+  fields: object,
+  password: string,
+): Promise<CreateResult<Errors>> {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      company: fields.company,
-      category: fields.category,
-      location: fields.location,
-      email: fields.email,
-      webpage: fields.webpage || undefined,
-      message: fields.message,
-      logo: fields.logo,
-      password,
-    }),
+    body: JSON.stringify({ ...fields, password }),
   });
 
   if (res.status === 400 && res.headers.get("Content-Type") === "application/json") {
-    const { errors } = (await res.json()) as { errors: ServiceErrors };
+    const { errors } = (await res.json()) as { errors: Errors };
     return { kind: "invalid", errors };
   }
 
@@ -231,18 +67,13 @@ export async function createService(
   return { kind: "created", id };
 }
 
-export async function uploadServicePhoto(
+
+export async function uploadPhoto(
+  path: string,
   file: File,
   password: string,
-): Promise<{ kind: "uploaded"; key: string } | { kind: "botCheckFailed" }> {
-  if (MOCK_SERVICE_API) {
-    return {
-      kind: "uploaded" as const,
-      key: `mock/services/${crypto.randomUUID()}.jpg`,
-    };
-  }
-
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/services/photos`, {
+): Promise<UploadResult> {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -255,10 +86,7 @@ export async function uploadServicePhoto(
   if (res.status === 401) return { kind: "botCheckFailed" };
   throwIfNotOk(res);
 
-  const { key, uploadUrl } = (await res.json()) as {
-    key: string;
-    uploadUrl: string;
-  };
+  const { key, uploadUrl } = (await res.json()) as { key: string; uploadUrl: string };
   const put = await fetch(uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": file.type },

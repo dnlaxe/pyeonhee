@@ -10,114 +10,91 @@ const API = import.meta.env.VITE_API_URL;
 
 type PayKind = "job" | "market" | "service";
 
+function unexpectedKind(kind: never): never {
+  throw new Error(`unexpected pay kind: ${String(kind)}`);
+}
+
 type PayDraft = {
   kind: PayKind;
   title: string;
   id: string;
   cancelTo: string;
-  successViewTo: (id: string) => string;
-  liveLabel: string;
 };
 
-function readJobDraft(): PayDraft | null {
-  const raw = sessionStorage.getItem("jobDraft");
-  if (!raw) return null;
-  try {
-    const d = JSON.parse(raw) as { title?: string; jobId?: string };
-    if (!d.jobId) return null;
-    return {
-      kind: "job",
-      title: d.title ?? "",
-      id: d.jobId,
-      cancelTo: "/post/job",
-      successViewTo: (id) => `/jobs/${id}`,
-      liveLabel: "job",
-    };
-  } catch {
-    return null;
-  }
-}
-
-function readMarketDraft(): PayDraft | null {
-  const raw = sessionStorage.getItem("marketDraft");
-  if (!raw) return null;
-  try {
-    const d = JSON.parse(raw) as { title?: string; marketId?: string };
-    if (!d.marketId) return null;
-    return {
-      kind: "market",
-      title: d.title ?? "",
-      id: d.marketId,
-      cancelTo: "/post/market",
-      successViewTo: (id) => `/market/${id}`,
-      liveLabel: "item",
-    };
-  } catch {
-    return null;
-  }
-}
-
-function readServiceDraft(): PayDraft | null {
-  const raw = sessionStorage.getItem("serviceDraft");
-  if (!raw) return null;
-  try {
-    const d = JSON.parse(raw) as { company?: string; serviceId?: string };
-    if (!d.serviceId) return null;
-    return {
-      kind: "service",
-      title: d.company ?? "",
-      id: d.serviceId,
-      cancelTo: "/post/service",
-      successViewTo: () => "/services",
-      liveLabel: "service",
-    };
-  } catch {
-    return null;
-  }
-}
+const draftSources = [
+  { key: "serviceDraft", kind: "service", idField: "serviceId", titleField: "company", cancelTo: "/post/service" },
+  { key: "marketDraft", kind: "market", idField: "marketId", titleField: "title", cancelTo: "/post/market" },
+  { key: "jobDraft", kind: "job", idField: "jobId", titleField: "title", cancelTo: "/post/job" },
+] as const;
 
 function readDraft(): PayDraft | null {
-  return readServiceDraft() ?? readMarketDraft() ?? readJobDraft();
+  const target = sessionStorage.getItem("payTarget");
+  const source = draftSources.find((source) => source.kind === target);
+  if (!source) return null;
+
+  const raw = sessionStorage.getItem(source.key);
+  if (!raw) return null;
+
+  let stashedFormData: Record<string, string | undefined>;
+  try {
+    stashedFormData = JSON.parse(raw) as Record<string, string | undefined>;
+  } catch {
+    return null;
+  }
+
+  const id = stashedFormData[source.idField];
+  const title = stashedFormData[source.titleField];
+  if (!id) return null;
+
+  return {
+    kind: source.kind,
+    title: title ?? "",
+    id,
+    cancelTo: source.cancelTo,
+  };
 }
 
 function payUrl(path: string, kind: PayKind, id: string) {
-  const key =
-    kind === "job" ? "jobId" : kind === "market" ? "marketId" : "serviceId";
+  let key: string;
+  switch (kind) {
+    case "job":
+      key = "jobId";
+      break;
+    case "market":
+      key = "marketId";
+      break;
+    case "service":
+      key = "serviceId";
+      break;
+    default:
+      return unexpectedKind(kind);
+  }
   return `${window.location.origin}${path}?${key}=${encodeURIComponent(id)}`;
 }
 
-const MOCK_MARKET_CHECKOUT = true;
-const MOCK_SERVICE_CHECKOUT = true;
-
 async function checkout(draft: PayDraft): Promise<Order> {
-  if (draft.kind === "market" && MOCK_MARKET_CHECKOUT) {
-    return {
-      orderId: crypto.randomUUID(),
-      amount: 5000,
-      orderName: "pyeonhee market post",
-    };
-  }
-  if (draft.kind === "service" && MOCK_SERVICE_CHECKOUT) {
-    return {
-      orderId: crypto.randomUUID(),
-      amount: 5000,
-      orderName: "pyeonhee service post",
-    };
+  let body: { jobId: string } | { marketId: string } | { serviceId: string };
+  switch (draft.kind) {
+    case "job":
+      body = { jobId: draft.id };
+      break;
+    case "market":
+      body = { marketId: draft.id };
+      break;
+    case "service":
+      body = { serviceId: draft.id };
+      break;
+    default:
+      return unexpectedKind(draft.kind);
   }
 
   const res = await fetch(`${API}/payments/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(
-      draft.kind === "job"
-        ? { jobId: draft.id }
-        : draft.kind === "market"
-          ? { marketId: draft.id }
-          : { serviceId: draft.id },
-    ),
+    body: JSON.stringify(body),
   });
   throwIfNotOk(res);
-  return res.json() as Promise<Order>;
+  return (await res.json()) as Order;
 }
 
 
@@ -136,8 +113,6 @@ function PayLayout({ title, children }: { title: string; children: ReactNode }) 
   );
 }
 
-const textClass = "text-[15px] leading-normal text-body";
-
 export function PayPage() {
   const [draft] = useState(readDraft);
   const start = useMutation({ mutationFn: checkout });
@@ -145,7 +120,7 @@ export function PayPage() {
   if (!draft) {
     return (
       <PayLayout title="Payment">
-        <p className={textClass}>Start from the job, market, or service form.</p>
+        <p className="text-[15px] leading-normal text-body">Start from the job, market, or service form.</p>
       </PayLayout>
     );
   }
@@ -164,7 +139,7 @@ export function PayPage() {
 
   return (
     <PayLayout title="Payment">
-      <p className={textClass}>Pay for {draft.title}.</p>
+      <p className="text-[15px] leading-normal text-body">Pay for {draft.title}.</p>
       {start.error && <ErrorMessage error={start.error} />}
       <div className="flex flex-wrap gap-3">
         <Button
@@ -205,25 +180,29 @@ export function PaySuccessPage() {
     enabled: complete,
     retry: false,
     queryFn: async () => {
-      if (kind === "market" && MOCK_MARKET_CHECKOUT) {
-        sessionStorage.removeItem("marketDraft");
-        return true;
+      if (kind === null) throw new Error("missing payment kind");
+      let body: { orderId: string; paymentKey: string; amount: number; jobId?: string; marketId?: string; serviceId?: string };
+      let draftKey: string;
+      switch (kind) {
+        case "job":
+          body = { jobId: id, orderId, paymentKey, amount };
+          draftKey = "jobDraft";
+          break;
+        case "market":
+          body = { marketId: id, orderId, paymentKey, amount };
+          draftKey = "marketDraft";
+          break;
+        case "service":
+          body = { serviceId: id, orderId, paymentKey, amount };
+          draftKey = "serviceDraft";
+          break;
+        default:
+          return unexpectedKind(kind);
       }
-      if (kind === "service" && MOCK_SERVICE_CHECKOUT) {
-        sessionStorage.removeItem("serviceDraft");
-        return true;
-      }
-
       const res = await fetch(`${API}/payments/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          kind === "job"
-            ? { jobId: id, orderId, paymentKey, amount }
-            : kind === "market"
-              ? { marketId: id, orderId, paymentKey, amount }
-              : { serviceId: id, orderId, paymentKey, amount },
-        ),
+        body: JSON.stringify(body),
       });
       if (res.status === 402) {
         throw new AppError(
@@ -232,21 +211,18 @@ export function PaySuccessPage() {
         );
       }
       throwIfNotOk(res);
-      sessionStorage.removeItem(
-        kind === "job"
-          ? "jobDraft"
-          : kind === "market"
-            ? "marketDraft"
-            : "serviceDraft",
-      );
+      sessionStorage.removeItem(draftKey);
+      if (sessionStorage.getItem("payTarget") === kind) {
+        sessionStorage.removeItem("payTarget");
+      }
       return true;
     },
   });
 
-  if (!complete) {
+  if (!kind || !id || !orderId || !paymentKey || !amount) {
     return (
       <PayLayout title="Payment">
-        <p className={textClass}>Missing payment details.</p>
+        <p className="text-[15px] leading-normal text-body">Missing payment details.</p>
       </PayLayout>
     );
   }
@@ -254,7 +230,7 @@ export function PaySuccessPage() {
   if (confirm.isPending) {
     return (
       <PayLayout title="Payment">
-        <p className={textClass}>Confirming payment…</p>
+        <p className="text-[15px] leading-normal text-body">Confirming payment…</p>
       </PayLayout>
     );
   }
@@ -272,14 +248,27 @@ export function PaySuccessPage() {
     );
   }
 
-  const viewTo =
-    kind === "job" ? `/jobs/${id}` : kind === "market" ? `/market/${id}` : "/services";
-  const liveLabel =
-    kind === "job" ? "job" : kind === "market" ? "item" : "service";
-
+  let viewTo: string;
+  let liveLabel: string;
+  switch (kind) {
+    case "job":
+      viewTo = `/jobs/${id}`;
+      liveLabel = "job";
+      break;
+    case "market":
+      viewTo = `/market/${id}`;
+      liveLabel = "item";
+      break;
+    case "service":
+      viewTo = "/services";
+      liveLabel = "service";
+      break;
+    default:
+      return unexpectedKind(kind);
+  }
   return (
     <PayLayout title="Thank you">
-      <p className={textClass}>
+      <p className="text-[15px] leading-normal text-body">
         Payment received. Your {liveLabel} is now live.
       </p>
       <div>
@@ -297,7 +286,7 @@ export function PayFailPage() {
 
   return (
     <PayLayout title="Payment not completed">
-      <p className={textClass}>
+      <p className="text-[15px] leading-normal text-body">
         {cancelled ? "You cancelled the payment." : "The payment did not go through."}
       </p>
       <div>
