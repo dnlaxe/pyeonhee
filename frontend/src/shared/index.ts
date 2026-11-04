@@ -32,5 +32,8 @@ export { ArrowLeftIcon } from "./icons/ArrowLeftIcon";
 export { BriefcaseIcon } from "./icons/BriefcaseIcon";
 export { BagIcon } from "./icons/BagIcon";
 export { UsersIcon } from "./icons/UsersIcon";
+export { CalendarIcon } from "./icons/CalendarIcon";
+export { PenIcon } from "./icons/PenIcon";
+export { SquareIcon } from "./icons/SquareIcon";
 
 export { BotCheck } from "./bot-check/BotCheck";
