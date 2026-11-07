@@ -1,9 +1,12 @@
 package app
 
 import (
+	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -54,4 +57,44 @@ func (a *App) getMarket(w http.ResponseWriter, r *http.Request) {
 	market := toMarketResponse(item)
 	market.Images = a.mediaURLs(market.Images)
 	writeJSON(w, http.StatusOK, market)
+}
+
+func (a *App) createMarket(w http.ResponseWriter, r *http.Request) {
+	var req CreateMarketRequest
+	data := json.NewDecoder(r.Body)
+	data.DisallowUnknownFields()
+	if err := data.Decode(&req); err != nil {
+		http.Error(w, "invalid json body", http.StatusBadRequest)
+		return
+	}
+
+	if err := a.BotCheck.Verify(r.Context(), req.Password); err != nil {
+		writeBotCheckError(w, err)
+		return
+	}
+
+	req.normalize()
+	if errs := req.validate(); len(errs) > 0 {
+		writeValidationErrors(w, errs)
+		return
+	}
+
+	for _, img := range req.Images {
+		if err := a.checkPhoto(r.Context(), img); err != nil {
+			if errors.Is(err, errBadPhoto) {
+				writeValidationErrors(w, map[string]string{"images": "Upload the photo again."})
+				return
+			}
+			writeInternalError(w, "createMarket", err)
+			return
+		}
+	}
+
+	id := rand.Text()
+	if err := a.Store.PutMarket(r.Context(), req.toMarketItem(id, time.Now())); err != nil {
+		writeInternalError(w, "createMarket", err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, map[string]string{"id": id})
 }

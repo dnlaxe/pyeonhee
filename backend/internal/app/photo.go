@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	jobPhotoPrefix   = "media/jobs/"
-	maxJobPhotoBytes = 2 << 20
+	photoPrefix   = "media/"
+	maxPhotoBytes = 2 << 20
 )
 
-var jobPhotoExt = map[string]string{
+var photoExt = map[string]string{
 	"image/jpeg": "jpg",
 	"image/png":  "png",
 	"image/webp": "webp",
@@ -37,7 +37,7 @@ func newS3Client(ctx context.Context) (*s3.Client, error) {
 	}), nil
 }
 
-func (a *App) createJobPhoto(w http.ResponseWriter, r *http.Request) {
+func (a *App) createPhoto(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<10)
 
 	var req struct {
@@ -57,12 +57,12 @@ func (a *App) createJobPhoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ext, ok := jobPhotoExt[req.ContentType]
+	ext, ok := photoExt[req.ContentType]
 	errs := map[string]string{}
 	if !ok {
 		errs["contentType"] = "Use a JPEG, PNG, or WebP image."
 	}
-	if req.ContentLength < 1 || req.ContentLength > maxJobPhotoBytes {
+	if req.ContentLength < 1 || req.ContentLength > maxPhotoBytes {
 		errs["contentLength"] = "Image must be 2 MB or smaller."
 	}
 	if len(errs) > 0 {
@@ -71,11 +71,11 @@ func (a *App) createJobPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if a.Uploads == nil || a.UploadsBucket == "" {
-		writeInternalError(w, "createJobPhoto", errors.New("UPLOADS_BUCKET not set"))
+		writeInternalError(w, "createPhoto", errors.New("UPLOADS_BUCKET not set"))
 		return
 	}
 
-	key := jobPhotoPrefix + rand.Text() + "." + ext
+	key := photoPrefix + rand.Text() + "." + ext
 	out, err := s3.NewPresignClient(a.Uploads).PresignPutObject(r.Context(), &s3.PutObjectInput{
 		Bucket:        aws.String(a.UploadsBucket),
 		Key:           aws.String(key),
@@ -83,7 +83,7 @@ func (a *App) createJobPhoto(w http.ResponseWriter, r *http.Request) {
 		ContentLength: aws.Int64(req.ContentLength),
 	}, s3.WithPresignExpires(5*time.Minute))
 	if err != nil {
-		writeInternalError(w, "createJobPhoto", err)
+		writeInternalError(w, "createPhoto", err)
 		return
 	}
 
@@ -93,12 +93,12 @@ func (a *App) createJobPhoto(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-var errBadLogo = errors.New("bad logo")
+var errBadPhoto = errors.New("bad photo")
 
-func (a *App) checkJobLogo(ctx context.Context, key string) error {
-	rest, ok := strings.CutPrefix(key, jobPhotoPrefix)
+func (a *App) checkPhoto(ctx context.Context, key string) error {
+	rest, ok := strings.CutPrefix(key, photoPrefix)
 	if !ok || rest == "" || strings.Contains(rest, "/") || strings.Contains(rest, "..") {
-		return errBadLogo
+		return errBadPhoto
 	}
 	if a.Uploads == nil || a.UploadsBucket == "" {
 		return errors.New("UPLOADS_BUCKET not set")
@@ -111,18 +111,18 @@ func (a *App) checkJobLogo(ctx context.Context, key string) error {
 	if err != nil {
 		var nf *types.NotFound
 		if errors.As(err, &nf) {
-			return errBadLogo
+			return errBadPhoto
 		}
 		return err
 	}
 
-	ext, ok := jobPhotoExt[aws.ToString(out.ContentType)]
+	ext, ok := photoExt[aws.ToString(out.ContentType)]
 	if !ok || !strings.HasSuffix(key, "."+ext) {
-		return errBadLogo
+		return errBadPhoto
 	}
 	n := aws.ToInt64(out.ContentLength)
-	if n < 1 || n > maxJobPhotoBytes {
-		return errBadLogo
+	if n < 1 || n > maxPhotoBytes {
+		return errBadPhoto
 	}
 	return nil
 }

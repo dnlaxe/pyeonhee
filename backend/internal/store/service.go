@@ -1,6 +1,12 @@
 package store
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+)
 
 type ServiceItem struct {
 	PK         string   `dynamodbav:"PK"`
@@ -24,4 +30,19 @@ func (s *Store) ListPublishedService(ctx context.Context) ([]ServiceItem, error)
 		return nil, err
 	}
 	return items, nil
+}
+
+func (s *Store) PutService(ctx context.Context, service ServiceItem) error {
+	av, err := attributevalue.MarshalMap(service)
+	if err != nil {
+		return fmt.Errorf("marshal service: %w", err)
+	}
+	if _, err := s.db.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName:           &s.table,
+		Item:                av,
+		ConditionExpression: new("attribute_not_exists(PK)"),
+	}); err != nil {
+		return fmt.Errorf("put service: %w", err)
+	}
+	return nil
 }

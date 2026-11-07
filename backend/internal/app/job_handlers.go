@@ -80,8 +80,8 @@ func (a *App) createJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Logo != "" {
-		if err := a.checkJobLogo(r.Context(), req.Logo); err != nil {
-			if errors.Is(err, errBadLogo) {
+		if err := a.checkPhoto(r.Context(), req.Logo); err != nil {
+			if errors.Is(err, errBadPhoto) {
 				writeValidationErrors(w, map[string]string{"logo": "Upload the photo again."})
 				return
 			}

@@ -59,7 +59,7 @@ func (s *Store) PutJob(ctx context.Context, item JobItem) error {
 		Item:                av,
 		ConditionExpression: new("attribute_not_exists(PK)"),
 	}); err != nil {
-		return fmt.Errorf("put job: %w", err)
+		return fmt.Errorf("put job error: %w", err)
 	}
 	return nil
 }
@@ -82,7 +82,6 @@ func (s *Store) SetJobOrder(ctx context.Context, jobID, orderID string, amount i
 	return notPendingOr(err)
 }
 
-// PublishJob returns ErrNotPending if the job is no longer pending or the order changed.
 func (s *Store) PublishJob(ctx context.Context, jobID, orderID, paymentKey string) error {
 	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           &s.table,

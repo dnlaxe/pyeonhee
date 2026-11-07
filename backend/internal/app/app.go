@@ -21,8 +21,10 @@ type Store interface {
 
 	ListPublishedMarket(ctx context.Context) ([]store.MarketItem, error)
 	GetMarket(ctx context.Context, id string) (store.MarketItem, error)
+	PutMarket(ctx context.Context, item store.MarketItem) error
 
 	ListPublishedService(ctx context.Context) ([]store.ServiceItem, error)
+	PutService(ctx context.Context, item store.ServiceItem) error
 }
 
 type App struct {
