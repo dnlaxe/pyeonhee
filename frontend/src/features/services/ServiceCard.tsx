@@ -11,7 +11,7 @@ export function ServiceCard({ service }: { service: Service }) {
           ) : null}
         </div>
         <div className="min-w-0">
-          <div className="text-base font-bold leading-[1.2] text-text-dark [overflow-wrap:anywhere]">
+          <div className="text-base font-semibold leading-[1.2] text-text-dark [overflow-wrap:anywhere]">
             {service.company}
           </div>
           <div className="mt-0.5 text-[13px] leading-[1.4] text-muted">

@@ -48,7 +48,7 @@ export function JobRow({ job }: { job: Job }) {
             </span>
           ) : null}
         </div>
-        <p className="m-0 line-clamp-2 text-[15px] font-normal leading-[1.2] text-body">
+        <p className="m-0 line-clamp-2 text-[15px] font-normal leading-normal text-body">
           {job.description.replace(/\n+/g, " ").trim()}
         </p>
       </div>

@@ -1,9 +1,10 @@
 type Props = {
   className?: string;
   size?: number;
+  strokeWidth?: number | string;
 };
 
-export function UsersIcon({ className, size = 22 }: Props) {
+export function UsersIcon({ className, size = 22, strokeWidth = 2 }: Props) {
   return (
     <svg
       width={size}
@@ -12,7 +13,7 @@ export function UsersIcon({ className, size = 22 }: Props) {
       aria-hidden
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

@@ -65,7 +65,7 @@ export function JobBoardPage() {
                     ))}
                   </div>
                   {hasMore && (
-                    <Button variant="more" onClick={loadMore}>
+                    <Button variant="more-lg" onClick={loadMore}>
                       see more jobs
                     </Button>
                   )}
