@@ -27,7 +27,6 @@ export function App() {
           <Route path="/post" element={<PostPage />} />
           <Route path="/post/:kind" element={<PostFormPage />} />
           <Route path="/pay" element={<PayPage />} />
-          <Route path="/pay" element={<PayPage />} />
           <Route path="/pay/success" element={<PaySuccessPage />} />
           <Route path="/pay/fail" element={<PayFailPage />} />
           <Route path="/market" element={<MarketPage />} />

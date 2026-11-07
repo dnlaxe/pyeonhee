@@ -22,10 +22,10 @@ export function MarketSection({
         <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
           <Link
             to="/market"
-            className="flex cursor-pointer items-center justify-between"
+            className="group flex cursor-pointer items-center justify-between"
           >
             For Sale
-            <ArrowRightIcon/>
+            <ArrowRightIcon className="shrink-0 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </h2>
 

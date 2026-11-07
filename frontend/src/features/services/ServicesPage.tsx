@@ -40,7 +40,7 @@ export function ServicesPage() {
       <section className="scroll-mt-20 py-20 max-md:py-14">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
           <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
-            English Services
+            English-friendly Services
           </h2>
 
           {isPending && <p className="text-muted">Loading…</p>}

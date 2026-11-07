@@ -10,7 +10,9 @@ const variants = {
     "inline-flex items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3 font-mono text-base leading-[1.2] text-text-dark no-underline hover:bg-yellow",
   more: "mx-auto mt-3 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 text-lg leading-[1.2] text-text-dark no-underline hover:bg-yellow tracking-wider",
   "more-lg":
-    "mx-auto mt-7 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 font-mono text-lg leading-[1.2] text-text-dark hover:bg-yellow",
+    "mx-auto mt-7 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 text-lg leading-[1.2] tracking-wider text-text-dark no-underline hover:bg-yellow",
+  post:
+    "inline-flex items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-7 py-3.5 text-lg leading-[1.2] tracking-wider text-text-dark no-underline hover:bg-surface",
 } as const;
 
 type Variant = keyof typeof variants;
