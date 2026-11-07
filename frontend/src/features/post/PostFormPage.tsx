@@ -109,7 +109,7 @@ function JobPostForm() {
     }) => {
       let logo: string | undefined;
       if (file) {
-        const uploaded = await uploadPhoto("/jobs/photos", file, password);
+        const uploaded = await uploadPhoto("/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         logo = uploaded.key;
       }
@@ -494,18 +494,14 @@ function MarketPostForm() {
   }
 
   const mutation = useMutation({
-    mutationFn: async ({
-                         fields,
-                         password,
-                         files,
-                       }: {
+    mutationFn: async ({ fields, password, files }: {
       fields: MarketFields;
       password: string;
       files: File[];
     }) => {
       const images: string[] = [];
       for (const file of files) {
-        const uploaded = await uploadPhoto("/market/photos", file, password);
+        const uploaded = await uploadPhoto("/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         images.push(uploaded.key);
       }
@@ -519,7 +515,7 @@ function MarketPostForm() {
         price: fields.price,
         description: fields.description,
         pinned: fields.pinned,
-        images: images.length ? images : undefined,
+        images,
       }, password);
     },
   });
@@ -826,7 +822,7 @@ function ServicePostForm() {
     }) => {
       let logo: string | undefined;
       if (file) {
-        const uploaded = await uploadPhoto("/services/photos", file, password);
+        const uploaded = await uploadPhoto("/photos", file, password);
         if (uploaded.kind !== "uploaded") return uploaded;
         logo = uploaded.key;
       }
@@ -835,7 +831,7 @@ function ServicePostForm() {
         category: fields.category,
         location: fields.location,
         email: fields.email,
-        webpage: fields.webpage || undefined,
+        webpage: fields.webpage,
         message: fields.message,
         logo,
       }, password);

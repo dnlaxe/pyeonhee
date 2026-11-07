@@ -84,7 +84,7 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/jobs/photos"),
+		Path:        jsii.String("/photos"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
@@ -148,8 +148,8 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		},
 	})
 
-	uploadsBucket.GrantPut(fn, jsii.String("media/jobs/*"))
-	uploadsBucket.GrantRead(fn, jsii.String("media/jobs/*"))
+	uploadsBucket.GrantPut(fn, jsii.String("media/*"))
+	uploadsBucket.GrantRead(fn, jsii.String("media/*"))
 	fn.AddEnvironment(jsii.String("UPLOADS_BUCKET"), uploadsBucket.BucketName(), nil)
 
 	distribution := awscloudfront.NewDistribution(stack, jsii.String("SiteDistribution"), &awscloudfront.DistributionProps{
