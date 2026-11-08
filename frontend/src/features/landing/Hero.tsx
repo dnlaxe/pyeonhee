@@ -77,7 +77,7 @@ export function Hero() {
   return (
     <section className="flex min-h-[calc(100svh-4rem)] flex-col pt-12 pb-6 md:min-h-0 md:pt-8 md:pb-4">
       <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <h1 className="m-0 mb-5 text-center text-[28px] font-semibold leading-[1.35] tracking-[-0.4px] text-text-dark min-[721px]:flex min-[721px]:items-baseline min-[721px]:justify-between min-[721px]:gap-4 min-[721px]:text-left">
+        <h1 className="m-0 mb-5 text-center text-[28px] max-[399px]:text-[22px] font-semibold leading-[1.35] tracking-[-0.4px] text-text-dark min-[721px]:flex min-[721px]:items-baseline min-[721px]:justify-between min-[721px]:gap-4 min-[721px]:text-left">
         <span className="block min-[721px]:min-w-0">
           <span className="block min-[721px]:inline-block">
             Living in Korea?
