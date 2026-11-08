@@ -119,7 +119,7 @@ export function Hero() {
                   <Icon strokeWidth={1.5} />
                 </span>
                   <span className="relative">
-                  <span className="text-[12cqi] font-semibold leading-[1.1] tracking-[-0.02em]">
+                  <span className="text-[14cqi] font-semibold leading-[1.1] tracking-[-0.02em]">
                     {label}
                   </span>
                 </span>
