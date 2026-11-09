@@ -85,9 +85,9 @@ func TestListPublishedFiltersByEntity(t *testing.T) {
 	}
 }
 
-func TestSetJobOrder(t *testing.T) {
+func TestSetOrder(t *testing.T) {
 	db := &fakeDB{}
-	if err := New(db, "t").SetJobOrder(context.Background(), "JOB1", "ORDER1", 5000); err != nil {
+	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); err != nil {
 		t.Fatal(err)
 	}
 	if pk := str(db.update.Key["PK"]); pk != "JOB#JOB1" {
@@ -99,9 +99,9 @@ func TestSetJobOrder(t *testing.T) {
 	}
 }
 
-func TestPublishJob(t *testing.T) {
+func TestPublish(t *testing.T) {
 	db := &fakeDB{}
-	if err := New(db, "t").PublishJob(context.Background(), "JOB1", "ORDER1", "mock_abc"); err != nil {
+	if err := New(db, "t").Publish(context.Background(), JobPK("JOB1"), "ORDER1", "mock_abc"); err != nil {
 		t.Fatal(err)
 	}
 	values := db.update.ExpressionAttributeValues
@@ -114,10 +114,10 @@ func TestUpdatesMapConditionFailureToNotPending(t *testing.T) {
 	db := &fakeDB{updateErr: &types.ConditionalCheckFailedException{}}
 	s := New(db, "t")
 
-	if err := s.SetJobOrder(context.Background(), "JOB1", "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
-		t.Fatalf("SetJobOrder err = %v", err)
+	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
+		t.Fatalf("SetOrder err = %v", err)
 	}
-	if err := s.PublishJob(context.Background(), "JOB1", "ORDER1", "k"); !errors.Is(err, ErrNotPending) {
-		t.Fatalf("PublishJob err = %v", err)
+	if err := s.Publish(context.Background(), JobPK("JOB1"), "ORDER1", "k"); !errors.Is(err, ErrNotPending) {
+		t.Fatalf("Publish err = %v", err)
 	}
 }

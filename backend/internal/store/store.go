@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -24,7 +25,7 @@ const (
 
 var (
 	ErrNotFound   = errors.New("not found")
-	ErrNotPending = errors.New("job is not awaiting payment")
+	ErrNotPending = errors.New("listing is not awaiting payment")
 )
 
 type DynamoDB interface {
@@ -99,4 +100,49 @@ func (s *Store) getMeta(ctx context.Context, pk string, out any) error {
 		return fmt.Errorf("unmarshal %s: %w", pk, err)
 	}
 	return nil
+}
+
+func (s *Store) SetOrder(ctx context.Context, pk, orderID string, amount int64) error {
+	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName:           &s.table,
+		Key:                 metaKey(pk),
+		UpdateExpression:    new("SET orderId = :orderId, amount = :amount"),
+		ConditionExpression: new("attribute_exists(PK) AND #status = :pending AND attribute_not_exists(orderId)"),
+		ExpressionAttributeNames: map[string]string{
+			"#status": "status",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":orderId": &types.AttributeValueMemberS{Value: orderID},
+			":amount":  &types.AttributeValueMemberN{Value: strconv.FormatInt(amount, 10)},
+			":pending": &types.AttributeValueMemberS{Value: StatusPending},
+		},
+	})
+	return notPendingOr(err)
+}
+
+func (s *Store) Publish(ctx context.Context, pk, orderID, paymentKey string) error {
+	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName:        &s.table,
+		Key:              metaKey(pk),
+		UpdateExpression: new("SET #status = :published, paymentKey = :paymentKey"),
+		ExpressionAttributeNames: map[string]string{
+			"#status": "status",
+		},
+		ConditionExpression: new("#status = :pending AND orderId = :orderId"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":published":  &types.AttributeValueMemberS{Value: StatusPublished},
+			":pending":    &types.AttributeValueMemberS{Value: StatusPending},
+			":orderId":    &types.AttributeValueMemberS{Value: orderID},
+			":paymentKey": &types.AttributeValueMemberS{Value: paymentKey},
+		},
+	})
+	return notPendingOr(err)
+}
+
+func notPendingOr(err error) error {
+	var failed *types.ConditionalCheckFailedException
+	if errors.As(err, &failed) {
+		return ErrNotPending
+	}
+	return err
 }

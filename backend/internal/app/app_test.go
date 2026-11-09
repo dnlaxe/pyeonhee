@@ -34,31 +34,11 @@ func (f *fakeStore) GetJob(_ context.Context, _ string) (store.JobItem, error) {
 	return *f.job, nil
 }
 
-func (f *fakeStore) SetJobOrder(_ context.Context, jobID, orderID string, amount int64) error {
-	f.orderJobID, f.orderID, f.orderAmount = jobID, orderID, amount
-	return f.orderErr
-}
-
-func (f *fakeStore) PublishJob(_ context.Context, _, _, paymentKey string) error {
-	f.published, f.publishedKey = true, paymentKey
-	return f.publishErr
-}
-
 func (f *fakeStore) GetMarket(_ context.Context, _ string) (store.MarketItem, error) {
 	if f.market == nil {
 		return store.MarketItem{}, store.ErrNotFound
 	}
 	return *f.market, nil
-}
-
-func (f *fakeStore) SetMarketOrder(_ context.Context, marketID, orderID string, amount int64) error {
-	f.orderJobID, f.orderID, f.orderAmount = marketID, orderID, amount
-	return f.orderErr
-}
-
-func (f *fakeStore) PublishMarket(_ context.Context, _, _, paymentKey string) error {
-	f.published, f.publishedKey = true, paymentKey
-	return f.publishErr
 }
 
 func (f *fakeStore) GetService(_ context.Context, _ string) (store.ServiceItem, error) {
@@ -68,12 +48,12 @@ func (f *fakeStore) GetService(_ context.Context, _ string) (store.ServiceItem, 
 	return *f.service, nil
 }
 
-func (f *fakeStore) SetServiceOrder(_ context.Context, serviceID, orderID string, amount int64) error {
-	f.orderJobID, f.orderID, f.orderAmount = serviceID, orderID, amount
+func (f *fakeStore) SetOrder(_ context.Context, pk, orderID string, amount int64) error {
+	f.orderJobID, f.orderID, f.orderAmount = pk, orderID, amount
 	return f.orderErr
 }
 
-func (f *fakeStore) PublishService(_ context.Context, _, _, paymentKey string) error {
+func (f *fakeStore) Publish(_ context.Context, _, _, paymentKey string) error {
 	f.published, f.publishedKey = true, paymentKey
 	return f.publishErr
 }

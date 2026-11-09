@@ -148,7 +148,7 @@ function JobPostForm() {
           }
           sessionStorage.setItem(
             "jobDraft",
-            JSON.stringify({ ...fields, jobId: result.id }),
+            JSON.stringify({ ...fields, id: result.id }),
           );
           sessionStorage.setItem("payTarget", "job");
           navigate("/pay");
@@ -543,7 +543,7 @@ function MarketPostForm() {
           }
           sessionStorage.setItem(
             "marketDraft",
-            JSON.stringify({ ...fields, marketId: result.id }),
+            JSON.stringify({ ...fields, id: result.id }),
           );
           sessionStorage.setItem("payTarget", "market");
           navigate("/pay");
@@ -879,7 +879,7 @@ function ServicePostForm() {
           }
           sessionStorage.setItem(
             "serviceDraft",
-            JSON.stringify({ ...fields, serviceId: result.id }),
+            JSON.stringify({ ...fields, id: result.id }),
           );
           sessionStorage.setItem("payTarget", "service");
           navigate("/pay");

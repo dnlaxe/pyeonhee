@@ -22,9 +22,9 @@ type PayDraft = {
 };
 
 const draftSources = [
-  { key: "serviceDraft", kind: "service", idField: "serviceId", titleField: "company", cancelTo: "/post/service" },
-  { key: "marketDraft", kind: "market", idField: "marketId", titleField: "title", cancelTo: "/post/market" },
-  { key: "jobDraft", kind: "job", idField: "jobId", titleField: "title", cancelTo: "/post/job" },
+  { key: "serviceDraft", kind: "service", titleField: "company", cancelTo: "/post/service" },
+  { key: "marketDraft", kind: "market", titleField: "title", cancelTo: "/post/market" },
+  { key: "jobDraft", kind: "job", titleField: "title", cancelTo: "/post/job" },
 ] as const;
 
 function readDraft(): PayDraft | null {
@@ -42,7 +42,7 @@ function readDraft(): PayDraft | null {
     return null;
   }
 
-  const id = stashedFormData[source.idField];
+  const id = stashedFormData.id;
   const title = stashedFormData[source.titleField];
   if (!id) return null;
 
@@ -55,43 +55,15 @@ function readDraft(): PayDraft | null {
 }
 
 function payUrl(path: string, kind: PayKind, id: string) {
-  let key: string;
-  switch (kind) {
-    case "job":
-      key = "jobId";
-      break;
-    case "market":
-      key = "marketId";
-      break;
-    case "service":
-      key = "serviceId";
-      break;
-    default:
-      return unexpectedKind(kind);
-  }
-  return `${window.location.origin}${path}?${key}=${encodeURIComponent(id)}`;
+  const q = new URLSearchParams({ kind, id });
+  return `${window.location.origin}${path}?${q}`;
 }
 
 async function checkout(draft: PayDraft): Promise<Order> {
-  let body: { jobId: string } | { marketId: string } | { serviceId: string };
-  switch (draft.kind) {
-    case "job":
-      body = { jobId: draft.id };
-      break;
-    case "market":
-      body = { marketId: draft.id };
-      break;
-    case "service":
-      body = { serviceId: draft.id };
-      break;
-    default:
-      return unexpectedKind(draft.kind);
-  }
-
   const res = await fetch(`${API}/payments/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ kind: draft.kind, id: draft.id }),
   });
   throwIfNotOk(res);
   return (await res.json()) as Order;
@@ -159,21 +131,16 @@ export function PayPage() {
 
 export function PaySuccessPage() {
   const [params] = useSearchParams();
-  const jobId = params.get("jobId") ?? "";
-  const marketId = params.get("marketId") ?? "";
-  const serviceId = params.get("serviceId") ?? "";
+  const kindParam = params.get("kind");
+  const id = params.get("id") ?? "";
   const orderId = params.get("orderId") ?? "";
   const paymentKey = params.get("paymentKey") ?? "";
   const amount = Number(params.get("amount"));
 
-  const kind: PayKind | null = jobId
-    ? "job"
-    : marketId
-      ? "market"
-      : serviceId
-        ? "service"
-        : null;
-  const id = jobId || marketId || serviceId;
+  const kind: PayKind | null =
+    kindParam === "job" || kindParam === "market" || kindParam === "service"
+      ? kindParam
+      : null;
   const complete = Boolean(kind && id && orderId && paymentKey && amount);
   const confirm = useQuery({
     queryKey: ["payment-confirm", kind, orderId, paymentKey],
@@ -181,24 +148,21 @@ export function PaySuccessPage() {
     retry: false,
     queryFn: async () => {
       if (kind === null) throw new Error("missing payment kind");
-      let body: { orderId: string; paymentKey: string; amount: number; jobId?: string; marketId?: string; serviceId?: string };
       let draftKey: string;
       switch (kind) {
         case "job":
-          body = { jobId: id, orderId, paymentKey, amount };
           draftKey = "jobDraft";
           break;
         case "market":
-          body = { marketId: id, orderId, paymentKey, amount };
           draftKey = "marketDraft";
           break;
         case "service":
-          body = { serviceId: id, orderId, paymentKey, amount };
           draftKey = "serviceDraft";
           break;
         default:
           return unexpectedKind(kind);
       }
+      const body = { kind, id, orderId, paymentKey, amount };
       const res = await fetch(`${API}/payments/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
