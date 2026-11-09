@@ -22,7 +22,7 @@ func postCheckout(st *fakeStore, body string) *httptest.ResponseRecorder {
 
 func TestCheckoutSavesOrder(t *testing.T) {
 	st := &fakeStore{}
-	rec := postCheckout(st, `{"jobId":"JOB1"}`)
+	rec := postCheckout(st, `{"kind":"job","id":"JOB1"}`)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d body = %q", rec.Code, rec.Body.String())
@@ -35,8 +35,8 @@ func TestCheckoutSavesOrder(t *testing.T) {
 		t.Fatalf("resp = %+v", resp)
 	}
 
-	if st.orderJobID != "JOB1" || st.orderAmount != jobPriceKRW {
-		t.Fatalf("SetJobOrder(%q, _, %d)", st.orderJobID, st.orderAmount)
+	if st.orderJobID != store.JobPK("JOB1") || st.orderAmount != jobPriceKRW {
+		t.Fatalf("SetOrder(%q, _, %d)", st.orderJobID, st.orderAmount)
 	}
 	if st.orderID != resp.OrderID {
 		t.Fatalf("saved orderId %q, returned %q", st.orderID, resp.OrderID)
@@ -50,10 +50,10 @@ func TestCheckoutRejects(t *testing.T) {
 		orderErr error
 		status   int
 	}{
-		{"missing jobId", `{}`, nil, http.StatusBadRequest},
-		{"client sends amount", `{"jobId":"JOB1","amount":100}`, nil, http.StatusBadRequest},
-		{"job not pending", `{"jobId":"JOB1"}`, store.ErrNotPending, http.StatusConflict},
-		{"database error", `{"jobId":"JOB1"}`, errors.New("dynamo down"), http.StatusInternalServerError},
+		{"missing id", `{}`, nil, http.StatusBadRequest},
+		{"client sends amount", `{"kind":"job","id":"JOB1","amount":100}`, nil, http.StatusBadRequest},
+		{"job not pending", `{"kind":"job","id":"JOB1"}`, store.ErrNotPending, http.StatusConflict},
+		{"database error", `{"kind":"job","id":"JOB1"}`, errors.New("dynamo down"), http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
@@ -78,7 +78,7 @@ func postConfirm(st *fakeStore, body string) *httptest.ResponseRecorder {
 	return rec
 }
 
-const goodConfirm = `{"jobId":"JOB1","orderId":"ORDER1","paymentKey":"mock_abc","amount":5000}`
+const goodConfirm = `{"kind":"job","id":"JOB1","orderId":"ORDER1","paymentKey":"mock_abc","amount":5000}`
 
 func TestConfirmPublishesJob(t *testing.T) {
 	st := &fakeStore{job: storedJob(store.StatusPending, "ORDER1")}
@@ -118,9 +118,9 @@ func TestConfirmRejects(t *testing.T) {
 		{"no checkout yet", storedJob(store.StatusPending, ""), goodConfirm, http.StatusBadRequest},
 		{"old order id", storedJob(store.StatusPending, "ORDER2"), goodConfirm, http.StatusBadRequest},
 		{"tampered amount", storedJob(store.StatusPending, "ORDER1"),
-			`{"jobId":"JOB1","orderId":"ORDER1","paymentKey":"mock_abc","amount":100}`, http.StatusBadRequest},
+			`{"kind":"job","id":"JOB1","orderId":"ORDER1","paymentKey":"mock_abc","amount":100}`, http.StatusBadRequest},
 		{"declined", storedJob(store.StatusPending, "ORDER1"),
-			`{"jobId":"JOB1","orderId":"ORDER1","paymentKey":"real_abc","amount":5000}`, http.StatusPaymentRequired},
+			`{"kind":"job","id":"JOB1","orderId":"ORDER1","paymentKey":"real_abc","amount":5000}`, http.StatusPaymentRequired},
 		{"published by other order", storedJob(store.StatusPublished, "ORDER2"), goodConfirm, http.StatusConflict},
 	}
 

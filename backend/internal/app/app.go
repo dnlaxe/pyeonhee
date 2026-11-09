@@ -16,20 +16,17 @@ type Store interface {
 	ListPublishedJob(ctx context.Context) ([]store.JobItem, error)
 	GetJob(ctx context.Context, id string) (store.JobItem, error)
 	PutJob(ctx context.Context, item store.JobItem) error
-	SetJobOrder(ctx context.Context, jobID, orderID string, amount int64) error
-	PublishJob(ctx context.Context, jobID, orderID, paymentKey string) error
 
 	ListPublishedMarket(ctx context.Context) ([]store.MarketItem, error)
 	GetMarket(ctx context.Context, id string) (store.MarketItem, error)
 	PutMarket(ctx context.Context, item store.MarketItem) error
-	SetMarketOrder(ctx context.Context, marketID, orderID string, amount int64) error
-	PublishMarket(ctx context.Context, marketID, orderID, paymentKey string) error
 
 	ListPublishedService(ctx context.Context) ([]store.ServiceItem, error)
 	GetService(ctx context.Context, id string) (store.ServiceItem, error)
 	PutService(ctx context.Context, item store.ServiceItem) error
-	SetServiceOrder(ctx context.Context, serviceID, orderID string, amount int64) error
-	PublishService(ctx context.Context, serviceID, orderID, paymentKey string) error
+
+	SetOrder(ctx context.Context, pk, orderID string, amount int64) error
+	Publish(ctx context.Context, pk, orderID, paymentKey string) error
 }
 
 type App struct {

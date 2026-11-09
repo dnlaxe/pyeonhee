@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-var ErrDeclined = errors.New("payment declined")
+var (
+	ErrDeclined         = errors.New("payment declined")
+	ErrAlreadyConfirmed = errors.New("payment already confirmed")
+)
 
 const MockKeyPrefix = "mock_"
 
