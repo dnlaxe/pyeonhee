@@ -5,7 +5,9 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
@@ -99,6 +101,8 @@ type payListing struct {
 	status  string
 	orderID string
 	amount  int64
+	email   string
+	title   string
 }
 
 func (a *App) getPayListing(ctx context.Context, kind, id string) (payListing, error) {
@@ -108,19 +112,19 @@ func (a *App) getPayListing(ctx context.Context, kind, id string) (payListing, e
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount}, nil
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title}, nil
 	case payMarket:
 		item, err := a.Store.GetMarket(ctx, id)
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount}, nil
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title}, nil
 	case payService:
 		item, err := a.Store.GetService(ctx, id)
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount}, nil
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.Contact, title: item.Company}, nil
 	default:
 		return payListing{}, store.ErrNotFound
 	}
@@ -200,6 +204,22 @@ func (a *App) confirmPayment(w http.ResponseWriter, r *http.Request) {
 		}
 		writeInternalError(w, "confirm: publish", err)
 		return
+	}
+
+	base := strings.TrimRight(a.MediaBaseURL, "/")
+	var link string
+	switch kind {
+	case payJob:
+		link = base + "/jobs/" + listing.id
+	case payMarket:
+		link = base + "/market/" + listing.id
+	case payService:
+		link = base + "/services"
+	default:
+		link = base
+	}
+	if err := a.Mail.SendPublished(r.Context(), listing.email, listing.title, link); err != nil {
+		log.Printf("mail.SendPublished failed: %v", err)
 	}
 
 	writePaymentConfirmed(w)

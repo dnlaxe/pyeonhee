@@ -6,6 +6,7 @@ import (
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/botcheck"
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
+	"github.com/dnlaxe/pyeonhee/backend/internal/mail"
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 
@@ -37,6 +38,7 @@ type App struct {
 	BotCheck      botcheck.Checker
 	Uploads       *s3.Client
 	UploadsBucket string
+	Mail          mail.Sender
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
@@ -60,6 +62,11 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
+	mailer, err := mail.New(ctx, cfg.SESFromEmail)
+	if err != nil {
+		return nil, err
+	}
+
 	var uploads *s3.Client
 	if cfg.UploadsBucket != "" {
 		uploads, err = newS3Client(ctx)
@@ -76,5 +83,6 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		BotCheck:      botCheck,
 		Uploads:       uploads,
 		UploadsBucket: cfg.UploadsBucket,
+		Mail:          mailer,
 	}, nil
 }

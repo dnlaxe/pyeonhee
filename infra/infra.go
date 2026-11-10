@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigatewayv2integrations"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
@@ -54,10 +55,25 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 			"MOCK_BOT_CHECK_PASSWORD": jsii.String(os.Getenv("MOCK_BOT_CHECK_PASSWORD")),
 			"BOT_CHECK_PROVIDER":      jsii.String(envOr("BOT_CHECK_PROVIDER", "mock")),
 			"PAYMENT_PROVIDER":        jsii.String(envOr("PAYMENT_PROVIDER", "mock")),
+			"SES_FROM_EMAIL":          jsii.String(os.Getenv("SES_FROM_EMAIL")),
 		},
 	})
 
 	table.GrantReadWriteData(fn)
+
+	sesFrom := os.Getenv("SES_FROM_EMAIL")
+	if sesFrom != "" {
+		fn.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+			Effect:  awsiam.Effect_ALLOW,
+			Actions: jsii.Strings("ses:SendEmail", "ses:SendRawEmail"),
+			Resources: jsii.Strings(*stack.FormatArn(&awscdk.ArnComponents{
+				Service:      jsii.String("ses"),
+				Resource:     jsii.String("identity"),
+				ResourceName: jsii.String(sesFrom),
+				ArnFormat:    awscdk.ArnFormat_SLASH_RESOURCE_NAME,
+			})),
+		}))
+	}
 
 	httpApi := awsapigatewayv2.NewHttpApi(stack, jsii.String("JobsApi"), &awsapigatewayv2.HttpApiProps{
 		ApiName: jsii.String("pyeonhee-jobs"),
@@ -96,14 +112,14 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/services"),
-		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Path:        jsii.String("/market"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET, awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/market"),
-		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
+		Path:        jsii.String("/services"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET, awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
@@ -121,6 +137,12 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
 		Path:        jsii.String("/payments/confirm"),
+		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
+		Integration: integration,
+	})
+
+	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
+		Path:        jsii.String("/contact"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})

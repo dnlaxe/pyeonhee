@@ -198,7 +198,13 @@ export function MarketItemPage() {
           </h1>
           <TagList tags={item.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
-          <ContactForm actionLabel="Contact" className="mt-8" email={item.email} />
+          <ContactForm
+            actionLabel="Contact"
+            className="mt-8"
+            email={item.email}
+            kind="market"
+            id={item.id}
+          />
           <ReportLink kind="market" id={item.id} />
         </div>
       </article>

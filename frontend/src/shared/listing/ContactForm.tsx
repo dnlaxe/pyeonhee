@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { throwIfNotOk } from "../../lib/httpError";
 import { Button } from "../components/Button";
 import { Form } from "../components/forms/Form";
 import { FormField } from "../components/forms/FormField";
@@ -10,6 +12,8 @@ type Props = {
   actionLabel: string;
   className?: string;
   email?: string;
+  kind: "job" | "market";
+  id: string;
 };
 
 type ContactErrors = {
@@ -37,12 +41,34 @@ function validateContact(data: FormData): ContactErrors {
   return errors;
 }
 
-export function ContactForm({ actionLabel, className, email }: Props) {
+export function ContactForm({ actionLabel, className, email, kind, id }: Props) {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<ContactErrors>({});
-  const [submitted, setSubmitted] = useState(false);
   const [ready, setReady] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const [fields, setFields] = useState<{ email: string; message: string } | null>(null);
+  const [botCheckError, setBotCheckError] = useState("");
+
+  const send = useMutation({
+    mutationFn: async (password: string) => {
+      if (!fields) throw new Error("missing fields");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind,
+          id,
+          email: fields.email,
+          message: fields.message,
+          password,
+        }),
+      });
+      if (res.status === 401) return { kind: "botCheckFailed" as const };
+      throwIfNotOk(res);
+      return { kind: "sent" as const };
+    },
+  });
 
   if (!open) {
     return (
@@ -94,14 +120,14 @@ export function ContactForm({ actionLabel, className, email }: Props) {
         onSubmit={(e) => {
           const data = new FormData(e.currentTarget);
           const next = validateContact(data);
-          setSubmitted(true);
           setErrors(next);
           if (Object.keys(next).length > 0) return;
+          setFields({
+            email: String(data.get("email") ?? "").trim(),
+            message: String(data.get("message") ?? "").trim(),
+          });
+          setBotCheckError("");
           setReady(true);
-        }}
-        onChange={(e) => {
-          if (!submitted) return;
-          setErrors(validateContact(new FormData(e.currentTarget)));
         }}
       >
         <fieldset
@@ -131,9 +157,24 @@ export function ContactForm({ actionLabel, className, email }: Props) {
           </Button>
         ) : null}
       </Form>
-        {ready ? (
-            <BotCheck onSubmit={() => setSent(true)} pending={false} error="" />
-          ) : null}
+      {ready ? (
+        <BotCheck
+          onSubmit={(password) => {
+            setBotCheckError("");
+            send.mutate(password, {
+              onSuccess: (result) => {
+                if (result.kind === "botCheckFailed") {
+                  setBotCheckError("That password is wrong.");
+                  return;
+                }
+                setSent(true);
+              },
+            });
+          }}
+          pending={send.isPending}
+          error={botCheckError || send.error?.message || ""}
+        />
+      ) : null}
     </div>
   );
 }
