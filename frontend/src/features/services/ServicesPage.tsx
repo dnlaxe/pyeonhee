@@ -37,11 +37,8 @@ export function ServicesPage() {
 
   return (
     <main>
-      <section className="scroll-mt-20 py-20 max-md:py-14">
+      <section className="scroll-mt-20 pt-6 pb-20 max-md:pt-4 max-md:pb-14">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-          <h2 className="mb-2 text-2xl font-semibold leading-[1.2] text-text-dark">
-            English-friendly Services
-          </h2>
 
           {isPending && <p className="text-muted">Loading…</p>}
           {error && <ErrorMessage error={error} />}
