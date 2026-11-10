@@ -16,6 +16,7 @@ type Config struct {
 	MockBotCheckPassword string   `yaml:"mock_bot_check_password"`
 	PaymentProvider      string   `yaml:"payment_provider"`
 	UploadsBucket        string   `yaml:"uploads_bucket"`
+	SESFromEmail         string   `yaml:"ses_from_email"`
 }
 
 func Defaults() Config {
@@ -71,5 +72,9 @@ func applyEnv(cfg *Config) {
 
 	if v := os.Getenv("UPLOADS_BUCKET"); v != "" {
 		cfg.UploadsBucket = v
+	}
+
+	if v := os.Getenv("SES_FROM_EMAIL"); v != "" {
+		cfg.SESFromEmail = v
 	}
 }

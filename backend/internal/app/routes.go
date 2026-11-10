@@ -32,5 +32,7 @@ func (a *App) NewRouter() *chi.Mux {
 	r.Post("/payments/checkout", a.checkout)
 	r.Post("/payments/confirm", a.confirmPayment)
 
+	r.Post("/contact", a.contact)
+
 	return r
 }
