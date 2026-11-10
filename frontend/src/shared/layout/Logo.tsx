@@ -27,17 +27,23 @@ export function LogoMark({ className }: { className?: string }) {
 type Props = {
   to?: string;
   showWordmark?: boolean;
+  subtitle?: string;
   className?: string;
 };
 
-export function Logo({ to = "/", showWordmark = true, className }: Props) {
+export function Logo({ to = "/", showWordmark = true, subtitle, className }: Props) {
   const inner = (
     <>
       <LogoMark />
       {showWordmark && (
         <span className="font-sans text-lg font-semibold leading-[1.2] text-black">
-          pyeonhee
-        </span>
+        pyeonhee
+      </span>
+      )}
+      {subtitle && (
+        <span className="font-sans text-lg font-semibold leading-[1.2] text-yellow-accent">
+        {subtitle}
+      </span>
       )}
     </>
   );
