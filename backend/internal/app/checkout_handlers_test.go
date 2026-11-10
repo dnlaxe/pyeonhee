@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dnlaxe/pyeonhee/backend/internal/mail"
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
@@ -71,7 +72,7 @@ func storedJob(status, orderID string) *store.JobItem {
 }
 
 func postConfirm(st *fakeStore, body string) *httptest.ResponseRecorder {
-	a := &App{Store: st, Payments: payment.Mock{}}
+	a := &App{Store: st, Payments: payment.Mock{}, Mail: mail.Nop{}}
 	req := httptest.NewRequest(http.MethodPost, "/payments/confirm", strings.NewReader(body))
 	rec := httptest.NewRecorder()
 	a.confirmPayment(rec, req)
