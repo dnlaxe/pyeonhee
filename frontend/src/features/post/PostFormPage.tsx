@@ -14,18 +14,6 @@ import {
   BotCheck,
 } from "../../shared";
 import {
-  serviceFilters,
-  teachingAreas,
-  nonTeachingAreas,
-  emailOptionLabels,
-  koreanLevels,
-  employmentTypes,
-  marketListingTypes,
-  marketCategories,
-  kinds,
-  paymentMethodLabels,
-} from "./constants";
-import {
   validateJob,
   type JobErrors,
   validateMarket,
@@ -33,7 +21,7 @@ import {
   validateService,
   type ServiceErrors,
 } from "./validation";
-import { config } from "../../config";
+import { config, formRules, postCopy } from "../../config";
 import { useMutation } from "@tanstack/react-query";
 import {
   createListing,
@@ -42,20 +30,6 @@ import {
   type MarketFields,
   type ServiceFields,
 } from "./api";
-
-function emailRadioOptions() {
-  return Object.entries(emailOptionLabels).map(([value, label]) => ({
-    value,
-    label,
-  }));
-}
-
-function paymentMethodOptions() {
-  return Object.entries(paymentMethodLabels).map(([value, label]) => ({
-    value,
-    label,
-  }));
-}
 
 function PinField({
   label,
@@ -86,11 +60,12 @@ function JobPostForm() {
   );
   const [errors, setErrors] = useState<JobErrors>({});
   const [submitted, setSubmitted] = useState(false);
-  const areas = track === "Teaching" ? teachingAreas : nonTeachingAreas;
+  const areas = track === "" ? [] : formRules.jobs.track.options[track];
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
 
-  const MAX_PHOTOS = config.maxPhotos.job;
+  const photoRules = formRules.jobs.photos;
+  const MAX_PHOTOS = photoRules.max;
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
 
   const [fields, setFields] = useState<ReturnType<typeof readJobDraft>>(null);
@@ -181,14 +156,27 @@ function JobPostForm() {
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
+    const accepted: { file: File; url: string }[] = [];
+    let photoError = "";
+
+    for (const file of chosen) {
+      const allowed = photoRules.allowedTypes as readonly string[];
+      if (!allowed.includes(file.type)) {
+        photoError = "Use a JPEG, PNG, or WebP image.";
+        continue;
+      }
+      if (file.size > photoRules.maxBytes) {
+        photoError = "Use a photo smaller than 2 MB.";
+        continue;
+      }
+      accepted.push({ file, url: URL.createObjectURL(file) });
+    }
+
     setPhotos((prev) => {
       const room = MAX_PHOTOS - prev.length;
-      const added = chosen.slice(0, room).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      return [...prev, ...added];
+      return [...prev, ...accepted.slice(0, room)];
     });
+    setErrors((prev) => ({ ...prev, logo: photoError }));
     e.target.value = "";
   }
 
@@ -265,7 +253,7 @@ function JobPostForm() {
         <RadioGroup
           legend="Email options:"
           name="emailOption"
-          options={emailRadioOptions()}
+          options={formRules.jobs.emailOption.options}
           defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
         />
 
@@ -291,7 +279,7 @@ function JobPostForm() {
               >
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={photoRules.allowedTypes.join(",")}
                   disabled={photos.length >= MAX_PHOTOS}
                   onChange={handlePhotosChange}
                   className="sr-only"
@@ -347,7 +335,7 @@ function JobPostForm() {
             <option value="" disabled>
               Select…
             </option>
-            {employmentTypes.map((t) => (
+            {formRules.jobs.employmentType.options.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
@@ -368,8 +356,11 @@ function JobPostForm() {
             <option value="" disabled>
               Select…
             </option>
-            <option value="Teaching">Teaching</option>
-            <option value="Non-teaching">Non-teaching</option>
+            {Object.keys(formRules.jobs.track.options).map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </SelectInput>
         </FormField>
 
@@ -404,7 +395,7 @@ function JobPostForm() {
             <option value="" disabled>
               Select…
             </option>
-            {koreanLevels.map((k) => (
+            {formRules.jobs.korean.options.map((k) => (
               <option key={k} value={k}>
                 {k}
               </option>
@@ -429,7 +420,7 @@ function JobPostForm() {
         <RadioGroup
           legend="How to pay:"
           name="method"
-          options={paymentMethodOptions()}
+          options={formRules.payment.options}
           defaultValue={draft?.method || "mock"}
         />
         {!ready ? (
@@ -450,7 +441,8 @@ function JobPostForm() {
 }
 
 function MarketPostForm() {
-  const MAX_PHOTOS = config.maxPhotos.market;
+  const photoRules = formRules.market.photos;
+  const MAX_PHOTOS = photoRules.max;
   const [draft] = useState(readMarketDraft);
   const [listingType, setListingType] = useState(draft?.listingType ?? "");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
@@ -554,14 +546,27 @@ function MarketPostForm() {
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
+    const accepted: { file: File; url: string }[] = [];
+    let photoError = "";
+
+    for (const file of chosen) {
+      const allowed = photoRules.allowedTypes as readonly string[];
+      if (!allowed.includes(file.type)) {
+        photoError = "Use a JPEG, PNG, or WebP image.";
+        continue;
+      }
+      if (file.size > photoRules.maxBytes) {
+        photoError = "Use a photo smaller than 2 MB.";
+        continue;
+      }
+      accepted.push({ file, url: URL.createObjectURL(file) });
+    }
+
     setPhotos((prev) => {
       const room = MAX_PHOTOS - prev.length;
-      const added = chosen.slice(0, room).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      return [...prev, ...added];
+      return [...prev, ...accepted.slice(0, room)];
     });
+    setErrors((prev) => ({ ...prev, images: photoError }));
     e.target.value = "";
   }
 
@@ -634,7 +639,7 @@ function MarketPostForm() {
       <RadioGroup
         legend="Email options:"
         name="emailOption"
-        options={emailRadioOptions()}
+        options={formRules.market.emailOption.options}
         defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
       />
 
@@ -667,7 +672,7 @@ function MarketPostForm() {
           <option value="" disabled>
             Select…
           </option>
-          {marketListingTypes.map((t) => (
+          {formRules.market.listingType.options.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
@@ -688,7 +693,7 @@ function MarketPostForm() {
             {listingType ? "Select…" : "Select listing type first"}
           </option>
           {listingType &&
-            marketCategories.map((c) => (
+            formRules.market.category.options.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -707,7 +712,7 @@ function MarketPostForm() {
         />
       </FormField>
 
-      <FormField label="Attach photos:">
+      <FormField label="Attach photos:" error={errors.images}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <label
@@ -719,7 +724,7 @@ function MarketPostForm() {
             >
               <input
                 type="file"
-                accept="image/*"
+                accept={photoRules.allowedTypes.join(",")}
                 multiple
                 disabled={photos.length >= MAX_PHOTOS}
                 onChange={handlePhotosChange}
@@ -774,7 +779,7 @@ function MarketPostForm() {
       <RadioGroup
         legend="How to pay:"
         name="method"
-        options={paymentMethodOptions()}
+        options={formRules.payment.options}
         defaultValue={draft?.method || "mock"}
       />
 
@@ -796,7 +801,8 @@ function MarketPostForm() {
 }
 
 function ServicePostForm() {
-  const MAX_PHOTOS = config.maxPhotos.service;
+  const photoRules = formRules.service.photos;
+  const MAX_PHOTOS = photoRules.max;
   const [draft] = useState(readServiceDraft);
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [errors, setErrors] = useState<ServiceErrors>({});
@@ -890,14 +896,27 @@ function ServicePostForm() {
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
     const chosen = Array.from(e.target.files ?? []);
+    const accepted: { file: File; url: string }[] = [];
+    let photoError = "";
+
+    for (const file of chosen) {
+      const allowed = photoRules.allowedTypes as readonly string[];
+      if (!allowed.includes(file.type)) {
+        photoError = "Use a JPEG, PNG, or WebP image.";
+        continue;
+      }
+      if (file.size > photoRules.maxBytes) {
+        photoError = "Use a photo smaller than 2 MB.";
+        continue;
+      }
+      accepted.push({ file, url: URL.createObjectURL(file) });
+    }
+
     setPhotos((prev) => {
       const room = MAX_PHOTOS - prev.length;
-      const added = chosen.slice(0, room).map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      return [...prev, ...added];
+      return [...prev, ...accepted.slice(0, room)];
     });
+    setErrors((prev) => ({ ...prev, logo: photoError }));
     e.target.value = "";
   }
 
@@ -967,7 +986,7 @@ function ServicePostForm() {
           <option value="" disabled>
             Select…
           </option>
-          {serviceFilters.map((tag) => (
+          {formRules.service.category.options.map((tag) => (
             <option key={tag} value={tag}>
               {tag}
             </option>
@@ -975,7 +994,7 @@ function ServicePostForm() {
         </SelectInput>
       </FormField>
 
-      <FormField label="Attach photo:">
+      <FormField label="Attach photo:" error={errors.logo}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <label
@@ -987,7 +1006,7 @@ function ServicePostForm() {
             >
               <input
                 type="file"
-                accept="image/*"
+                accept={photoRules.allowedTypes.join(",")}
                 disabled={photos.length >= MAX_PHOTOS}
                 onChange={handlePhotosChange}
                 className="sr-only"
@@ -1063,7 +1082,7 @@ function ServicePostForm() {
       <RadioGroup
         legend="How to pay:"
         name="method"
-        options={paymentMethodOptions()}
+        options={formRules.payment.options}
         defaultValue={draft?.method || "mock"}
       />
 
@@ -1086,11 +1105,8 @@ function ServicePostForm() {
 
 export function PostFormPage() {
   const { kind } = useParams();
-  const kindInfo =
-    kind === "job" || kind === "market" || kind === "service"
-      ? kinds[kind]
-      : null;
-
+  const postKind = config.postKinds.find((item) => item === kind);
+  const kindInfo = postKind ? postCopy[postKind] : null;
   if (!kindInfo) {
     return <Navigate to="/post" replace />;
   }
