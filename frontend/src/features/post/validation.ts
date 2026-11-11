@@ -1,4 +1,4 @@
-import { config } from "../../config";
+import { formRules } from "../../config";
 
 export type JobErrors = {
   email?: string;
@@ -12,11 +12,9 @@ export type JobErrors = {
   logo?: string,
 };
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_DESCRIPTION_LENGTH = config.minDescriptionLength;
-
 export function validateJob(data: FormData): JobErrors {
   const errors: JobErrors = {};
+  const rules = formRules.jobs;
 
   const email = String(data.get("email") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
@@ -29,36 +27,44 @@ export function validateJob(data: FormData): JobErrors {
 
   if (email === "") {
     errors.email = "Enter an email address.";
-  } else if (!EMAIL_PATTERN.test(email)) {
+  } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
   if (title === "") {
     errors.title = "Add a post title.";
+  } else if (title.length < rules.title.minLength) {
+    errors.title = "Make the title a little longer.";
+  } else if (title.length > rules.title.maxLength) {
+    errors.title = "Shorten the post title.";
   }
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length > rules.location.maxLength) {
+    errors.location = "Shorten the location.";
   }
 
-  if (employmentType === "") {
+  if (!rules.employmentType.options.includes(employmentType)) {
     errors.employmentType = "Choose an employment type.";
   }
 
-  if (track === "") {
+  if (!(track in rules.track.options)) {
     errors.track = "Choose teaching or non-teaching.";
-  } else if (area === "") {
+  } else if (!rules.track.options[track].includes(area)) {
     errors.area = "Choose a job area.";
   }
 
-  if (korean === "") {
+  if (!rules.korean.options.includes(korean)) {
     errors.korean = "Choose a Korean requirement.";
   }
 
   if (description === "") {
     errors.description = "Add a description.";
-  } else if (description.length < MIN_DESCRIPTION_LENGTH) {
+  } else if (description.length < rules.description.minLength) {
     errors.description = "Add a little more detail about the job.";
+  } else if (description.length > rules.description.maxLength) {
+    errors.description = "Shorten the description.";
   }
 
   return errors;
@@ -77,6 +83,7 @@ export type MarketErrors = {
 
 export function validateMarket(data: FormData): MarketErrors {
   const errors: MarketErrors = {};
+  const rules = formRules.market;
 
   const email = String(data.get("email") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
@@ -88,32 +95,40 @@ export function validateMarket(data: FormData): MarketErrors {
 
   if (email === "") {
     errors.email = "Enter an email address.";
-  } else if (!EMAIL_PATTERN.test(email)) {
+  } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
   if (title === "") {
     errors.title = "Add a post title.";
+  } else if (title.length > rules.title.maxLength) {
+    errors.title = "Shorten the post title.";
   }
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length > rules.location.maxLength) {
+    errors.location = "Shorten the location.";
   }
 
-  if (listingType === "") {
+  if (!rules.listingType.options.includes(listingType)) {
     errors.listingType = "Choose a listing type.";
-  } else if (category === "") {
+  } else if (!rules.category.options.includes(category)) {
     errors.category = "Choose a category.";
   }
 
   if (price === "") {
     errors.price = "Add a price.";
+  } else if (price.length > rules.price.maxLength) {
+    errors.price = "Shorten the price.";
   }
 
   if (description === "") {
     errors.description = "Add a description.";
-  } else if (description.length < MIN_DESCRIPTION_LENGTH) {
+  } else if (description.length < rules.description.minLength) {
     errors.description = "Add a little more detail about the item.";
+  } else if (description.length > rules.description.maxLength) {
+    errors.description = "Shorten the description.";
   }
 
   return errors;
@@ -131,6 +146,7 @@ export type ServiceErrors = {
 
 export function validateService(data: FormData): ServiceErrors {
   const errors: ServiceErrors = {};
+  const rules = formRules.service;
 
   const company = String(data.get("company") ?? "").trim();
   const category = String(data.get("category") ?? "").trim();
@@ -141,30 +157,36 @@ export function validateService(data: FormData): ServiceErrors {
 
   if (company === "") {
     errors.company = "Add a company name.";
+  } else if (company.length > rules.company.maxLength) {
+    errors.company = "Shorten the company name.";
   }
 
-  if (category === "") {
+  if (!rules.category.options.includes(category)) {
     errors.category = "Choose a service.";
   }
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length > rules.location.maxLength) {
+    errors.location = "Shorten the location.";
   }
 
   if (email === "") {
     errors.email = "Enter an email address.";
-  } else if (!EMAIL_PATTERN.test(email)) {
+  } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
-  if (webpage !== "" && !/^https?:\/\/.+/i.test(webpage)) {
+  if (webpage !== "" && !rules.webpage.pattern.test(webpage)) {
     errors.webpage = "Enter a full link, like https://example.com.";
   }
 
   if (message === "") {
     errors.message = "Add a message.";
-  } else if (message.length < MIN_DESCRIPTION_LENGTH) {
+  } else if (message.length < rules.message.minLength) {
     errors.message = "Add a little more detail about the service.";
+  } else if (message.length > rules.message.maxLength) {
+    errors.message = "Shorten the message.";
   }
 
   return errors;
