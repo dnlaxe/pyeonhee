@@ -1,17 +1,14 @@
-import { Tag } from "./Tag";
-
 type Props = {
   tags: readonly string[];
   className?: string;
 };
 
 export function TagList({ tags, className }: Props) {
+  if (tags.length === 0) return null;
   return (
-    <div
-      className={`flex flex-wrap gap-1.5 ${className ? ` ${className}` : ""}`}
-    >
+    <div className={`detail-tags${className ? ` ${className}` : ""}`}>
       {tags.map((t) => (
-        <Tag key={t}>{t}</Tag>
+        <span key={t}>{t}</span>
       ))}
     </div>
   );

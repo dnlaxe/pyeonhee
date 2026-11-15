@@ -3,17 +3,17 @@ import type { MouseEvent } from "react";
 import { Navigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  BackLink,
   Prose,
   ContactForm,
   ReportLink,
   TagList,
   ErrorMessage,
+  LoadingMessage,
   formatTimeSince,
   PinIcon,
 } from "../../shared";
-import type { MarketItem } from "./types";
-import { throwIfNotOk } from "../../lib/httpError";
+import { SimilarPosts, findListing, listingsQueryOptions } from "../feed";
+import { marketItemQueryOptions } from "./queries";
 import styles from "./MarketItemPage.module.css";
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
@@ -50,26 +50,23 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
 
 export function MarketItemPage() {
   const { id } = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
   const apiUrl = import.meta.env.VITE_API_URL;
+  const queryClient = useQueryClient();
 
-  const fromList = queryClient
-    .getQueryData<MarketItem[]>(["market"])
-    ?.find((item) => item.id === id);
+  const fromList = findListing(
+    queryClient.getQueryData(listingsQueryOptions(apiUrl).queryKey),
+    "market",
+    id,
+  );
 
   const {
     data: item,
     isPending,
     error,
   } = useQuery({
-    queryKey: ["market", id],
+    ...marketItemQueryOptions(apiUrl, id),
     enabled: Boolean(apiUrl) && Boolean(id) && !fromList,
     initialData: fromList,
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/market/${id}`);
-      throwIfNotOk(res);
-      return res.json() as Promise<MarketItem>;
-    },
   });
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -101,10 +98,20 @@ export function MarketItemPage() {
     };
   }, [zoomed, item]);
 
+  if (!apiUrl) {
+    return (
+      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
+        <p className="m-0 text-[20px] font-normal leading-[1.2] text-danger max-[399px]:text-[18px]">
+          VITE_API_URL is not set
+        </p>
+      </main>
+    );
+  }
+
   if (isPending) {
     return (
       <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <p className="text-muted">Loading…</p>
+        <LoadingMessage />
       </main>
     );
   }
@@ -118,7 +125,7 @@ export function MarketItemPage() {
   }
 
   if (!item) {
-    return <Navigate to="/market" replace />;
+    return <Navigate to="/?kind=market" replace />;
   }
 
   const paragraphs = item.description.split("\n").filter(Boolean);
@@ -140,7 +147,6 @@ export function MarketItemPage() {
     <main>
       <article className={styles.article}>
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
-          <BackLink to="/market">back to market</BackLink>
           <div className={styles.mediaWrap}>
             {photo ? (
               <>
@@ -152,7 +158,7 @@ export function MarketItemPage() {
                 >
                   <img src={photo} alt="" className={styles.image} />
                 </button>
-                {hasMany && (
+                {hasMany ? (
                   <>
                     <button
                       type="button"
@@ -174,28 +180,24 @@ export function MarketItemPage() {
                       {photoIndex + 1} / {photos.length}
                     </p>
                   </>
-                )}
+                ) : null}
               </>
             ) : (
-              <div
-                className={`${styles.mediaFrame} ${styles.mediaFrameEmpty}`}
-              />
+              <div className={`${styles.mediaFrame} ${styles.mediaFrameEmpty}`} />
             )}
           </div>
           <h1 className={styles.title}>
+            {item.pinned ? (
+              <span className="mr-[0.35em] inline-flex align-middle" aria-label="Pinned">
+                <PinIcon />
+              </span>
+            ) : null}
             {item.title}{" "}
-            <span className="align-middle font-mono text-sm font-normal text-muted">
-              [{formatTimeSince(item.createdAt)}]
-              {item.pinned ? (
-                <span
-                  className="ml-1.5 inline-flex align-middle"
-                  aria-label="Pinned"
-                >
-                  <PinIcon />
-                </span>
-              ) : null}
+            <span className="align-middle text-sm font-normal text-muted">
+              {formatTimeSince(item.createdAt)}
             </span>
           </h1>
+          {item.price ? <p className={styles.price}>{item.price}</p> : null}
           <TagList tags={item.tags} className="mb-7" />
           <Prose paragraphs={paragraphs} />
           <ContactForm
@@ -208,8 +210,9 @@ export function MarketItemPage() {
           <ReportLink kind="market" id={item.id} />
         </div>
       </article>
+      <SimilarPosts kind="market" excludeId={item.id} />
 
-      {zoomed && (
+      {zoomed ? (
         <div
           className={styles.lightbox}
           role="dialog"
@@ -222,7 +225,7 @@ export function MarketItemPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <img src={photo} alt="" className={styles.lightboxImage} />
-            {hasMany && (
+            {hasMany ? (
               <>
                 <button
                   type="button"
@@ -244,10 +247,10 @@ export function MarketItemPage() {
                   {photoIndex + 1} / {photos.length}
                 </p>
               </>
-            )}
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
     </main>
   );
 }

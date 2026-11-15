@@ -13,7 +13,7 @@ export function FormErrorSummary({ count }: Props) {
   return (
     <div
       role="alert"
-      className="border-[1.5px] border-text-dark bg-danger px-3 py-2.5 font-mono text-sm leading-[1.4] text-text-dark rounded-lg"
+      className="border-[1.5px] border-text bg-danger px-3 py-2.5 font-sans text-sm leading-[1.4] text-text rounded-lg"
     >
       {text}
     </div>

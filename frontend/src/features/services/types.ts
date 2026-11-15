@@ -1,5 +1,3 @@
-import type { ServiceTag } from "./constants";
-
 export type Service = {
   id: string;
   company: string;
@@ -8,5 +6,6 @@ export type Service = {
   blurb: string;
   contact: string;
   webpage?: string;
-  tags: ServiceTag[];
+  tags: string[];
+  createdAt: string;
 };

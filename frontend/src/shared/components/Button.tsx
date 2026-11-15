@@ -2,17 +2,16 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { Link, type LinkProps } from "react-router";
 
 const variants = {
-  yellow:
-    "inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-yellow px-7 py-3 text-base leading-[1.2] text-text-dark hover:bg-yellow-accent tracking-wider",
-  "yellow-lg":
-    "inline-flex min-w-[140px] items-center justify-center rounded border-[1.5px] border-text-dark bg-yellow px-7 py-3.5 font-mono text-base leading-[1.2] text-text-dark no-underline hover:bg-yellow-accent",
+  accent:
+    "inline-flex cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-accent px-7 py-3 text-base font-normal leading-[1.2] text-text hover:bg-accent-hover tracking-normal",
+  "accent-lg":
+    "inline-flex min-w-[140px] cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-accent px-7 py-3.5 font-sans text-[20px] font-normal leading-[1.2] tracking-normal text-text no-underline hover:bg-accent-hover max-[399px]:text-[18px]",
   outline:
-    "inline-flex items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3 font-mono text-base leading-[1.2] text-text-dark no-underline hover:bg-yellow",
-  more: "mx-auto mt-3 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 text-lg leading-[1.2] text-text-dark no-underline hover:bg-yellow tracking-wider",
+    "inline-flex items-center justify-center rounded-none border-[1.5px] border-text bg-transparent px-7 py-3 font-sans text-base font-normal leading-[1.2] text-text no-underline hover:bg-accent",
   "more-lg":
-    "mx-auto mt-7 flex w-fit cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-transparent px-7 py-3.5 text-lg leading-[1.2] tracking-wider text-text-dark no-underline hover:bg-yellow",
+    "mx-auto mt-7 flex w-fit cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-transparent px-7 py-3.5 text-lg font-normal leading-[1.2] tracking-normal text-text no-underline hover:bg-accent",
   post:
-    "inline-flex items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-7 py-3.5 text-lg leading-[1.2] tracking-wider text-text-dark no-underline hover:bg-surface",
+    "inline-flex shrink-0 items-center justify-center rounded-none border-[1.5px] border-text bg-white px-7 py-3.5 text-[20px] font-normal leading-[1.2] tracking-normal text-text no-underline hover:bg-surface max-[399px]:text-[18px]",
 } as const;
 
 type Variant = keyof typeof variants;
@@ -30,7 +29,7 @@ type AsLink = BaseProps &
   Omit<LinkProps, "className" | "children"> & { to: string };
 
 export function Button(props: AsButton | AsLink) {
-  const { variant = "yellow", className, children, ...rest } = props;
+  const { variant = "accent", className, children, ...rest } = props;
   const classes = `${variants[variant]}${className ? ` ${className}` : ""}`;
 
   if ("to" in props && props.to) {

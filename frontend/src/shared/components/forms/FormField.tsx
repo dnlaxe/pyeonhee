@@ -10,12 +10,12 @@ type Props = {
 export function FormField({ label, children, className, error }: Props) {
   return (
     <label className={`flex flex-col gap-2${className ? ` ${className}` : ""}`}>
-      <span className="font-mono text-sm leading-[1.2] text-text-dark">
+      <span className="font-sans text-sm leading-[1.2] text-text">
         {label}
       </span>
       {children}
       {error ? (
-        <span className="font-mono text-[13px] leading-[1.4] text-danger">
+        <span className="font-sans text-[13px] leading-[1.4] text-danger">
           {error}
         </span>
       ) : null}

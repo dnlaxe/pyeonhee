@@ -40,12 +40,12 @@ function PinField({
 }) {
   return (
     <FormField label="Pinned:">
-      <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
+      <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text">
         <input
           type="checkbox"
           name="pinned"
           defaultChecked={defaultChecked}
-          className="size-4 accent-yellow"
+          className="size-4 [accent-color:var(--color-accent)]"
         />
         {label}
       </span>
@@ -238,7 +238,9 @@ function JobPostForm() {
           setErrors(validateJob(data));
         }}
       >
-        <FormErrorSummary count={Object.keys(errors).length} />
+        <FormErrorSummary
+          count={Object.values(errors).filter(Boolean).length}
+        />
 
         <FormField label="Email address:" error={errors.email}>
           <TextInput
@@ -271,10 +273,10 @@ function JobPostForm() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3">
               <label
-                className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+                className={`inline-flex cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-white px-3 py-2 font-sans text-[15px] text-text ${
                   photos.length >= MAX_PHOTOS
                     ? "pointer-events-none opacity-50"
-                    : "hover:bg-yellow"
+                    : "hover:bg-accent"
                 }`}
               >
                 <input
@@ -298,13 +300,13 @@ function JobPostForm() {
                     <img
                       src={photo.url}
                       alt=""
-                      className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
+                      className="h-20 w-20 rounded-none border-[1.5px] border-text object-cover"
                     />
                     <button
                       type="button"
                       onClick={() => removePhoto(photo.url)}
                       aria-label="Remove photo"
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none border border-text bg-white text-xs leading-none text-text"
                     >
                       ×
                     </button>
@@ -424,7 +426,7 @@ function JobPostForm() {
           defaultValue={draft?.method || "mock"}
         />
         {!ready ? (
-          <Button type="submit" variant="yellow" className="mt-2">
+          <Button type="submit" variant="accent" className="mt-2">
             Send
           </Button>
         ) : null}
@@ -625,7 +627,9 @@ function MarketPostForm() {
         setErrors(validateMarket(data));
       }}
     >
-      <FormErrorSummary count={Object.keys(errors).length} />
+      <FormErrorSummary
+        count={Object.values(errors).filter(Boolean).length}
+      />
       <FormField label="Email address:" error={errors.email}>
         <TextInput
           type="email"
@@ -716,10 +720,10 @@ function MarketPostForm() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <label
-              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+              className={`inline-flex cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-white px-3 py-2 font-sans text-[15px] text-text ${
                 photos.length >= MAX_PHOTOS
                   ? "pointer-events-none opacity-50"
-                  : "hover:bg-yellow"
+                  : "hover:bg-accent"
               }`}
             >
               <input
@@ -744,13 +748,13 @@ function MarketPostForm() {
                   <img
                     src={photo.url}
                     alt=""
-                    className="h-20 w-20 rounded border-[1.5px] border-text-dark object-cover"
+                    className="h-20 w-20 rounded-none border-[1.5px] border-text object-cover"
                   />
                   <button
                     type="button"
                     onClick={() => removePhoto(photo.url)}
                     aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none border border-text bg-white text-xs leading-none text-text"
                   >
                     ×
                   </button>
@@ -784,7 +788,7 @@ function MarketPostForm() {
       />
 
       {!ready ? (
-        <Button type="submit" variant="yellow" className="mt-2">
+        <Button type="submit" variant="accent" className="mt-2">
           Send
         </Button>
       ) : null}
@@ -966,7 +970,9 @@ function ServicePostForm() {
         setErrors(validateService(data));
       }}
     >
-      <FormErrorSummary count={Object.keys(errors).length} />
+      <FormErrorSummary
+        count={Object.values(errors).filter(Boolean).length}
+      />
       <FormField label="Company name:" error={errors.company}>
         <TextInput
           type="text"
@@ -998,10 +1004,10 @@ function ServicePostForm() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <label
-              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
+              className={`inline-flex cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-white px-3 py-2 font-sans text-[15px] text-text ${
                 photos.length >= MAX_PHOTOS
                   ? "pointer-events-none opacity-50"
-                  : "hover:bg-yellow"
+                  : "hover:bg-accent"
               }`}
             >
               <input
@@ -1025,13 +1031,13 @@ function ServicePostForm() {
                   <img
                     src={photo.url}
                     alt=""
-                    className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
+                    className="h-20 w-20 rounded-none border-[1.5px] border-text object-cover"
                   />
                   <button
                     type="button"
                     onClick={() => removePhoto(photo.url)}
                     aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none border border-text bg-white text-xs leading-none text-text"
                   >
                     ×
                   </button>
@@ -1087,7 +1093,7 @@ function ServicePostForm() {
       />
 
       {!ready ? (
-        <Button type="submit" variant="yellow" className="mt-2">
+        <Button type="submit" variant="accent" className="mt-2">
           Send
         </Button>
       ) : null}
@@ -1113,12 +1119,16 @@ export function PostFormPage() {
 
   return (
     <main>
-      <article className="py-2 pb-20">
+      <article className="py-8 pb-20 md:py-10">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
-          <BackLink to="/post">back to post</BackLink>
-          <h1 className="mb-4 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
-            {kindInfo.title}
-          </h1>
+          <div className="mb-4 flex items-center gap-3">
+            <BackLink to="/post" className="inline-flex shrink-0 text-text">
+              back to post
+            </BackLink>
+            <h1 className="m-0 text-[clamp(24px,4vw,32px)] font-normal leading-[1.2] tracking-[-0.5px] text-text">
+              {kindInfo.title}
+            </h1>
+          </div>
           <p className="mb-8 text-[15px] leading-normal text-body">
             {kindInfo.privacy} See our <FaqLink>FAQs</FaqLink> for posting
             guidelines and safety tips.

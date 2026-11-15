@@ -7,6 +7,7 @@ import { FormField } from "../components/forms/FormField";
 import { TextInput } from "../components/forms/TextInput";
 import { TextareaInput } from "../components/forms/TextareaInput";
 import { BotCheck } from "../bot-check/BotCheck";
+import { FaqLink } from "../links/FaqLink";
 
 type Props = {
   actionLabel: string;
@@ -47,8 +48,14 @@ export function ContactForm({ actionLabel, className, email, kind, id }: Props) 
   const [ready, setReady] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const [fields, setFields] = useState<{ email: string; message: string } | null>(null);
+  const [fields, setFields] = useState<{ email: string; message: string } | null>(
+    null,
+  );
   const [botCheckError, setBotCheckError] = useState("");
+
+  // Poster chose “show email” — CTA reveals it instead of the relay form.
+  const revealEmail = Boolean(email?.trim());
+  const label = revealEmail ? "Contact" : actionLabel;
 
   const send = useMutation({
     mutationFn: async (password: string) => {
@@ -70,22 +77,10 @@ export function ContactForm({ actionLabel, className, email, kind, id }: Props) 
     },
   });
 
-  if (!open) {
-    return (
-      <Button
-        variant="yellow"
-        className={className}
-        onClick={() => setOpen(true)}
-      >
-        {actionLabel}
-      </Button>
-    );
-  }
-
-  if (email) {
+  if (open && revealEmail) {
     return (
       <p
-        className={`font-mono text-[15px] leading-[1.2] text-text-dark${
+        className={`m-0 text-[15px] leading-[1.2] text-text${
           className ? ` ${className}` : ""
         }`}
       >
@@ -94,86 +89,99 @@ export function ContactForm({ actionLabel, className, email, kind, id }: Props) 
     );
   }
 
-  if (sent) {
-    return (
-      <p
-        className={`text-[15px] leading-normal text-body${
-          className ? ` ${className}` : ""
-        }`}
-      >
-        Message sent.
-      </p>
-    );
-  }
-
   return (
-    <div
-      className={`rounded border-[1.5px] border-text-dark p-4 ${
-        className ? ` ${className}` : ""
-      }`}
-    >
-      <p className="mb-4 text-[15px] leading-normal text-body">
-        Message the poster
-      </p>
-      <Form
-        noValidate
-        onSubmit={(e) => {
-          const data = new FormData(e.currentTarget);
-          const next = validateContact(data);
-          setErrors(next);
-          if (Object.keys(next).length > 0) return;
-          setFields({
-            email: String(data.get("email") ?? "").trim(),
-            message: String(data.get("message") ?? "").trim(),
-          });
-          setBotCheckError("");
-          setReady(true);
-        }}
-      >
-        <fieldset
-          disabled={ready}
-          className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
-        >
-          <FormField label="Your email:" error={errors.email}>
-            <TextInput
-              type="email"
-              name="email"
-              required
-              invalid={Boolean(errors.email)}
+    <div className={className}>
+      {!open ? (
+        <Button variant="accent-lg" onClick={() => setOpen(true)}>
+          {label}
+        </Button>
+      ) : null}
+
+      {open && !revealEmail && sent ? (
+        <div className="detail-contact-box">
+          <p className="mb-2 m-0 text-[20px] font-normal leading-[1.2] tracking-normal text-text max-[399px]:text-[18px]">
+            Message sent!
+          </p>
+          <p className="m-0 text-[14px] leading-normal text-body">
+            We emailed the poster your message. If they reply, you&apos;ll get their
+            response in your inbox — then you can write each other directly. Check
+            spam if nothing shows up soon.
+          </p>
+        </div>
+      ) : null}
+
+      {open && !revealEmail && !sent ? (
+        <div className="detail-contact-box">
+          <p className="mb-2 m-0 text-[20px] font-normal leading-[1.2] tracking-normal text-text max-[399px]:text-[18px]">
+            Message the poster
+          </p>
+          <p className="mb-5 m-0 text-[14px] leading-normal text-body">
+            Your email is not given to the poster — they only receive your message.
+            It is shared only if you later respond to their reply. See our{" "}
+            <FaqLink>FAQs</FaqLink> for details.
+          </p>
+          <Form
+            noValidate
+            onSubmit={(e) => {
+              const data = new FormData(e.currentTarget);
+              const next = validateContact(data);
+              setErrors(next);
+              if (Object.keys(next).length > 0) return;
+              setFields({
+                email: String(data.get("email") ?? "").trim(),
+                message: String(data.get("message") ?? "").trim(),
+              });
+              setBotCheckError("");
+              setReady(true);
+            }}
+          >
+            <fieldset
+              disabled={ready}
+              className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
+            >
+              <FormField label="Your email:" error={errors.email}>
+                <TextInput
+                  type="email"
+                  name="email"
+                  required
+                  invalid={Boolean(errors.email)}
+                />
+              </FormField>
+              <FormField label="Message:" error={errors.message}>
+                <TextareaInput
+                  name="message"
+                  rows={5}
+                  required
+                  className="min-h-[120px]"
+                  invalid={Boolean(errors.message)}
+                />
+              </FormField>
+            </fieldset>
+            {!ready ? (
+              <Button type="submit" variant="accent-lg">
+                Send
+              </Button>
+            ) : null}
+          </Form>
+          {ready ? (
+            <BotCheck
+              onSubmit={(password) => {
+                setBotCheckError("");
+                send.mutate(password, {
+                  onSuccess: (result) => {
+                    if (result.kind === "botCheckFailed") {
+                      setBotCheckError("That password is wrong.");
+                      return;
+                    }
+                    setSent(true);
+                  },
+                });
+              }}
+              pending={send.isPending}
+              error={botCheckError || send.error?.message || ""}
             />
-          </FormField>
-          <FormField label="Message:" error={errors.message}>
-            <TextareaInput
-              name="message"
-              rows={5}
-              required
-              invalid={Boolean(errors.message)}
-            />
-          </FormField>
-        </fieldset>
-        {!ready ? (
-          <Button type="submit" variant="yellow">
-            Send
-          </Button>
-        ) : null}
-      </Form>
-      {ready ? (
-        <BotCheck
-          onSubmit={(password) => {
-            setBotCheckError("");
-            send.mutate(password, {
-              onSuccess: (result) => {
-                if (result.kind === "botCheckFailed") {
-                  setBotCheckError("That password is wrong.");
-                  return;
-                }
-                setSent(true);
-              },
-            });
-          }}
-          pending={send.isPending}
-          error={botCheckError || send.error?.message || ""}
-        />
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

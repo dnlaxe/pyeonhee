@@ -15,7 +15,7 @@ export function MockBotCheck({ onSubmit, pending, error }: Props) {
 
   return (
     <Form
-      className="pt-6 flex flex-col gap-4"
+      className="mt-6 gap-4 border-t border-border pt-6"
       onSubmit={() => onSubmit(password)}
     >
       <FormField label="Password:" error={error}>
@@ -29,7 +29,7 @@ export function MockBotCheck({ onSubmit, pending, error }: Props) {
           invalid={Boolean(error)}
         />
       </FormField>
-      <Button type="submit" variant="yellow" disabled={pending}>
+      <Button type="submit" variant="accent" disabled={pending}>
         {pending ? "Checking…" : "Continue"}
       </Button>
     </Form>

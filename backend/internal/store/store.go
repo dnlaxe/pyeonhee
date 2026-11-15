@@ -63,26 +63,66 @@ func metaKey(pk string) map[string]types.AttributeValue {
 	}
 }
 
-func (s *Store) scanPublished(ctx context.Context, entity string, out any) error {
+// PublishedListings is every published META row, split by entityType.
+type PublishedListings struct {
+	Jobs     []JobItem
+	Market   []MarketItem
+	Services []ServiceItem
+}
+
+func entityTypeOf(item map[string]types.AttributeValue) string {
+	av, ok := item["entityType"]
+	if !ok {
+		return ""
+	}
+	s, ok := av.(*types.AttributeValueMemberS)
+	if !ok {
+		return ""
+	}
+	return s.Value
+}
+
+// ListPublished loads all published job/market/service META items in one Scan.
+func (s *Store) ListPublished(ctx context.Context) (PublishedListings, error) {
 	res, err := s.db.Scan(ctx, &dynamodb.ScanInput{
 		TableName:        &s.table,
-		FilterExpression: new("SK = :meta AND #status = :published AND entityType = :entity"),
+		FilterExpression: new("SK = :meta AND #status = :published"),
 		ExpressionAttributeNames: map[string]string{
 			"#status": "status",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":meta":      &types.AttributeValueMemberS{Value: SortKeyMeta},
 			":published": &types.AttributeValueMemberS{Value: StatusPublished},
-			":entity":    &types.AttributeValueMemberS{Value: entity},
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("scan %s: %w", entity, err)
+		return PublishedListings{}, fmt.Errorf("scan published: %w", err)
 	}
-	if err := attributevalue.UnmarshalListOfMaps(res.Items, out); err != nil {
-		return fmt.Errorf("unmarshal %s: %w", entity, err)
+
+	var out PublishedListings
+	for _, raw := range res.Items {
+		switch entityTypeOf(raw) {
+		case EntityJob:
+			var item JobItem
+			if err := attributevalue.UnmarshalMap(raw, &item); err != nil {
+				return PublishedListings{}, fmt.Errorf("unmarshal job: %w", err)
+			}
+			out.Jobs = append(out.Jobs, item)
+		case EntityMarket:
+			var item MarketItem
+			if err := attributevalue.UnmarshalMap(raw, &item); err != nil {
+				return PublishedListings{}, fmt.Errorf("unmarshal market: %w", err)
+			}
+			out.Market = append(out.Market, item)
+		case EntityService:
+			var item ServiceItem
+			if err := attributevalue.UnmarshalMap(raw, &item); err != nil {
+				return PublishedListings{}, fmt.Errorf("unmarshal service: %w", err)
+			}
+			out.Services = append(out.Services, item)
+		}
 	}
-	return nil
+	return out, nil
 }
 
 func (s *Store) getMeta(ctx context.Context, pk string, out any) error {

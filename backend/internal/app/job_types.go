@@ -15,7 +15,6 @@ type JobResponse struct {
 	Logo        string   `json:"logo,omitempty"`
 	Pinned      bool     `json:"pinned"`
 	Email       string   `json:"email,omitempty"`
-	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
 }
 
@@ -47,7 +46,6 @@ func toJobResponse(item store.JobItem) JobResponse {
 		Tags:        tags,
 		Logo:        item.Logo,
 		Pinned:      item.Pinned,
-		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}
 	if item.EmailOption == "show" {

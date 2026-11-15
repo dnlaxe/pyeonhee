@@ -32,14 +32,6 @@ type JobItem struct {
 	PaymentKey     string   `dynamodbav:"paymentKey,omitempty"`
 }
 
-func (s *Store) ListPublishedJob(ctx context.Context) ([]JobItem, error) {
-	var items []JobItem
-	if err := s.scanPublished(ctx, EntityJob, &items); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 func (s *Store) GetJob(ctx context.Context, id string) (JobItem, error) {
 	var item JobItem
 	err := s.getMeta(ctx, JobPK(id), &item)

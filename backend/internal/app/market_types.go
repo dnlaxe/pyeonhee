@@ -16,7 +16,6 @@ type MarketResponse struct {
 	Tags        []string `json:"tags"`
 	Email       string   `json:"email,omitempty"`
 	Pinned      bool     `json:"pinned"`
-	Status      string   `json:"status"`
 	CreatedAt   string   `json:"createdAt"`
 }
 
@@ -52,7 +51,6 @@ func toMarketResponse(item store.MarketItem) MarketResponse {
 		Images:      images,
 		Tags:        tags,
 		Pinned:      item.Pinned,
-		Status:      item.Status,
 		CreatedAt:   item.CreatedAt,
 	}
 	if item.EmailOption == "show" {

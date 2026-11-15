@@ -29,14 +29,6 @@ type MarketItem struct {
 	PaymentKey  string   `dynamodbav:"paymentKey,omitempty"`
 }
 
-func (s *Store) ListPublishedMarket(ctx context.Context) ([]MarketItem, error) {
-	var items []MarketItem
-	if err := s.scanPublished(ctx, EntityMarket, &items); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 func (s *Store) GetMarket(ctx context.Context, id string) (MarketItem, error) {
 	var item MarketItem
 	err := s.getMeta(ctx, MarketPK(id), &item)

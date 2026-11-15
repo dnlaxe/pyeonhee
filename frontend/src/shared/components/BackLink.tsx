@@ -11,9 +11,9 @@ export function BackLink({ to, children, className }: Props) {
   return (
     <Link
       to={to}
-      className={`mb-7 inline-flex text-text-dark${
-        className ? ` ${className}` : ""
-      }`}
+      className={
+        className ?? "mb-7 inline-flex shrink-0 text-text"
+      }
     >
       <ArrowLeftIcon />
       <span className="sr-only">{children}</span>

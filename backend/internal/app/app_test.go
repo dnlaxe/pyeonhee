@@ -78,7 +78,7 @@ func TestNewRequiresTableName(t *testing.T) {
 	}
 }
 
-func TestListJobsAgainstDynamoDB(t *testing.T) {
+func TestListListingsAgainstDynamoDB(t *testing.T) {
 	if os.Getenv("TABLE_NAME") == "" {
 		t.Skip("TABLE_NAME not set; skipping live DynamoDB check")
 	}
@@ -89,7 +89,7 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/jobs", nil)
+	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)

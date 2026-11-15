@@ -8,10 +8,10 @@ export function TextareaInput({ className, invalid, ...props }: Props) {
   return (
     <textarea
       aria-invalid={invalid}
-      className={`min-h-[140px] w-full resize-y rounded border-[1.5px] bg-white px-3 py-2.5 font-sans text-[15px] leading-[1.4] text-text-dark focus:outline-2 focus:outline-offset-[1px] ${
+      className={`min-h-[140px] w-full resize-y rounded-none border-[1.5px] bg-white px-3 py-2.5 font-sans text-[15px] leading-[1.4] text-text focus:outline-2 focus:outline-offset-[1px] ${
         invalid
           ? "border-danger focus:outline-danger"
-          : "border-text-dark focus:outline-yellow"
+          : "border-text focus:outline-accent"
       }${className ? ` ${className}` : ""}`}
       {...props}
     />

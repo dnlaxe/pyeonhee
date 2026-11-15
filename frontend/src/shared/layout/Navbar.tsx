@@ -73,23 +73,28 @@ export function Navbar({
           aria-hidden={!open}
         >
           <ul className="menu-island-list">
-            {links.map((l) => (
-              <li key={l.path} role="none">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={`${l.highlight ? "is-post" : ""}${
-                    pathname === l.path ? " font-medium" : ""
-                  }`.trim()}
-                  onClick={() => {
-                    setOpen(false);
-                    navigate(l.path);
-                  }}
-                >
-                  {l.label}
-                </button>
-              </li>
-            ))}
+            {links.map((l) => {
+              const active =
+                l.path === "/#latest"
+                  ? pathname === "/"
+                  : pathname === l.path || pathname.startsWith(`${l.path}/`);
+              return (
+                <li key={l.path} role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={l.highlight ? "is-post" : undefined}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => {
+                      setOpen(false);
+                      navigate(l.path);
+                    }}
+                  >
+                    {l.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

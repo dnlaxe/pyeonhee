@@ -14,15 +14,14 @@ import (
 )
 
 type Store interface {
-	ListPublishedJob(ctx context.Context) ([]store.JobItem, error)
+	ListPublished(ctx context.Context) (store.PublishedListings, error)
+
 	GetJob(ctx context.Context, id string) (store.JobItem, error)
 	PutJob(ctx context.Context, item store.JobItem) error
 
-	ListPublishedMarket(ctx context.Context) ([]store.MarketItem, error)
 	GetMarket(ctx context.Context, id string) (store.MarketItem, error)
 	PutMarket(ctx context.Context, item store.MarketItem) error
 
-	ListPublishedService(ctx context.Context) ([]store.ServiceItem, error)
 	GetService(ctx context.Context, id string) (store.ServiceItem, error)
 	PutService(ctx context.Context, item store.ServiceItem) error
 

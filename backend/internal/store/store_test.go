@@ -74,14 +74,48 @@ func TestGetJobNotFound(t *testing.T) {
 	}
 }
 
-func TestListPublishedFiltersByEntity(t *testing.T) {
-	db := &fakeDB{}
-	if _, err := New(db, "t").ListPublishedMarket(context.Background()); err != nil {
+func TestListPublishedOneScan(t *testing.T) {
+	jobAV, err := attributevalue.MarshalMap(JobItem{
+		ID: "j1", EntityType: EntityJob, Status: StatusPublished,
+	})
+	if err != nil {
 		t.Fatal(err)
 	}
-	values := db.scan.ExpressionAttributeValues
-	if str(values[":entity"]) != EntityMarket || str(values[":published"]) != StatusPublished {
-		t.Fatalf("scan values = %v", values)
+	marketAV, err := attributevalue.MarshalMap(MarketItem{
+		ID: "m1", EntityType: EntityMarket, Status: StatusPublished,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	serviceAV, err := attributevalue.MarshalMap(ServiceItem{
+		ID: "s1", EntityType: EntityService, Status: StatusPublished,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db := &fakeDB{items: []map[string]types.AttributeValue{jobAV, marketAV, serviceAV}}
+	out, err := New(db, "t").ListPublished(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if db.scan == nil {
+		t.Fatal("expected one Scan")
+	}
+	if _, ok := db.scan.ExpressionAttributeValues[":entity"]; ok {
+		t.Fatal("expected no :entity filter")
+	}
+	if str(db.scan.ExpressionAttributeValues[":published"]) != StatusPublished {
+		t.Fatalf("published = %v", db.scan.ExpressionAttributeValues[":published"])
+	}
+	if len(out.Jobs) != 1 || out.Jobs[0].ID != "j1" {
+		t.Fatalf("jobs = %+v", out.Jobs)
+	}
+	if len(out.Market) != 1 || out.Market[0].ID != "m1" {
+		t.Fatalf("market = %+v", out.Market)
+	}
+	if len(out.Services) != 1 || out.Services[0].ID != "s1" {
+		t.Fatalf("services = %+v", out.Services)
 	}
 }
 

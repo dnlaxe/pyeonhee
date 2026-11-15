@@ -9,9 +9,3 @@ export function richText(text: string): ReactNode[] {
     return <span key={i}> {part} </span>;
   });
 }
-
-export function richParagraphs(text: string): ReactNode {
-  return text
-    .split(/\n\n+/)
-    .map((para, i) => <p key={i}> {richText(para)} </p>);
-}

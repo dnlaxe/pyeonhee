@@ -15,7 +15,6 @@ type ServiceResponse struct {
 	Contact   string   `json:"contact"`
 	Webpage   string   `json:"webpage,omitempty"`
 	Tags      []string `json:"tags"`
-	Status    string   `json:"status"`
 	CreatedAt string   `json:"createdAt"`
 }
 
@@ -44,7 +43,6 @@ func toServiceResponse(item store.ServiceItem) ServiceResponse {
 		Contact:   item.Contact,
 		Webpage:   item.Webpage,
 		Tags:      tags,
-		Status:    item.Status,
 		CreatedAt: item.CreatedAt,
 	}
 }
