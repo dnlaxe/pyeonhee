@@ -1,4 +1,4 @@
-export type ErrorTone = "warning" | "danger" | "neutral";
+type ErrorTone = "warning" | "danger" | "neutral";
 
 export class AppError extends Error {
 	tone: ErrorTone;

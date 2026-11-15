@@ -6,10 +6,10 @@ export function FaqPage() {
     <main>
       <section className="scroll-mt-20 py-20 max-md:py-14">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-          <h2 className="m-0 text-center text-2xl font-normal leading-[1.6] tracking-[-0.5px] text-heading">
+          <h2 className="m-0 text-center text-[clamp(24px,4vw,32px)] font-normal leading-[1.2] tracking-[-0.5px] text-text">
             FAQs
           </h2>
-          <div className="mx-auto w-full max-w-[824px]">
+          <div className="mx-auto mt-9 flex w-full max-w-[824px] flex-col gap-9">
             <FaqList sections={faqSections} />
           </div>
         </div>

@@ -214,7 +214,7 @@ func (a *App) confirmPayment(w http.ResponseWriter, r *http.Request) {
 	case payMarket:
 		link = base + "/market/" + listing.id
 	case payService:
-		link = base + "/services"
+		link = base + "/services/" + listing.id
 	default:
 		link = base
 	}

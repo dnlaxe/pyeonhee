@@ -7,6 +7,5 @@ export type Job = {
   logo?: string;
   email?: string;
   pinned: boolean;
-  status: string;
   createdAt: string;
 };

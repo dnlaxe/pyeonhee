@@ -9,7 +9,7 @@ export function FaqLink({ children, className }: Props) {
   return (
     <Link
       to="/faq"
-      className={`text-text-dark underline underline-offset-[3px]${
+      className={`text-text underline underline-offset-[3px]${
         className ? ` ${className}` : ""
       }`}
     >

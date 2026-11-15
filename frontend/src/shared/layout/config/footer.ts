@@ -1,12 +1,5 @@
-export type FooterLink = {
-  to: string;
-  label: string;
-};
-
-export const footerLinks: FooterLink[] = [
-  { to: "/jobs", label: "jobs" },
-  { to: "/market", label: "market" },
-  { to: "/services", label: "services" },
-  { to: "/events", label: "events" },
+export const footerLinks = [
+  { to: "/#latest", label: "latest posts" },
+  { to: "/post", label: "post" },
   { to: "/faq", label: "faq" },
 ];

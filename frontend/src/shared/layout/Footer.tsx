@@ -6,13 +6,13 @@ import { Logo } from "./Logo";
 export function Footer() {
   return (
     <footer className="mt-auto">
-      <div className="bg-yellow py-8">
-        <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-start justify-between gap-4 sm:flex-row sm:items-center max-md:w-[min(100%-32px,1120px)]">
-          <div>
-            <p className="m-0 text-lg font-semibold text-text-dark">
+      <div className="bg-accent py-10 md:py-12">
+        <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-start justify-between gap-6 sm:flex-row sm:items-center max-md:w-[min(100%-32px,1120px)]">
+          <div className="min-w-0 max-w-xl">
+            <p className="m-0 text-[22px] font-normal leading-[28px] tracking-normal text-text md:text-[28px] md:leading-[1.2]">
               Have something to share?
             </p>
-            <p className="m-0 mt-1 text-sm text-body">
+            <p className="m-0 mt-2 text-[15px] font-normal leading-[1.5] text-body md:text-base md:leading-[1.6]">
               Post a job, listing, or event in about a minute.
             </p>
           </div>
@@ -30,7 +30,7 @@ export function Footer() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="font-mono text-sm text-text-dark no-underline hover:underline hover:underline-offset-[3px]"
+                className="font-sans text-sm text-text no-underline hover:underline hover:underline-offset-[3px]"
               >
                 {l.label}
               </Link>

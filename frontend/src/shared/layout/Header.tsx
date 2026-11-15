@@ -1,26 +1,36 @@
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
+import { ArrowLeftIcon } from "../icons/ArrowLeftIcon";
 import { Logo } from "./Logo";
 import { Navbar } from "./Navbar";
 
+function detailBackTo(pathname: string): string | null {
+  if (/^\/jobs\/[^/]+$/.test(pathname)) return "/?kind=job";
+  if (/^\/market\/[^/]+$/.test(pathname)) return "/?kind=market";
+  if (/^\/services\/[^/]+$/.test(pathname)) return "/?kind=service";
+  return null;
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
-
   const { pathname } = useLocation();
-  const subtitle =
-    pathname === "/jobs"
-      ? "job board"
-      : pathname === "/market"
-        ? "market"
-        : pathname === "/services"
-          ? "services"
-          : undefined;
+  const backTo = detailBackTo(pathname);
 
   return (
     <>
-      <header className="sticky top-0 z-[80] border-b border-transparent bg-[rgba(250,250,250,0.86)] backdrop-blur-[10px]">
-        <div className="mx-auto flex min-h-16 w-[min(100%-48px,1120px)] items-center justify-between max-md:w-[min(100%-32px,1120px)]">
-          <Logo to="/" subtitle={subtitle} />
+      <header className="site-bar relative z-[80]">
+        <div className="mx-auto flex h-14 w-[min(100%-48px,1120px)] items-center justify-between max-md:w-[min(100%-32px,1120px)]">
+          {backTo ? (
+            <Link
+              to={backTo}
+              className="inline-flex shrink-0 items-center text-text no-underline"
+              aria-label="Back to latest posts"
+            >
+              <ArrowLeftIcon />
+            </Link>
+          ) : (
+            <Logo to="/" showWordmark={false} />
+          )}
           <Navbar open={open} setOpen={setOpen} />
         </div>
       </header>

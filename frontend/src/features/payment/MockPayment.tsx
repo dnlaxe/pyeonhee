@@ -38,7 +38,7 @@ export function MockPayment({ order, successUrl, failUrl }: PaymentStepProps) {
         Mock payment: {order.amount} won for {order.orderName}.
       </p>
       <div className="flex flex-wrap gap-3">
-        <Button variant="yellow" onClick={() => pay("mock_")}>
+        <Button variant="accent" onClick={() => pay("mock_")}>
           Pay
         </Button>
         <Button variant="outline" onClick={() => pay("declined_")}>

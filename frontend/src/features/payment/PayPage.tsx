@@ -73,9 +73,9 @@ async function checkout(draft: PayDraft): Promise<Order> {
 function PayLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
     <main>
-      <article className="py-2 pb-20">
+      <article className="py-8 pb-20 md:py-10">
         <div className="mx-auto flex w-[min(100%-48px,1120px)] max-w-essay flex-col gap-4 max-md:w-[min(100%-32px,1120px)]">
-          <h1 className="text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
+          <h1 className="text-[clamp(24px,4vw,32px)] font-normal leading-[1.2] tracking-[-0.5px] text-text">
             {title}
           </h1>
           {children}
@@ -115,7 +115,7 @@ export function PayPage() {
       {start.error && <ErrorMessage error={start.error} />}
       <div className="flex flex-wrap gap-3">
         <Button
-          variant="yellow"
+          variant="accent"
           disabled={start.isPending}
           onClick={() => start.mutate(draft)}
         >
@@ -204,7 +204,7 @@ export function PaySuccessPage() {
       <PayLayout title="Payment not completed">
         <ErrorMessage error={confirm.error} />
         <div>
-          <Button variant="yellow" to="/pay">
+          <Button variant="accent" to="/pay">
             Try again
           </Button>
         </div>
@@ -224,7 +224,7 @@ export function PaySuccessPage() {
       liveLabel = "item";
       break;
     case "service":
-      viewTo = "/services";
+      viewTo = `/services/${id}`;
       liveLabel = "service";
       break;
     default:
@@ -236,7 +236,7 @@ export function PaySuccessPage() {
         Payment received. Your {liveLabel} is now live.
       </p>
       <div>
-        <Button variant="yellow" to={viewTo}>
+        <Button variant="accent" to={viewTo}>
           View your {liveLabel}
         </Button>
       </div>
@@ -254,7 +254,7 @@ export function PayFailPage() {
         {cancelled ? "You cancelled the payment." : "The payment did not go through."}
       </p>
       <div>
-        <Button variant="yellow" to="/pay">
+        <Button variant="accent" to="/pay">
           Try again
         </Button>
       </div>

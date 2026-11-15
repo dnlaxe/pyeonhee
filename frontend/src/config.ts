@@ -1,7 +1,6 @@
 export const config = {
   postKinds: ["job", "market", "service"],
-  landing: { jobs: 3, market: 3, services: 3 },
-  pageSize: { jobs: 10, market: 9, services: 9 },
+  pageSize: { feed: 20 },
 } as const;
 
 export const formRules = {
@@ -157,10 +156,6 @@ export const formRules = {
       maxBytes: 2 * 1024 * 1024,
       allowedTypes: ["image/jpeg", "image/png", "image/webp"],
     },
-  },
-  promotion: {
-    required: true,
-    options: ["standard", "pinned"],
   },
   payment: {
     required: true,

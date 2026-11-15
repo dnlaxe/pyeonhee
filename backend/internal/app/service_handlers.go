@@ -6,23 +6,32 @@ import (
 	"errors"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
 
-func (a *App) listService(w http.ResponseWriter, r *http.Request) {
-	items, err := a.Store.ListPublishedService(r.Context())
-	if err != nil {
-		writeInternalError(w, "listService", err)
+func (a *App) getService(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
 		return
 	}
 
-	services := make([]ServiceResponse, 0, len(items))
-	for _, item := range items {
-		service := toServiceResponse(item)
-		service.Logo = a.mediaURL(service.Logo)
-		services = append(services, service)
+	item, err := a.Store.GetService(r.Context(), id)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && item.Status != store.StatusPublished) {
+		http.Error(w, "service not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		writeInternalError(w, "getService", err)
+		return
 	}
 
-	writeJSON(w, http.StatusOK, services)
+	service := toServiceResponse(item)
+	service.Logo = a.mediaURL(service.Logo)
+	writeJSON(w, http.StatusOK, service)
 }
 
 func (a *App) createService(w http.ResponseWriter, r *http.Request) {

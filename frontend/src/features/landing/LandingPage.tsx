@@ -1,68 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { throwIfNotOk } from "../../lib/httpError";
-import type { Job } from "../jobs/types";
+import { LatestPosts } from "../feed";
 import { Hero } from "./Hero";
-import { JobsSection } from "./JobsSection";
-import { MarketSection } from "./MarketSection";
-import { ServicesSection } from "./ServicesSection";
-import type { Service } from "../services";
-import type { MarketItem } from "../market";
-import { config } from "../../config";
 
 export function LandingPage() {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
-  const jobsQuery = useQuery({
-    queryKey: ["jobs"],
-    enabled: Boolean(apiUrl),
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/jobs`);
-      throwIfNotOk(res);
-      return res.json() as Promise<Job[]>;
-    },
-  });
-
-  const servicesQuery = useQuery({
-    queryKey: ["services"],
-    enabled: Boolean(apiUrl),
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/services`);
-      throwIfNotOk(res);
-      return res.json() as Promise<Service[]>;
-    },
-  });
-
-  const marketQuery = useQuery({
-    queryKey: ["market"],
-    enabled: Boolean(apiUrl),
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/market`);
-      throwIfNotOk(res);
-      return res.json() as Promise<MarketItem[]>;
-    },
-  });
-
   return (
     <main>
       <Hero />
-      <JobsSection
-        jobs={jobsQuery.data?.slice(0, config.landing.jobs) ?? []}
-        isPending={jobsQuery.isPending}
-        error={jobsQuery.error}
-        apiUrl={apiUrl}
-      />
-      <MarketSection
-        items={marketQuery.data?.slice(0, config.landing.market) ?? []}
-        isPending={marketQuery.isPending}
-        error={marketQuery.error}
-        apiUrl={apiUrl}
-      />
-      <ServicesSection
-        services={servicesQuery.data?.slice(0, config.landing.services) ?? []}
-        isPending={servicesQuery.isPending}
-        error={servicesQuery.error}
-        apiUrl={apiUrl}
-      />
+      <LatestPosts />
     </main>
   );
 }
