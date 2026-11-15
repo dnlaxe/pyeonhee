@@ -8,6 +8,7 @@ export function listingsQueryOptions(apiUrl: string | undefined) {
     queryKey: ["listings"] as const,
     enabled: Boolean(apiUrl),
     queryFn: async (): Promise<Listing[]> => {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       const res = await fetch(`${apiUrl}/listings`);
       throwIfNotOk(res);
       return res.json();

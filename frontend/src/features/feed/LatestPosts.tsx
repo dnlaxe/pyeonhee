@@ -5,8 +5,8 @@ import {
   EmptyState,
   ErrorMessage,
   ListingCard,
-  LoadingMessage,
   feedItemKey,
+  LoadingState,
   listingKindLabel,
   type FeedItem,
   type ListingKind,
@@ -172,7 +172,11 @@ export function LatestPosts() {
             </p>
           ) : null}
 
-          {apiUrl && isPending ? <LoadingMessage /> : null}
+          {apiUrl && isPending ? (
+            <div className="flex min-h-80 w-full items-center justify-center">
+              <LoadingState size={180} />
+            </div>
+          ) : null}
 
           {apiUrl && isError && error ? <ErrorMessage error={error} /> : null}
 
