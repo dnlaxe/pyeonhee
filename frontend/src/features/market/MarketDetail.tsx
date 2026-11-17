@@ -15,6 +15,7 @@ import {
 import type { MarketItem } from "./types";
 import { throwIfNotOk } from "../../lib/httpError";
 import styles from "./MarketItemPage.module.css";
+import type { Job, JobItem } from "../jobs/types.ts";
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
   return (
@@ -48,29 +49,29 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-export function MarketItemPage() {
+export function MarketDetail() {
   const { id } = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  const fromList = queryClient
-    .getQueryData<MarketItem[]>(["market"])
-    ?.find((item) => item.id === id);
+  const queryClient = useQueryClient()
 
   const {
-    data: item,
+    data: market,
     isPending,
     error,
   } = useQuery({
-    queryKey: ["market", id],
-    enabled: Boolean(apiUrl) && Boolean(id) && !fromList,
-    initialData: fromList,
+    queryKey: ["jobs", id],
     queryFn: async () => {
-      const res = await fetch(`${apiUrl}/market/${id}`);
+      const res = await fetch(`${apiUrl}/jobs/${id}`);
       throwIfNotOk(res);
-      return res.json() as Promise<MarketItem>;
+      return await res.json() as Promise<JobItem>;
     },
+    enabled: Boolean(apiUrl) && Boolean(id),
+    initialData: () =>
+      queryClient.getQueryData<JobItem[]>(["jobs"])?.find((j) => j.id === id),
+    staleTime: Infinity
   });
+
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 

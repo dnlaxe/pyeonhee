@@ -1,13 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
-import type { Job } from "../jobs/types";
+import type { JobItem } from "../jobs/types";
 import { Hero } from "./Hero";
-import { JobsSection } from "./JobsSection";
-import { MarketSection } from "./MarketSection";
-import { ServicesSection } from "./ServicesSection";
+import { LatestPostsSection } from "./LatestPostsSection";
 import type { Service } from "../services";
 import type { MarketItem } from "../market";
-import { config } from "../../config";
 
 export function LandingPage() {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -18,8 +15,9 @@ export function LandingPage() {
     queryFn: async () => {
       const res = await fetch(`${apiUrl}/jobs`);
       throwIfNotOk(res);
-      return res.json() as Promise<Job[]>;
+      return res.json() as Promise<JobItem[]>;
     },
+    staleTime: Infinity,
   });
 
   const servicesQuery = useQuery({
@@ -45,22 +43,16 @@ export function LandingPage() {
   return (
     <main>
       <Hero />
-      <JobsSection
-        jobs={jobsQuery.data?.slice(0, config.landing.jobs) ?? []}
-        isPending={jobsQuery.isPending}
-        error={jobsQuery.error}
-        apiUrl={apiUrl}
-      />
-      <MarketSection
-        items={marketQuery.data?.slice(0, config.landing.market) ?? []}
-        isPending={marketQuery.isPending}
-        error={marketQuery.error}
-        apiUrl={apiUrl}
-      />
-      <ServicesSection
-        services={servicesQuery.data?.slice(0, config.landing.services) ?? []}
-        isPending={servicesQuery.isPending}
-        error={servicesQuery.error}
+      <LatestPostsSection
+        jobs={jobsQuery.data ?? []}
+        items={marketQuery.data ?? []}
+        services={servicesQuery.data ?? []}
+        isPending={
+          jobsQuery.isPending ||
+          marketQuery.isPending ||
+          servicesQuery.isPending
+        }
+        errors={[jobsQuery.error, marketQuery.error, servicesQuery.error]}
         apiUrl={apiUrl}
       />
     </main>
