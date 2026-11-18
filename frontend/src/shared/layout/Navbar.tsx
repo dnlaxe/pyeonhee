@@ -1,23 +1,24 @@
-import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { type NavLink, navLinks } from "./config/nav";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { navLinks } from "../../config";
+import { ArrowLeftIcon } from "../icons/ArrowLeftIcon";
+import { Logo } from "../icons/Logo";
+import { Hamburger } from "./Hamburger";
+import menu from "./MenuIsland.module.css";
 
-type Props = {
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-  links?: NavLink[];
-  className?: string;
-};
+function detailBackTo(pathname: string): string | null {
+  if (/^\/jobs\/[^/]+$/.test(pathname)) return "/?kind=job";
+  if (/^\/market\/[^/]+$/.test(pathname)) return "/?kind=market";
+  if (/^\/services\/[^/]+$/.test(pathname)) return "/?kind=service";
+  return null;
+}
 
-export function Navbar({
-                         open,
-                         setOpen,
-                         links = navLinks,
-                         className,
-                       }: Props) {
+export function Navbar() {
+  const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const backTo = detailBackTo(pathname);
 
   useEffect(() => {
     if (!open) return;
@@ -38,61 +39,69 @@ export function Navbar({
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, setOpen]);
+  }, [open]);
 
   useEffect(() => {
     setOpen(false);
-  }, [pathname, setOpen]);
+  }, [pathname]);
 
   return (
-    <nav
-      className={`flex items-center gap-[18px]${className ? ` ${className}` : ""}`}
-      aria-label="Main"
-    >
-      <div className="relative" ref={dropdownRef}>
-        <button
-          type="button"
-          className="hb hb-to-x relative z-[71]"
-          aria-label="Menu"
-          aria-expanded={open}
-          aria-haspopup="true"
-          aria-controls="site-menu"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="hb-bars" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-        </button>
+    <>
+      <header className="relative z-[80]">
+        <div className="mx-auto flex h-14 w-[min(100%-48px,1120px)] items-center justify-between max-md:w-[min(100%-32px,1120px)]">
+          {backTo ? (
+            <Link
+              to={backTo}
+              className="inline-flex shrink-0 items-center text-text no-underline"
+              aria-label="Back to latest posts"
+            >
+              <ArrowLeftIcon />
+            </Link>
+          ) : (
+            <Logo to="/" showWordmark={false} />
+          )}
 
-        <div
-          id="site-menu"
-          className={`menu-island${open ? " is-open" : ""}`}
-          role="menu"
-          aria-hidden={!open}
-        >
-          <ul className="menu-island-list">
-            {links.map((l) => (
-              <li key={l.path} role="none">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={`${l.highlight ? "is-post" : ""}${
-                    pathname === l.path ? " font-medium" : ""
-                  }`.trim()}
-                  onClick={() => {
-                    setOpen(false);
-                    navigate(l.path);
-                  }}
-                >
-                  {l.label}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <nav className="flex items-center gap-[18px]" aria-label="Main">
+            <div className="relative" ref={dropdownRef}>
+              <Hamburger
+                open={open}
+                onToggle={() => setOpen((v) => !v)}
+                extraClass="relative z-71"
+              />
+
+              <div
+                id="site-menu"
+                className={`${menu.island}${open ? ` ${menu.isOpen}` : ""}`}
+                role="menu"
+                aria-hidden={!open}
+              >
+                <ul className={menu.list}>
+                  {navLinks.map((l) => (
+                    <li key={l.path} role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setOpen(false);
+                          navigate(l.path);
+                        }}
+                      >
+                        {l.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </nav>
         </div>
-      </div>
-    </nav>
+      </header>
+
+      <div
+        className={`${menu.overlay}${open ? ` ${menu.isOpen}` : ""}`}
+        aria-hidden={!open}
+        onClick={() => setOpen(false)}
+      />
+    </>
   );
 }

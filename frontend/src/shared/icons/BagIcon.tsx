@@ -1,10 +1,10 @@
 type Props = {
-  className?: string;
+  extraClass?: string;
   size?: number;
   strokeWidth?: number | string;
 };
 
-export function BagIcon({ className, size = 22, strokeWidth = 2 }: Props) {
+export function BagIcon({ extraClass, size = 22, strokeWidth = 2 }: Props) {
   return (
     <svg
       width={size}
@@ -16,7 +16,7 @@ export function BagIcon({ className, size = 22, strokeWidth = 2 }: Props) {
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={extraClass}
     >
       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
       <path d="M3 6h18" />

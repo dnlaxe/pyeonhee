@@ -1,4 +1,4 @@
-import type { Faq, FaqSection } from "./types";
+import type { FaqSection } from "./types";
 
 export const faqSections: FaqSection[] = [
   {
@@ -27,7 +27,7 @@ export const faqSections: FaqSection[] = [
       {
         question: "How do I post a job or an item?",
         answer:
-          "Use the yellow **post** link in the menu. You'll be able to share a job opening or something you're selling, giving away, or looking for.",
+          "Use the **post** link in the menu. You'll be able to share a job opening or something you're selling, giving away, or looking for.",
       },
       {
         question: "How to contact a poster?",
@@ -62,5 +62,3 @@ export const faqSections: FaqSection[] = [
     ],
   },
 ];
-
-export const faqs: Faq[] = faqSections.flatMap((s) => s.faqs);

@@ -1,0 +1,71 @@
+.hb {
+    --hb-w: 22px;
+    --hb-h: 2px;
+    --hb-gap: 5px;
+    --hb-color: var(--color-text);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--hb-color);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.hb:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+}
+
+.hbBars {
+    position: relative;
+    display: block;
+    width: var(--hb-w);
+    height: calc(var(--hb-h) * 3 + var(--hb-gap) * 2);
+}
+
+.hbBars span {
+    position: absolute;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: var(--hb-h);
+    border-radius: 1px;
+    background: currentColor;
+    transition:
+            transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.2s ease,
+            top 0.28s ease;
+    transform-origin: center;
+}
+
+.hbBars span:nth-child(1) {
+    top: 0;
+}
+
+.hbBars span:nth-child(2) {
+    top: calc(var(--hb-h) + var(--hb-gap));
+}
+
+.hbBars span:nth-child(3) {
+    top: calc((var(--hb-h) + var(--hb-gap)) * 2);
+}
+
+.hbToX[aria-expanded="true"] .hbBars span:nth-child(1) {
+    top: calc(var(--hb-h) + var(--hb-gap));
+    transform: rotate(45deg);
+}
+
+.hbToX[aria-expanded="true"] .hbBars span:nth-child(2) {
+    opacity: 0;
+}
+
+.hbToX[aria-expanded="true"] .hbBars span:nth-child(3) {
+    top: calc(var(--hb-h) + var(--hb-gap));
+    transform: rotate(-45deg);
+}

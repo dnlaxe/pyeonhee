@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
@@ -56,6 +57,65 @@ func (f *fakeStore) SetOrder(_ context.Context, pk, orderID string, amount int64
 func (f *fakeStore) Publish(_ context.Context, _, _, paymentKey string) error {
 	f.published, f.publishedKey = true, paymentKey
 	return f.publishErr
+}
+
+func TestGetService(t *testing.T) {
+	a := &App{
+		Store: &fakeStore{service: &store.ServiceItem{
+			ID:        "svc1",
+			Company:   "Visa Help",
+			Location:  "Seoul",
+			Logo:      "media/services/logo.png",
+			Blurb:     "We help with visas.",
+			Contact:   "hi@example.com",
+			Tags:      []string{"Visa"},
+			Status:    store.StatusPublished,
+			CreatedAt: "2026-01-02T00:00:00Z",
+		}},
+		MediaBaseURL: "https://cdn.example",
+	}
+	req := httptest.NewRequest(http.MethodGet, "/services/svc1", nil)
+	rec := httptest.NewRecorder()
+
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body.String())
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, "Visa Help") {
+		t.Fatalf("body = %s", body)
+	}
+	if !strings.Contains(body, "https://cdn.example/media/services/logo.png") {
+		t.Fatalf("logo url missing: %s", body)
+	}
+}
+
+func TestGetServiceNotFound(t *testing.T) {
+	a := &App{Store: &fakeStore{}}
+	req := httptest.NewRequest(http.MethodGet, "/services/missing", nil)
+	rec := httptest.NewRecorder()
+
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
+}
+
+func TestGetServiceUnpublished(t *testing.T) {
+	a := &App{Store: &fakeStore{service: &store.ServiceItem{
+		ID:     "svc1",
+		Status: store.StatusPending,
+	}}}
+	req := httptest.NewRequest(http.MethodGet, "/services/svc1", nil)
+	rec := httptest.NewRecorder()
+
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
 }
 
 func TestUnknownRouteNotFound(t *testing.T) {

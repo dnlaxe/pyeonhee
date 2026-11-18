@@ -1,10 +1,10 @@
 type Props = {
-  className?: string;
+  extraClass?: string;
   size?: number;
   strokeWidth?: number | string;
 };
 
-export function UsersIcon({ className, size = 22, strokeWidth = 2 }: Props) {
+export function UsersIcon({ extraClass, size = 22, strokeWidth = 2 }: Props) {
   return (
     <svg
       width={size}
@@ -16,7 +16,7 @@ export function UsersIcon({ className, size = 22, strokeWidth = 2 }: Props) {
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={extraClass}
     >
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />

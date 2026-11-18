@@ -3,11 +3,7 @@ import { richText } from "../../shared";
 import type { Faq, FaqSection } from "./types";
 import styles from "./FaqItem.module.css";
 
-export function FaqItem({
-  faq,
-  open,
-  onToggle,
-}: {
+export function FaqItem({ faq, open, onToggle}: {
   faq: Faq;
   open: boolean;
   onToggle: () => void;

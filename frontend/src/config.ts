@@ -1,7 +1,5 @@
 export const config = {
   postKinds: ["job", "market", "service"],
-  landing: { jobs: 3, market: 3, services: 3 },
-  pageSize: { jobs: 10, market: 9, services: 9 },
 } as const;
 
 export const formRules = {
@@ -173,3 +171,25 @@ export const postCopy = {
   market: formRules.market.copy,
   service: formRules.service.copy,
 } as const;
+
+export type NavLink = {
+  path: string;
+  label: string;
+};
+
+export const navLinks: NavLink[] = [
+  { path: "/", label: "latest posts" },
+  { path: "/post", label: "post" },
+  { path: "/faq", label: "faq" },
+];
+
+export type FooterLink = {
+  to: string;
+  label: string;
+};
+
+export const footerLinks: FooterLink[] = [
+  { to: "/", label: "latest posts" },
+  { to: "/post", label: "post" },
+  { to: "/faq", label: "faq" },
+];

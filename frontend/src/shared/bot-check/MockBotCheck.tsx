@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { FormField } from "../components/forms/FormField.tsx";
-import { Form } from "../components/forms/Form.tsx";
-import { TextInput } from "../components/forms/TextInput.tsx";
-import { Button } from "../components/Button.tsx";
-
+import { FormField } from "../forms/FormField.tsx";
+import { Form } from "../forms/Form.tsx";
+import { TextInput } from "../forms/TextInput.tsx";
 type Props = {
   onSubmit: (password: string) => void;
   pending: boolean;
@@ -15,7 +13,7 @@ export function MockBotCheck({ onSubmit, pending, error }: Props) {
 
   return (
     <Form
-      className="pt-6 flex flex-col gap-4"
+      extraClass="pt-6 flex flex-col gap-4"
       onSubmit={() => onSubmit(password)}
     >
       <FormField label="Password:" error={error}>
@@ -29,9 +27,9 @@ export function MockBotCheck({ onSubmit, pending, error }: Props) {
           invalid={Boolean(error)}
         />
       </FormField>
-      <Button type="submit" variant="yellow" disabled={pending}>
+      <button type="submit" className="primaryBtn" disabled={pending}>
         {pending ? "Checking…" : "Continue"}
-      </Button>
+      </button>
     </Form>
   );
 }

@@ -1,0 +1,27 @@
+.detailLogo {
+  position: relative;
+  width: 120px;
+  min-width: 120px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--color-accent);
+}
+
+.detailLogo > * {
+  grid-area: 1 / 1;
+}
+
+.detailLogo img,
+.detailLogo svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detailLogo svg {
+  object-fit: none;
+  padding: 18%;
+  color: var(--color-bg);
+}
