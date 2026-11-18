@@ -1,5 +1,7 @@
-import { Button } from "../../shared";
 import type { PaymentStepProps } from "./types";
+
+const btnClass =
+  "inline-flex cursor-pointer items-center justify-center border-[1.5px] border-text bg-accent px-7 py-3 text-base leading-[1.2] text-text hover:bg-accent-hover";
 
 function withParams(base: string, params: Record<string, string>) {
   const url = new URL(base);
@@ -38,15 +40,19 @@ export function MockPayment({ order, successUrl, failUrl }: PaymentStepProps) {
         Mock payment: {order.amount} won for {order.orderName}.
       </p>
       <div className="flex flex-wrap gap-3">
-        <Button variant="yellow" onClick={() => pay("mock_")}>
+        <button type="button" className={btnClass} onClick={() => pay("mock_")}>
           Pay
-        </Button>
-        <Button variant="outline" onClick={() => pay("declined_")}>
+        </button>
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => pay("declined_")}
+        >
           Decline
-        </Button>
-        <Button variant="outline" onClick={cancel}>
+        </button>
+        <button type="button" className={btnClass} onClick={cancel}>
           Cancel
-        </Button>
+        </button>
       </div>
     </div>
   );

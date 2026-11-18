@@ -1,24 +1,26 @@
 import { Link } from "react-router";
-import { Button } from "../components/Button";
-import { footerLinks } from "./config/footer";
-import { Logo } from "./Logo";
+import { footerLinks } from "../../config";
+import { Logo } from "../icons/Logo.tsx";
 
 export function Footer() {
   return (
     <footer className="mt-auto">
-      <div className="bg-yellow py-8">
-        <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-start justify-between gap-4 sm:flex-row sm:items-center max-md:w-[min(100%-32px,1120px)]">
-          <div>
-            <p className="m-0 text-lg font-semibold text-text-dark">
+      <div className="bg-accent py-10 md:py-12">
+        <div className="mx-auto flex w-[min(100%-48px,1120px)] flex-col items-start justify-between gap-6 sm:flex-row sm:items-center max-md:w-[min(100%-32px,1120px)]">
+          <div className="min-w-0 max-w-xl">
+            <p className="m-0 text-[22px] leading-7 text-text md:text-[28px] md:leading-[1.2]">
               Have something to share?
             </p>
-            <p className="m-0 mt-1 text-sm text-body">
+            <p className="m-0 mt-2 text-[15px] leading-normal text-body md:text-base md:leading-[1.6]">
               Post a job, listing, or event in about a minute.
             </p>
           </div>
-          <Button variant="post" to="/post">
+          <Link
+            to="/post"
+            className="inline-flex shrink-0 items-center justify-center border-[1.5px] border-text bg-bg px-7 py-3.5 text-[20px] leading-[1.2] text-text hover:bg-surface max-[399px]:text-[18px]"
+          >
             Post something
-          </Button>
+          </Link>
         </div>
       </div>
 
@@ -30,7 +32,7 @@ export function Footer() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="font-mono text-sm text-text-dark no-underline hover:underline hover:underline-offset-[3px]"
+                className=" text-sm text-text no-underline hover:underline hover:underline-offset-[3px]"
               >
                 {l.label}
               </Link>

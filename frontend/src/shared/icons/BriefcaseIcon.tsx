@@ -1,10 +1,10 @@
 type Props = {
-  className?: string;
+  extraClass?: string;
   size?: number;
   strokeWidth?: number | string;
 };
 
-export function BriefcaseIcon({ className, size = 22, strokeWidth = 2 }: Props) {
+export function BriefcaseIcon({ extraClass, size = 22, strokeWidth = 2 }: Props) {
   return (
     <svg
       width={size}
@@ -16,7 +16,7 @@ export function BriefcaseIcon({ className, size = 22, strokeWidth = 2 }: Props) 
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={extraClass}
     >
       <rect width="20" height="14" x="2" y="7" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />

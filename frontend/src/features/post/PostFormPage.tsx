@@ -1,7 +1,6 @@
 import { useState, useEffect, type ChangeEvent, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import {
-  Button,
   BackLink,
   Form,
   FormField,
@@ -40,15 +39,85 @@ function PinField({
 }) {
   return (
     <FormField label="Pinned:">
-      <span className="inline-flex items-center gap-2 font-sans text-[15px] text-text-dark">
+      <span className="inline-flex items-center gap-2 text-[15px] text-text">
         <input
           type="checkbox"
           name="pinned"
           defaultChecked={defaultChecked}
-          className="size-4 accent-yellow"
+          className="size-4 [accent-color:var(--color-accent)]"
         />
         {label}
       </span>
+    </FormField>
+  );
+}
+
+function PhotoAttachField({
+  label,
+  error,
+  photos,
+  max,
+  accept,
+  multiple = false,
+  onChange,
+  onRemove,
+}: {
+  label: string;
+  error?: string;
+  photos: { file: File; url: string }[];
+  max: number;
+  accept: string;
+  multiple?: boolean;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onRemove: (url: string) => void;
+}) {
+  const atLimit = photos.length >= max;
+  return (
+    <FormField label={label} error={error}>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <label
+            className={`inline-flex cursor-pointer items-center justify-center rounded-none border-[1.5px] border-text bg-bg px-3 py-2 text-[15px] text-text ${
+              atLimit ? "pointer-events-none opacity-50" : "hover:bg-accent"
+            }`}
+          >
+            <input
+              type="file"
+              accept={accept}
+              multiple={multiple}
+              disabled={atLimit}
+              onChange={onChange}
+              className="sr-only"
+            />
+            {multiple ? "Add photos" : "Add photo"}
+          </label>
+          <span className="text-[15px] text-muted">
+            {photos.length}/{max}
+          </span>
+        </div>
+
+        {photos.length > 0 && (
+          <ul className="flex flex-wrap gap-2">
+            {photos.map((photo) => (
+              <li key={photo.url} className="relative">
+                <img
+                  src={photo.url}
+                  alt=""
+                  className="h-20 w-20 rounded-none border-[1.5px] border-text object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemove(photo.url)}
+                  aria-label="Remove photo"
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none border border-text bg-bg text-xs leading-none text-text"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </FormField>
   );
 }
@@ -176,7 +245,12 @@ function JobPostForm() {
       const room = MAX_PHOTOS - prev.length;
       return [...prev, ...accepted.slice(0, room)];
     });
-    setErrors((prev) => ({ ...prev, logo: photoError }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (photoError) next.logo = photoError;
+      else delete next.logo;
+      return next;
+    });
     e.target.value = "";
   }
 
@@ -240,193 +314,160 @@ function JobPostForm() {
       >
         <FormErrorSummary count={Object.keys(errors).length} />
 
-        <FormField label="Email address:" error={errors.email}>
-          <TextInput
-            type="email"
-            name="email"
-            required
-            defaultValue={draft?.email ?? ""}
-            invalid={Boolean(errors.email)}
+        <fieldset
+          disabled={ready}
+          className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
+        >
+          <FormField label="Email address:" error={errors.email}>
+            <TextInput
+              type="email"
+              name="email"
+              required
+              defaultValue={draft?.email ?? ""}
+              invalid={Boolean(errors.email)}
+            />
+          </FormField>
+
+          <RadioGroup
+            legend="Email options:"
+            name="emailOption"
+            options={formRules.jobs.emailOption.options}
+            defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
           />
-        </FormField>
 
-        <RadioGroup
-          legend="Email options:"
-          name="emailOption"
-          options={formRules.jobs.emailOption.options}
-          defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
-        />
+          <FormField label="Post title:" error={errors.title}>
+            <TextInput
+              type="text"
+              name="title"
+              required
+              defaultValue={draft?.title ?? ""}
+              invalid={Boolean(errors.title)}
+            />
+          </FormField>
 
-        <FormField label="Post title:" error={errors.title}>
-          <TextInput
-            type="text"
-            name="title"
-            required
-            defaultValue={draft?.title ?? ""}
-            invalid={Boolean(errors.title)}
+          <PhotoAttachField
+            label="Attach photo:"
+            error={errors.logo}
+            photos={photos}
+            max={MAX_PHOTOS}
+            accept={photoRules.allowedTypes.join(",")}
+            onChange={handlePhotosChange}
+            onRemove={removePhoto}
           />
-        </FormField>
 
-        <FormField label="Attach photo:" error={errors.logo}>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <label
-                className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
-                  photos.length >= MAX_PHOTOS
-                    ? "pointer-events-none opacity-50"
-                    : "hover:bg-yellow"
-                }`}
-              >
-                <input
-                  type="file"
-                  accept={photoRules.allowedTypes.join(",")}
-                  disabled={photos.length >= MAX_PHOTOS}
-                  onChange={handlePhotosChange}
-                  className="sr-only"
-                />
-                Add photo
-              </label>
-              <span className="text-[15px] text-muted">
-                {photos.length}/{MAX_PHOTOS}
-              </span>
-            </div>
+          <FormField label="Location:" error={errors.location}>
+            <TextInput
+              type="text"
+              name="location"
+              required
+              defaultValue={draft?.location ?? ""}
+              invalid={Boolean(errors.location)}
+            />
+          </FormField>
 
-            {photos.length > 0 && (
-              <ul className="flex flex-wrap gap-2">
-                {photos.map((photo) => (
-                  <li key={photo.url} className="relative">
-                    <img
-                      src={photo.url}
-                      alt=""
-                      className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(photo.url)}
-                      aria-label="Remove photo"
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </FormField>
-
-        <FormField label="Location:" error={errors.location}>
-          <TextInput
-            type="text"
-            name="location"
-            required
-            defaultValue={draft?.location ?? ""}
-            invalid={Boolean(errors.location)}
-          />
-        </FormField>
-
-        <FormField label="Employment type:" error={errors.employmentType}>
-          <SelectInput
-            name="employmentType"
-            required
-            defaultValue={draft?.employmentType ?? ""}
-            invalid={Boolean(errors.employmentType)}
-          >
-            <option value="" disabled>
-              Select…
-            </option>
-            {formRules.jobs.employmentType.options.map((t) => (
-              <option key={t} value={t}>
-                {t}
+          <FormField label="Employment type:" error={errors.employmentType}>
+            <SelectInput
+              name="employmentType"
+              required
+              defaultValue={draft?.employmentType ?? ""}
+              invalid={Boolean(errors.employmentType)}
+            >
+              <option value="" disabled>
+                Select…
               </option>
-            ))}
-          </SelectInput>
-        </FormField>
-
-        <FormField label="Teaching / non-teaching:" error={errors.track}>
-          <SelectInput
-            name="track"
-            required
-            value={track}
-            invalid={Boolean(errors.track)}
-            onChange={(e) =>
-              setTrack(e.target.value as "Teaching" | "Non-teaching" | "")
-            }
-          >
-            <option value="" disabled>
-              Select…
-            </option>
-            {Object.keys(formRules.jobs.track.options).map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </SelectInput>
-        </FormField>
-
-        <FormField label="Job area:" error={errors.area}>
-          <SelectInput
-            name="area"
-            required
-            disabled={!track}
-            key={track || "none"}
-            defaultValue={draft?.area ?? ""}
-            invalid={Boolean(errors.area)}
-          >
-            <option value="" disabled>
-              {track ? "Select…" : "Select teaching / non-teaching first"}
-            </option>
-            {track &&
-              areas.map((a) => (
-                <option key={a} value={a}>
-                  {a}
+              {formRules.jobs.employmentType.options.map((t) => (
+                <option key={t} value={t}>
+                  {t}
                 </option>
               ))}
-          </SelectInput>
-        </FormField>
+            </SelectInput>
+          </FormField>
 
-        <FormField label="Korean requirement:" error={errors.korean}>
-          <SelectInput
-            name="korean"
-            required
-            defaultValue={draft?.korean ?? ""}
-            invalid={Boolean(errors.korean)}
-          >
-            <option value="" disabled>
-              Select…
-            </option>
-            {formRules.jobs.korean.options.map((k) => (
-              <option key={k} value={k}>
-                {k}
+          <FormField label="Teaching / non-teaching:" error={errors.track}>
+            <SelectInput
+              name="track"
+              required
+              value={track}
+              invalid={Boolean(errors.track)}
+              onChange={(e) =>
+                setTrack(e.target.value as "Teaching" | "Non-teaching" | "")
+              }
+            >
+              <option value="" disabled>
+                Select…
               </option>
-            ))}
-          </SelectInput>
-        </FormField>
+              {Object.keys(formRules.jobs.track.options).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </SelectInput>
+          </FormField>
 
-        <FormField label="Post description:" error={errors.description}>
-          <TextareaInput
-            name="description"
-            rows={8}
-            required
-            defaultValue={draft?.description ?? ""}
-            invalid={Boolean(errors.description)}
+          <FormField label="Job area:" error={errors.area}>
+            <SelectInput
+              name="area"
+              required
+              disabled={!track}
+              key={track || "none"}
+              defaultValue={draft?.area ?? ""}
+              invalid={Boolean(errors.area)}
+            >
+              <option value="" disabled>
+                {track ? "Select…" : "Select teaching / non-teaching first"}
+              </option>
+              {track &&
+                areas.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+            </SelectInput>
+          </FormField>
+
+          <FormField label="Korean requirement:" error={errors.korean}>
+            <SelectInput
+              name="korean"
+              required
+              defaultValue={draft?.korean ?? ""}
+              invalid={Boolean(errors.korean)}
+            >
+              <option value="" disabled>
+                Select…
+              </option>
+              {formRules.jobs.korean.options.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </SelectInput>
+          </FormField>
+
+          <FormField label="Post description:" error={errors.description}>
+            <TextareaInput
+              name="description"
+              rows={8}
+              required
+              defaultValue={draft?.description ?? ""}
+              invalid={Boolean(errors.description)}
+            />
+          </FormField>
+
+          <PinField
+            label="Show at the top of the job board"
+            defaultChecked={draft?.pinned ?? false}
           />
-        </FormField>
-
-        <PinField
-          label="Show at the top of the job board"
-          defaultChecked={draft?.pinned ?? false}
-        />
-        <RadioGroup
-          legend="How to pay:"
-          name="method"
-          options={formRules.payment.options}
-          defaultValue={draft?.method || "mock"}
-        />
+          <RadioGroup
+            legend="How to pay:"
+            name="method"
+            options={formRules.payment.options}
+            defaultValue={draft?.method || "mock"}
+          />
+        </fieldset>
         {!ready ? (
-          <Button type="submit" variant="yellow" className="mt-2">
+          <button type="submit" className="primaryBtn mt-2">
             Send
-          </Button>
+          </button>
         ) : null}
       </Form>
       {ready && fields ? (
@@ -566,7 +607,12 @@ function MarketPostForm() {
       const room = MAX_PHOTOS - prev.length;
       return [...prev, ...accepted.slice(0, room)];
     });
-    setErrors((prev) => ({ ...prev, images: photoError }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (photoError) next.images = photoError;
+      else delete next.images;
+      return next;
+    });
     e.target.value = "";
   }
 
@@ -626,167 +672,134 @@ function MarketPostForm() {
       }}
     >
       <FormErrorSummary count={Object.keys(errors).length} />
-      <FormField label="Email address:" error={errors.email}>
-        <TextInput
-          type="email"
-          name="email"
-          required
-          defaultValue={draft?.email ?? ""}
-          invalid={Boolean(errors.email)}
-        />
-      </FormField>
+      <fieldset
+        disabled={ready}
+        className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
+      >
+        <FormField label="Email address:" error={errors.email}>
+          <TextInput
+            type="email"
+            name="email"
+            required
+            defaultValue={draft?.email ?? ""}
+            invalid={Boolean(errors.email)}
+          />
+        </FormField>
 
-      <RadioGroup
-        legend="Email options:"
-        name="emailOption"
-        options={formRules.market.emailOption.options}
-        defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
-      />
+        <RadioGroup
+          legend="Email options:"
+          name="emailOption"
+          options={formRules.market.emailOption.options}
+          defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
+        />
 
-      <FormField label="Post title:" error={errors.title}>
-        <TextInput
-          type="text"
-          name="title"
-          required
-          defaultValue={draft?.title ?? ""}
-          invalid={Boolean(errors.title)}
-        />
-      </FormField>
-      <FormField label="Location:" error={errors.location}>
-        <TextInput
-          type="text"
-          name="location"
-          required
-          defaultValue={draft?.location ?? ""}
-          invalid={Boolean(errors.location)}
-        />
-      </FormField>
-      <FormField label="Listing type:" error={errors.listingType}>
-        <SelectInput
-          name="listingType"
-          required
-          value={listingType}
-          invalid={Boolean(errors.listingType)}
-          onChange={(e) => setListingType(e.target.value)}
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          {formRules.market.listingType.options.map((t) => (
-            <option key={t} value={t}>
-              {t}
+        <FormField label="Post title:" error={errors.title}>
+          <TextInput
+            type="text"
+            name="title"
+            required
+            defaultValue={draft?.title ?? ""}
+            invalid={Boolean(errors.title)}
+          />
+        </FormField>
+        <FormField label="Location:" error={errors.location}>
+          <TextInput
+            type="text"
+            name="location"
+            required
+            defaultValue={draft?.location ?? ""}
+            invalid={Boolean(errors.location)}
+          />
+        </FormField>
+        <FormField label="Listing type:" error={errors.listingType}>
+          <SelectInput
+            name="listingType"
+            required
+            value={listingType}
+            invalid={Boolean(errors.listingType)}
+            onChange={(e) => setListingType(e.target.value)}
+          >
+            <option value="" disabled>
+              Select…
             </option>
-          ))}
-        </SelectInput>
-      </FormField>
-
-      <FormField label="Category:" error={errors.category}>
-        <SelectInput
-          name="category"
-          required
-          disabled={!listingType}
-          key={listingType || "none"}
-          defaultValue={draft?.category ?? ""}
-          invalid={Boolean(errors.category)}
-        >
-          <option value="" disabled>
-            {listingType ? "Select…" : "Select listing type first"}
-          </option>
-          {listingType &&
-            formRules.market.category.options.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {formRules.market.listingType.options.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
             ))}
-        </SelectInput>
-      </FormField>
+          </SelectInput>
+        </FormField>
 
-      <FormField label="Price:" error={errors.price}>
-        <TextInput
-          type="text"
-          name="price"
-          required
-          placeholder="e.g. ₩50,000 or Negotiable"
-          defaultValue={draft?.price ?? ""}
-          invalid={Boolean(errors.price)}
-        />
-      </FormField>
-
-      <FormField label="Attach photos:" error={errors.images}>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <label
-              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
-                photos.length >= MAX_PHOTOS
-                  ? "pointer-events-none opacity-50"
-                  : "hover:bg-yellow"
-              }`}
-            >
-              <input
-                type="file"
-                accept={photoRules.allowedTypes.join(",")}
-                multiple
-                disabled={photos.length >= MAX_PHOTOS}
-                onChange={handlePhotosChange}
-                className="sr-only"
-              />
-              Add photos
-            </label>
-            <span className="text-[15px] text-muted">
-              {photos.length}/{MAX_PHOTOS}
-            </span>
-          </div>
-
-          {photos.length > 0 && (
-            <ul className="flex flex-wrap gap-2">
-              {photos.map((photo) => (
-                <li key={photo.url} className="relative">
-                  <img
-                    src={photo.url}
-                    alt=""
-                    className="h-20 w-20 rounded border-[1.5px] border-text-dark object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(photo.url)}
-                    aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
-                  >
-                    ×
-                  </button>
-                </li>
+        <FormField label="Category:" error={errors.category}>
+          <SelectInput
+            name="category"
+            required
+            disabled={!listingType}
+            key={listingType || "none"}
+            defaultValue={draft?.category ?? ""}
+            invalid={Boolean(errors.category)}
+          >
+            <option value="" disabled>
+              {listingType ? "Select…" : "Select listing type first"}
+            </option>
+            {listingType &&
+              formRules.market.category.options.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
-            </ul>
-          )}
-        </div>
-      </FormField>
+          </SelectInput>
+        </FormField>
 
-      <FormField label="Description:" error={errors.description}>
-        <TextareaInput
-          name="description"
-          rows={8}
-          required
-          defaultValue={draft?.description ?? ""}
-          invalid={Boolean(errors.description)}
+        <FormField label="Price:" error={errors.price}>
+          <TextInput
+            type="text"
+            name="price"
+            required
+            placeholder="e.g. ₩50,000 or Negotiable"
+            defaultValue={draft?.price ?? ""}
+            invalid={Boolean(errors.price)}
+          />
+        </FormField>
+
+        <PhotoAttachField
+          label="Attach photos:"
+          error={errors.images}
+          photos={photos}
+          max={MAX_PHOTOS}
+          accept={photoRules.allowedTypes.join(",")}
+          multiple
+          onChange={handlePhotosChange}
+          onRemove={removePhoto}
         />
-      </FormField>
 
-      <PinField
-        label="Show at the top of the market"
-        defaultChecked={draft?.pinned ?? false}
-      />
+        <FormField label="Description:" error={errors.description}>
+          <TextareaInput
+            name="description"
+            rows={8}
+            required
+            defaultValue={draft?.description ?? ""}
+            invalid={Boolean(errors.description)}
+          />
+        </FormField>
 
-      <RadioGroup
-        legend="How to pay:"
-        name="method"
-        options={formRules.payment.options}
-        defaultValue={draft?.method || "mock"}
-      />
+        <PinField
+          label="Show at the top of the market"
+          defaultChecked={draft?.pinned ?? false}
+        />
+
+        <RadioGroup
+          legend="How to pay:"
+          name="method"
+          options={formRules.payment.options}
+          defaultValue={draft?.method || "mock"}
+        />
+      </fieldset>
 
       {!ready ? (
-        <Button type="submit" variant="yellow" className="mt-2">
+        <button type="submit" className="primaryBtn mt-2">
           Send
-        </Button>
+        </button>
       ) : null}
     </Form>
       {ready && fields ? (
@@ -916,7 +929,12 @@ function ServicePostForm() {
       const room = MAX_PHOTOS - prev.length;
       return [...prev, ...accepted.slice(0, room)];
     });
-    setErrors((prev) => ({ ...prev, logo: photoError }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (photoError) next.logo = photoError;
+      else delete next.logo;
+      return next;
+    });
     e.target.value = "";
   }
 
@@ -967,129 +985,96 @@ function ServicePostForm() {
       }}
     >
       <FormErrorSummary count={Object.keys(errors).length} />
-      <FormField label="Company name:" error={errors.company}>
-        <TextInput
-          type="text"
-          name="company"
-          required
-          defaultValue={draft?.company ?? ""}
-          invalid={Boolean(errors.company)}
-        />
-      </FormField>
-      <FormField label="Service:" error={errors.category}>
-        <SelectInput
-          name="category"
-          required
-          defaultValue={draft?.category ?? ""}
-          invalid={Boolean(errors.category)}
-        >
-          <option value="" disabled>
-            Select…
-          </option>
-          {formRules.service.category.options.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
+      <fieldset
+        disabled={ready}
+        className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
+      >
+        <FormField label="Company name:" error={errors.company}>
+          <TextInput
+            type="text"
+            name="company"
+            required
+            defaultValue={draft?.company ?? ""}
+            invalid={Boolean(errors.company)}
+          />
+        </FormField>
+        <FormField label="Service:" error={errors.category}>
+          <SelectInput
+            name="category"
+            required
+            defaultValue={draft?.category ?? ""}
+            invalid={Boolean(errors.category)}
+          >
+            <option value="" disabled>
+              Select…
             </option>
-          ))}
-        </SelectInput>
-      </FormField>
+            {formRules.service.category.options.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </SelectInput>
+        </FormField>
 
-      <FormField label="Attach photo:" error={errors.logo}>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <label
-              className={`inline-flex cursor-pointer items-center justify-center rounded border-[1.5px] border-text-dark bg-white px-3 py-2 font-sans text-[15px] text-text-dark ${
-                photos.length >= MAX_PHOTOS
-                  ? "pointer-events-none opacity-50"
-                  : "hover:bg-yellow"
-              }`}
-            >
-              <input
-                type="file"
-                accept={photoRules.allowedTypes.join(",")}
-                disabled={photos.length >= MAX_PHOTOS}
-                onChange={handlePhotosChange}
-                className="sr-only"
-              />
-              Add photo
-            </label>
-            <span className="text-[15px] text-muted">
-              {photos.length}/{MAX_PHOTOS}
-            </span>
-          </div>
+        <PhotoAttachField
+          label="Attach photo:"
+          error={errors.logo}
+          photos={photos}
+          max={MAX_PHOTOS}
+          accept={photoRules.allowedTypes.join(",")}
+          onChange={handlePhotosChange}
+          onRemove={removePhoto}
+        />
 
-          {photos.length > 0 && (
-            <ul className="flex flex-wrap gap-2">
-              {photos.map((photo) => (
-                <li key={photo.url} className="relative">
-                  <img
-                    src={photo.url}
-                    alt=""
-                    className="h-20 w-20 rounded-full border-[1.5px] border-text-dark object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(photo.url)}
-                    aria-label="Remove photo"
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-text-dark bg-white text-xs leading-none text-text-dark"
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </FormField>
+        <FormField label="Location:" error={errors.location}>
+          <TextInput
+            type="text"
+            name="location"
+            required
+            invalid={Boolean(errors.location)}
+            defaultValue={draft?.location ?? ""}
+          />
+        </FormField>
+        <FormField label="Email address:" error={errors.email}>
+          <TextInput
+            type="email"
+            name="email"
+            required
+            invalid={Boolean(errors.email)}
+            defaultValue={draft?.email ?? ""}
+          />
+        </FormField>
+        <FormField label="Webpage link:" error={errors.webpage}>
+          <TextInput
+            type="url"
+            name="webpage"
+            placeholder="https://"
+            invalid={Boolean(errors.webpage)}
+            defaultValue={draft?.webpage ?? ""}
+          />
+        </FormField>
+        <FormField label="Message:" error={errors.message}>
+          <TextareaInput
+            name="message"
+            rows={8}
+            required
+            invalid={Boolean(errors.message)}
+            defaultValue={draft?.message ?? ""}
+          />
+        </FormField>
 
-      <FormField label="Location:" error={errors.location}>
-        <TextInput
-          type="text"
-          name="location"
-          required
-          invalid={Boolean(errors.location)}
-          defaultValue={draft?.location ?? ""}
+        <RadioGroup
+          legend="How to pay:"
+          name="method"
+          options={formRules.payment.options}
+          defaultValue={draft?.method || "mock"}
         />
-      </FormField>
-      <FormField label="Email address:" error={errors.email}>
-        <TextInput
-          type="email"
-          name="email"
-          required
-          invalid={Boolean(errors.email)}
-          defaultValue={draft?.email ?? ""}
-        />
-      </FormField>
-      <FormField label="Webpage link:" error={errors.webpage}>
-        <TextInput
-          type="url"
-          name="webpage"
-          placeholder="https://"
-          invalid={Boolean(errors.webpage)}
-          defaultValue={draft?.webpage ?? ""}
-        />
-      </FormField>
-      <FormField label="Message:" error={errors.message}>
-        <TextareaInput
-          name="message"
-          rows={8}
-          required
-          invalid={Boolean(errors.message)}
-          defaultValue={draft?.message ?? ""}
-        />
-      </FormField>
-
-      <RadioGroup
-        legend="How to pay:"
-        name="method"
-        options={formRules.payment.options}
-        defaultValue={draft?.method || "mock"}
-      />
+      </fieldset>
 
       {!ready ? (
-        <Button type="submit" variant="yellow" className="mt-2">
+        <button type="submit" className="primaryBtn mt-2">
           Send
-        </Button>
+        </button>
       ) : null}
     </Form>
       {ready && fields ? (
@@ -1113,12 +1098,16 @@ export function PostFormPage() {
 
   return (
     <main>
-      <article className="py-2 pb-20">
+      <article className="py-8 pb-20 md:py-10">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
-          <BackLink to="/post">back to post</BackLink>
-          <h1 className="mb-4 text-[clamp(24px,4vw,32px)] font-bold leading-[1.2] tracking-[-0.5px] text-text">
-            {kindInfo.title}
-          </h1>
+          <div className="mb-4 flex items-center gap-3">
+            <BackLink to="/post" extraClass="inline-flex shrink-0 text-text">
+              back to post
+            </BackLink>
+            <h1 className="m-0 text-[clamp(24px,4vw,32px)] font-normal leading-[1.2] tracking-[-0.5px] text-text">
+              {kindInfo.title}
+            </h1>
+          </div>
           <p className="mb-8 text-[15px] leading-normal text-body">
             {kindInfo.privacy} See our <FaqLink>FAQs</FaqLink> for posting
             guidelines and safety tips.
