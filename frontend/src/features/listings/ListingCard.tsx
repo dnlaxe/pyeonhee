@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Link } from "react-router";
 import { TagList } from "../../shared/ui/TagList.tsx";
 import { LogoPlaceholder } from "../../shared/icons/LogoPlaceholder.tsx";
@@ -8,31 +8,32 @@ import styles from "./ListingCard.module.css";
 import { type FeedItem, listingKindLabel } from "./types.ts";
 
 export function ListingCard({ item }: { item: FeedItem }) {
-  const [thumbReady, setThumbReady] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const thumbUrl = item.thumbUrl ?? "";
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const thumbReady = Boolean(thumbUrl) && loadedUrl === thumbUrl;
 
-  useEffect(() => {
-    setThumbReady(false);
-    const img = imgRef.current;
-    if (img?.complete && img.naturalWidth > 0) {
-      setThumbReady(true);
-    }
-  }, [item.thumbUrl, item.kind, item.id]);
-
-  const hasThumb = Boolean(item.thumbUrl);
+  const imgRef = useCallback(
+    (img: HTMLImageElement | null) => {
+      if (img?.complete && img.naturalWidth > 0) {
+        setLoadedUrl(thumbUrl);
+      }
+    },
+    [thumbUrl],
+  );
 
   return (
     <Link to={item.href} className={`${styles.card} group`}>
       <div className={styles.logo} aria-hidden={thumbReady ? undefined : true}>
         {!thumbReady ? <LogoPlaceholder /> : null}
-        {hasThumb ? (
+        {thumbUrl ? (
           <img
+            key={thumbUrl}
             ref={imgRef}
-            src={item.thumbUrl}
+            src={thumbUrl}
             alt=""
             className={thumbReady ? undefined : styles.thumbPending}
-            onLoad={() => setThumbReady(true)}
-            onError={() => setThumbReady(false)}
+            onLoad={() => setLoadedUrl(thumbUrl)}
+            onError={() => setLoadedUrl(null)}
           />
         ) : null}
       </div>

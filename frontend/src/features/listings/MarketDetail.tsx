@@ -74,11 +74,13 @@ export function MarketDetail() {
 
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [prevId, setPrevId] = useState(id);
 
-  useEffect(() => {
+  if (id !== prevId) {
+    setPrevId(id);
     setPhotoIndex(0);
     setZoomed(false);
-  }, [id]);
+  }
 
   useEffect(() => {
     if (!zoomed || !market) return;
