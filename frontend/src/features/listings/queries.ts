@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { JobItem, MarketItem, Service } from "./types";
 
@@ -37,4 +37,55 @@ export const servicesQueryOptions = () =>
     enabled: Boolean(apiUrl),
     staleTime: LIST_STALE_TIME,
     queryFn: ({ signal }) => fetchJson<Service[]>("/services", signal),
+  });
+
+export const jobDetailQueryOptions = (
+  queryClient: QueryClient,
+  id: string | undefined,
+) =>
+  queryOptions({
+    queryKey: ["jobs", id] as const,
+    enabled: Boolean(apiUrl) && Boolean(id),
+    staleTime: LIST_STALE_TIME,
+    queryFn: ({ signal }) => fetchJson<JobItem>(`/jobs/${id}`, signal),
+    initialData: () =>
+      queryClient
+        .getQueryData(jobsQueryOptions().queryKey)
+        ?.find((j) => j.id === id),
+    initialDataUpdatedAt: () =>
+      queryClient.getQueryState(jobsQueryOptions().queryKey)?.dataUpdatedAt,
+  });
+
+export const marketDetailQueryOptions = (
+  queryClient: QueryClient,
+  id: string | undefined,
+) =>
+  queryOptions({
+    queryKey: ["market", id] as const,
+    enabled: Boolean(apiUrl) && Boolean(id),
+    staleTime: LIST_STALE_TIME,
+    queryFn: ({ signal }) => fetchJson<MarketItem>(`/market/${id}`, signal),
+    initialData: () =>
+      queryClient
+        .getQueryData(marketQueryOptions().queryKey)
+        ?.find((m) => m.id === id),
+    initialDataUpdatedAt: () =>
+      queryClient.getQueryState(marketQueryOptions().queryKey)?.dataUpdatedAt,
+  });
+
+export const serviceDetailQueryOptions = (
+  queryClient: QueryClient,
+  id: string | undefined,
+) =>
+  queryOptions({
+    queryKey: ["services", id] as const,
+    enabled: Boolean(apiUrl) && Boolean(id),
+    staleTime: LIST_STALE_TIME,
+    queryFn: ({ signal }) => fetchJson<Service>(`/services/${id}`, signal),
+    initialData: () =>
+      queryClient
+        .getQueryData(servicesQueryOptions().queryKey)
+        ?.find((s) => s.id === id),
+    initialDataUpdatedAt: () =>
+      queryClient.getQueryState(servicesQueryOptions().queryKey)?.dataUpdatedAt,
   });
