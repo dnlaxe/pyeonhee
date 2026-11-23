@@ -60,11 +60,13 @@ func (a *App) getMarket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) createMarket(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxListingBodyBytes)
+
 	var req CreateMarketRequest
 	data := json.NewDecoder(r.Body)
 	data.DisallowUnknownFields()
 	if err := data.Decode(&req); err != nil {
-		http.Error(w, "invalid json body", http.StatusBadRequest)
+		writeDecodeError(w, err)
 		return
 	}
 

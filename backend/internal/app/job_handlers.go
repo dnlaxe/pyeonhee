@@ -60,11 +60,13 @@ func (a *App) getJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) createJob(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxListingBodyBytes)
+
 	var req CreateJobRequest
 	data := json.NewDecoder(r.Body)
 	data.DisallowUnknownFields()
 	if err := data.Decode(&req); err != nil {
-		http.Error(w, "invalid json body", http.StatusBadRequest)
+		writeDecodeError(w, err)
 		return
 	}
 
