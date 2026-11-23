@@ -122,6 +122,65 @@ function PhotoAttachField({
   );
 }
 
+function usePhotoFiles(photoRules: {
+  max: number;
+  maxBytes: number;
+  allowedTypes: readonly string[];
+}) {
+  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const urlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const urls = urlsRef.current;
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      urls.clear();
+    };
+  }, []);
+
+  function addPhotos(
+    e: ChangeEvent<HTMLInputElement>,
+    onError: (message: string) => void,
+  ) {
+    const chosen = Array.from(e.target.files ?? []);
+    const valid: File[] = [];
+    let photoError = "";
+
+    for (const file of chosen) {
+      if (!photoRules.allowedTypes.includes(file.type)) {
+        photoError = "Use a JPEG, PNG, or WebP image.";
+        continue;
+      }
+      if (file.size > photoRules.maxBytes) {
+        photoError = "Use a photo smaller than 2 MB.";
+        continue;
+      }
+      valid.push(file);
+    }
+
+    const room = Math.max(0, photoRules.max - photos.length);
+    const added = valid.slice(0, room).map((file) => {
+      const url = URL.createObjectURL(file);
+      urlsRef.current.add(url);
+      return { file, url };
+    });
+
+    if (added.length > 0) {
+      setPhotos((prev) => [...prev, ...added]);
+    }
+    onError(photoError);
+    e.target.value = "";
+  }
+
+  function removePhoto(url: string) {
+    URL.revokeObjectURL(url);
+    urlsRef.current.delete(url);
+    setPhotos((prev) => prev.filter((p) => p.url !== url));
+  }
+
+  return { photos, addPhotos, removePhoto };
+}
+
 function JobPostForm() {
   const [draft] = useState(readJobDraft);
   const [track, setTrack] = useState<"Teaching" | "Non-teaching" | "">(
@@ -135,7 +194,7 @@ function JobPostForm() {
 
   const photoRules = formRules.jobs.photos;
   const MAX_PHOTOS = photoRules.max;
-  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const { photos, addPhotos, removePhoto } = usePhotoFiles(photoRules);
 
   const [fields, setFields] = useState<ReturnType<typeof readJobDraft>>(null);
 
@@ -224,51 +283,15 @@ function JobPostForm() {
   }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
-    const chosen = Array.from(e.target.files ?? []);
-    const accepted: { file: File; url: string }[] = [];
-    let photoError = "";
-
-    for (const file of chosen) {
-      const allowed = photoRules.allowedTypes as readonly string[];
-      if (!allowed.includes(file.type)) {
-        photoError = "Use a JPEG, PNG, or WebP image.";
-        continue;
-      }
-      if (file.size > photoRules.maxBytes) {
-        photoError = "Use a photo smaller than 2 MB.";
-        continue;
-      }
-      accepted.push({ file, url: URL.createObjectURL(file) });
-    }
-
-    setPhotos((prev) => {
-      const room = MAX_PHOTOS - prev.length;
-      return [...prev, ...accepted.slice(0, room)];
-    });
-    setErrors((prev) => {
-      const next = { ...prev };
-      if (photoError) next.logo = photoError;
-      else delete next.logo;
-      return next;
-    });
-    e.target.value = "";
-  }
-
-  function removePhoto(url: string) {
-    setPhotos((prev) => {
-      const target = prev.find((p) => p.url === url);
-      if (target) URL.revokeObjectURL(target.url);
-      return prev.filter((p) => p.url !== url);
+    addPhotos(e, (photoError) => {
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (photoError) next.logo = photoError;
+        else delete next.logo;
+        return next;
+      });
     });
   }
-
-  const photosRef = useRef(photos);
-  photosRef.current = photos;
-  useEffect(() => {
-    return () => {
-      photosRef.current.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, []);
 
   return (
     <>
@@ -486,7 +509,7 @@ function MarketPostForm() {
   const MAX_PHOTOS = photoRules.max;
   const [draft] = useState(readMarketDraft);
   const [listingType, setListingType] = useState(draft?.listingType ?? "");
-  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const { photos, addPhotos, removePhoto } = usePhotoFiles(photoRules);
   const [errors, setErrors] = useState<MarketErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [fields, setFields] = useState<{
@@ -586,51 +609,15 @@ function MarketPostForm() {
   }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
-    const chosen = Array.from(e.target.files ?? []);
-    const accepted: { file: File; url: string }[] = [];
-    let photoError = "";
-
-    for (const file of chosen) {
-      const allowed = photoRules.allowedTypes as readonly string[];
-      if (!allowed.includes(file.type)) {
-        photoError = "Use a JPEG, PNG, or WebP image.";
-        continue;
-      }
-      if (file.size > photoRules.maxBytes) {
-        photoError = "Use a photo smaller than 2 MB.";
-        continue;
-      }
-      accepted.push({ file, url: URL.createObjectURL(file) });
-    }
-
-    setPhotos((prev) => {
-      const room = MAX_PHOTOS - prev.length;
-      return [...prev, ...accepted.slice(0, room)];
-    });
-    setErrors((prev) => {
-      const next = { ...prev };
-      if (photoError) next.images = photoError;
-      else delete next.images;
-      return next;
-    });
-    e.target.value = "";
-  }
-
-  function removePhoto(url: string) {
-    setPhotos((prev) => {
-      const target = prev.find((p) => p.url === url);
-      if (target) URL.revokeObjectURL(target.url);
-      return prev.filter((p) => p.url !== url);
+    addPhotos(e, (photoError) => {
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (photoError) next.images = photoError;
+        else delete next.images;
+        return next;
+      });
     });
   }
-
-  const photosRef = useRef(photos);
-  photosRef.current = photos;
-  useEffect(() => {
-    return () => {
-      photosRef.current.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, []);
 
   return (
     <>
@@ -817,7 +804,7 @@ function ServicePostForm() {
   const photoRules = formRules.service.photos;
   const MAX_PHOTOS = photoRules.max;
   const [draft] = useState(readServiceDraft);
-  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
+  const { photos, addPhotos, removePhoto } = usePhotoFiles(photoRules);
   const [errors, setErrors] = useState<ServiceErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [fields, setFields] = useState<{
@@ -908,51 +895,15 @@ function ServicePostForm() {
   }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
-    const chosen = Array.from(e.target.files ?? []);
-    const accepted: { file: File; url: string }[] = [];
-    let photoError = "";
-
-    for (const file of chosen) {
-      const allowed = photoRules.allowedTypes as readonly string[];
-      if (!allowed.includes(file.type)) {
-        photoError = "Use a JPEG, PNG, or WebP image.";
-        continue;
-      }
-      if (file.size > photoRules.maxBytes) {
-        photoError = "Use a photo smaller than 2 MB.";
-        continue;
-      }
-      accepted.push({ file, url: URL.createObjectURL(file) });
-    }
-
-    setPhotos((prev) => {
-      const room = MAX_PHOTOS - prev.length;
-      return [...prev, ...accepted.slice(0, room)];
-    });
-    setErrors((prev) => {
-      const next = { ...prev };
-      if (photoError) next.logo = photoError;
-      else delete next.logo;
-      return next;
-    });
-    e.target.value = "";
-  }
-
-  function removePhoto(url: string) {
-    setPhotos((prev) => {
-      const target = prev.find((p) => p.url === url);
-      if (target) URL.revokeObjectURL(target.url);
-      return prev.filter((p) => p.url !== url);
+    addPhotos(e, (photoError) => {
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (photoError) next.logo = photoError;
+        else delete next.logo;
+        return next;
+      });
     });
   }
-
-  const photosRef = useRef(photos);
-  photosRef.current = photos;
-  useEffect(() => {
-    return () => {
-      photosRef.current.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, []);
 
   return (
     <>
