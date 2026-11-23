@@ -12,16 +12,13 @@ import {
 } from "../../shared";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { JobItem } from "./types";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import styles from "./JobDetail.module.css";
 import { SimilarPosts } from "../feed";
 
 export function JobDetails() {
   const { id } = useParams<{ id: string }>();
   const apiUrl = import.meta.env.VITE_API_URL;
-
-  const [logoReady, setLogoReady] = useState(false);
-  const logoRef = useRef<HTMLImageElement>(null);
 
   const queryClient = useQueryClient();
 
@@ -42,13 +39,18 @@ export function JobDetails() {
     staleTime: Infinity,
   });
 
-  useEffect(() => {
-    setLogoReady(false);
-    const img = logoRef.current;
-    if (img?.complete && img.naturalWidth > 0) {
-      setLogoReady(true);
-    }
-  }, [id, job?.logo]);
+  const logoUrl = job?.logo?.trim() || "";
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const logoReady = Boolean(logoUrl) && loadedUrl === logoUrl;
+
+  const logoRef = useCallback(
+    (img: HTMLImageElement | null) => {
+      if (img?.complete && img.naturalWidth > 0) {
+        setLoadedUrl(logoUrl);
+      }
+    },
+    [logoUrl],
+  );
 
   if (!apiUrl) {
     return (
@@ -81,7 +83,6 @@ export function JobDetails() {
   }
 
   const paragraphs = job.description.split("\n").filter(Boolean);
-  const logoUrl = job.logo?.trim() || "";
 
   return (
     <main>
@@ -92,12 +93,13 @@ export function JobDetails() {
               {!logoReady ? <LogoPlaceholder /> : null}
               {logoUrl ? (
                 <img
+                  key={logoUrl}
                   ref={logoRef}
                   src={logoUrl}
                   alt=""
                   hidden={!logoReady}
-                  onLoad={() => setLogoReady(true)}
-                  onError={() => setLogoReady(false)}
+                  onLoad={() => setLoadedUrl(logoUrl)}
+                  onError={() => setLoadedUrl(null)}
                 />
               ) : null}
             </div>
