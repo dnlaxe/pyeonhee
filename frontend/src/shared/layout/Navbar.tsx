@@ -16,6 +16,13 @@ function detailBackTo(pathname: string): string | null {
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+  }
+
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const backTo = detailBackTo(pathname);
@@ -40,10 +47,6 @@ export function Navbar() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   return (
     <>
