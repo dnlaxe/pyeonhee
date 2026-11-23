@@ -36,11 +36,13 @@ func (a *App) contact(w http.ResponseWriter, r *http.Request) {
 	req.Email = strings.TrimSpace(req.Email)
 	req.Message = strings.TrimSpace(req.Message)
 	errs := map[string]string{}
-	if req.Message == "" {
-		errs["email"] = "Enter an email address"
+	if req.Email == "" {
+		errs["email"] = "Enter an email address."
+	} else if !emailPattern.MatchString(req.Email) {
+		errs["email"] = "Enter a full email address, like name@example.com."
 	}
 	if req.Message == "" {
-		errs["message"] = "Enter a message"
+		errs["message"] = "Enter a message."
 	}
 	if req.ID == "" {
 		http.Error(w, "invalid json body", http.StatusBadRequest)

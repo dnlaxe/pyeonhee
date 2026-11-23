@@ -130,6 +130,25 @@ func TestUnknownRouteNotFound(t *testing.T) {
 	}
 }
 
+func TestCreateListingRejectsOversizedBody(t *testing.T) {
+	a := &App{}
+	router := a.NewRouter()
+
+	for _, path := range []string{"/jobs", "/market", "/services"} {
+		t.Run(path, func(t *testing.T) {
+			body := `{"description":"` + strings.Repeat("a", maxListingBodyBytes+1) + `"}`
+			req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
+			rec := httptest.NewRecorder()
+
+			router.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusRequestEntityTooLarge {
+				t.Fatalf("status = %d, want %d, body = %q", rec.Code, http.StatusRequestEntityTooLarge, rec.Body.String())
+			}
+		})
+	}
+}
+
 func TestNewRequiresTableName(t *testing.T) {
 
 	_, err := New(context.Background(), config.Config{})

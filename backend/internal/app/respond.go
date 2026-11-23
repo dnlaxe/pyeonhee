@@ -44,3 +44,14 @@ func writeValidationErrors(w http.ResponseWriter, errs map[string]string) {
 		log.Printf("write validation errors: %v", err)
 	}
 }
+
+const maxListingBodyBytes = 1 << 16
+
+func writeDecodeError(w http.ResponseWriter, err error) {
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+	http.Error(w, "invalid json body", http.StatusBadRequest)
+}
