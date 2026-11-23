@@ -7,8 +7,7 @@ import {
   ErrorMessage,
   LogoPlaceholder,
 } from "../../shared";
-import { throwIfNotOk } from "../../lib/httpError";
-import type { Service } from "./types";
+import { serviceDetailQueryOptions } from "./queries";
 import { SimilarPosts } from "../feed";
 import logoStyles from "./JobDetail.module.css";
 
@@ -22,18 +21,7 @@ export function ServiceDetail() {
     data: service,
     isPending,
     error,
-  } = useQuery({
-    queryKey: ["services", id],
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/services/${id}`);
-      throwIfNotOk(res);
-      return (await res.json()) as Promise<Service>;
-    },
-    enabled: Boolean(apiUrl) && Boolean(id),
-    initialData: () =>
-      queryClient.getQueryData<Service[]>(["services"])?.find((j) => j.id === id),
-    staleTime: Infinity,
-  });
+  } = useQuery(serviceDetailQueryOptions(queryClient, id));
 
   if (!apiUrl) {
     return (

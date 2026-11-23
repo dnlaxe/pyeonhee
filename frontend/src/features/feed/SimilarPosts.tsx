@@ -1,8 +1,11 @@
 import { useQueries } from "@tanstack/react-query";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import type { FeedItem, ListingKind } from "../listings/types";
-import type { JobItem, MarketItem, Service } from "../listings";
-import { throwIfNotOk } from "../../lib/httpError";
+import {
+  jobsQueryOptions,
+  marketQueryOptions,
+  servicesQueryOptions,
+} from "../listings";
 import styles from "./SimilarPosts.module.css";
 
 type Props = {
@@ -13,40 +16,11 @@ type Props = {
 const LIMIT = 4;
 
 export function SimilarPosts({ kind, excludeId }: Props) {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   const [jobsQ, marketQ, servicesQ] = useQueries({
     queries: [
-      {
-        queryKey: ["jobs"],
-        enabled: Boolean(apiUrl),
-        queryFn: async () => {
-          const res = await fetch(`${apiUrl}/jobs`);
-          throwIfNotOk(res);
-          return res.json() as Promise<JobItem[]>;
-        },
-        staleTime: Infinity,
-      },
-      {
-        queryKey: ["market"],
-        enabled: Boolean(apiUrl),
-        queryFn: async () => {
-          const res = await fetch(`${apiUrl}/market`);
-          throwIfNotOk(res);
-          return res.json() as Promise<MarketItem[]>;
-        },
-        staleTime: Infinity,
-      },
-      {
-        queryKey: ["services"],
-        enabled: Boolean(apiUrl),
-        queryFn: async () => {
-          const res = await fetch(`${apiUrl}/services`);
-          throwIfNotOk(res);
-          return res.json() as Promise<Service[]>;
-        },
-        staleTime: Infinity,
-      },
+      jobsQueryOptions(),
+      marketQueryOptions(),
+      servicesQueryOptions(),
     ],
   });
 

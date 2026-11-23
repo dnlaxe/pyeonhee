@@ -1,8 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ErrorMessage } from "../../shared";
 import { AppError, throwIfNotOk } from "../../lib/httpError";
+import {
+  jobsQueryOptions,
+  marketQueryOptions,
+  servicesQueryOptions,
+} from "../listings";
 import { PaymentStep } from "./PaymentStep";
 import type { Order } from "./types";
 
@@ -72,6 +77,55 @@ async function checkout(draft: PayDraft): Promise<Order> {
   return (await res.json()) as Order;
 }
 
+type ConfirmVars = {
+  kind: PayKind;
+  id: string;
+  orderId: string;
+  paymentKey: string;
+  amount: number;
+};
+
+function draftKeyFor(kind: PayKind): string {
+  switch (kind) {
+    case "job":
+      return "jobDraft";
+    case "market":
+      return "marketDraft";
+    case "service":
+      return "serviceDraft";
+    default:
+      return unexpectedKind(kind);
+  }
+}
+
+function listQueryKeyFor(kind: PayKind) {
+  switch (kind) {
+    case "job":
+      return jobsQueryOptions().queryKey;
+    case "market":
+      return marketQueryOptions().queryKey;
+    case "service":
+      return servicesQueryOptions().queryKey;
+    default:
+      return unexpectedKind(kind);
+  }
+}
+
+async function confirmPayment(body: ConfirmVars): Promise<PayKind> {
+  const res = await fetch(`${API}/payments/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 402) {
+    throw new AppError(
+      "Your payment was declined. Please try again.",
+      "warning",
+    );
+  }
+  throwIfNotOk(res);
+  return body.kind;
+}
 
 function PayLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -146,46 +200,31 @@ export function PaySuccessPage() {
       ? kindParam
       : null;
   const complete = Boolean(kind && id && orderId && paymentKey && amount);
-  const confirm = useQuery({
-    queryKey: ["payment-confirm", kind, orderId, paymentKey],
-    enabled: complete,
-    retry: false,
-    queryFn: async () => {
-      if (kind === null) throw new Error("missing payment kind");
-      let draftKey: string;
-      switch (kind) {
-        case "job":
-          draftKey = "jobDraft";
-          break;
-        case "market":
-          draftKey = "marketDraft";
-          break;
-        case "service":
-          draftKey = "serviceDraft";
-          break;
-        default:
-          return unexpectedKind(kind);
-      }
-      const body = { kind, id, orderId, paymentKey, amount };
-      const res = await fetch(`${API}/payments/confirm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.status === 402) {
-        throw new AppError(
-          "Your payment was declined. Please try again.",
-          "warning",
-        );
-      }
-      throwIfNotOk(res);
-      sessionStorage.removeItem(draftKey);
-      if (sessionStorage.getItem("payTarget") === kind) {
+  const queryClient = useQueryClient();
+  const confirm = useMutation({
+    mutationFn: confirmPayment,
+    onSuccess: (confirmedKind) => {
+      sessionStorage.removeItem(draftKeyFor(confirmedKind));
+      if (sessionStorage.getItem("payTarget") === confirmedKind) {
         sessionStorage.removeItem("payTarget");
       }
-      return true;
+      return queryClient.invalidateQueries({
+        queryKey: listQueryKeyFor(confirmedKind),
+      });
     },
   });
+
+  const confirmKey = complete
+    ? `${kind}:${id}:${orderId}:${paymentKey}:${amount}`
+    : null;
+  const triggeredKeyRef = useRef<string | null>(null);
+  const { mutate } = confirm;
+
+  useEffect(() => {
+    if (!confirmKey || !kind || triggeredKeyRef.current === confirmKey) return;
+    triggeredKeyRef.current = confirmKey;
+    mutate({ kind, id, orderId, paymentKey, amount });
+  }, [confirmKey, kind, id, orderId, paymentKey, amount, mutate]);
 
   if (!kind || !id || !orderId || !paymentKey || !amount) {
     return (
@@ -195,7 +234,7 @@ export function PaySuccessPage() {
     );
   }
 
-  if (confirm.isPending) {
+  if (confirm.isIdle || confirm.isPending) {
     return (
       <PayLayout title="Payment">
         <p className="text-[15px] leading-normal text-body">Confirming payment…</p>

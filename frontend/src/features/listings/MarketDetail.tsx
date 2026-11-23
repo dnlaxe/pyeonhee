@@ -11,8 +11,7 @@ import {
   LogoPlaceholder,
   PinIcon,
 } from "../../shared";
-import type { MarketItem } from "./types";
-import { throwIfNotOk } from "../../lib/httpError";
+import { marketDetailQueryOptions } from "./queries";
 import styles from "./MarketDetail.module.css";
 import { SimilarPosts } from "../feed";
 
@@ -50,27 +49,15 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
 }
 
 export function MarketDetail() {
-  const { id } = useParams<{ id: string }>();
-  const apiUrl = import.meta.env.VITE_API_URL;
 
-  const queryClient = useQueryClient()
+  const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
 
   const {
     data: market,
     isPending,
     error,
-  } = useQuery({
-    queryKey: ["market", id],
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/market/${id}`);
-      throwIfNotOk(res);
-      return await res.json() as Promise<MarketItem>;
-    },
-    enabled: Boolean(apiUrl) && Boolean(id),
-    initialData: () =>
-      queryClient.getQueryData<MarketItem[]>(["market"])?.find((j) => j.id === id),
-    staleTime: Infinity
-  });
+  } = useQuery(marketDetailQueryOptions(queryClient, id));
 
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);

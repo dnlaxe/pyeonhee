@@ -10,8 +10,7 @@ import {
   LogoPlaceholder,
   PinIcon,
 } from "../../shared";
-import { throwIfNotOk } from "../../lib/httpError";
-import type { JobItem } from "./types";
+import { jobDetailQueryOptions } from "./queries";
 import { useCallback, useState } from "react";
 import styles from "./JobDetail.module.css";
 import { SimilarPosts } from "../feed";
@@ -26,18 +25,7 @@ export function JobDetails() {
     data: job,
     isPending,
     error,
-  } = useQuery({
-    queryKey: ["jobs", id],
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/jobs/${id}`);
-      throwIfNotOk(res);
-      return (await res.json()) as Promise<JobItem>;
-    },
-    enabled: Boolean(apiUrl) && Boolean(id),
-    initialData: () =>
-      queryClient.getQueryData<JobItem[]>(["jobs"])?.find((j) => j.id === id),
-    staleTime: Infinity,
-  });
+  } = useQuery(jobDetailQueryOptions(queryClient, id));
 
   const logoUrl = job?.logo?.trim() || "";
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
