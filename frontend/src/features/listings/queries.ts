@@ -16,11 +16,7 @@ export const jobsQueryOptions = () =>
     queryKey: ["jobs"] as const,
     enabled: Boolean(apiUrl),
     staleTime: LIST_STALE_TIME,
-    queryFn: async ({ signal }) => {
-      // Temporary delay to inspect LoadingState
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return fetchJson<JobItem[]>("/jobs", signal);
-    },
+    queryFn: ({ signal }) => fetchJson<JobItem[]>("/jobs", signal),
   });
 
 export const marketQueryOptions = () =>
