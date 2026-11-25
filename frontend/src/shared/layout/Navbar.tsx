@@ -6,16 +6,31 @@ import { Logo } from "../icons/Logo";
 import { Hamburger } from "./Hamburger";
 import menu from "./MenuIsland.module.css";
 
-function detailBackTo(pathname: string): string | null {
+function detailBackTo(pathname: string, state: unknown): string | null {
+  const isDetail =
+    /^\/jobs\/[^/]+$/.test(pathname) ||
+    /^\/market\/[^/]+$/.test(pathname) ||
+    /^\/services\/[^/]+$/.test(pathname);
+  if (!isDetail) return null;
+
+  if (
+    typeof state === "object" &&
+    state !== null &&
+    "backTo" in state &&
+    typeof state.backTo === "string" &&
+    (state.backTo === "/" || state.backTo.startsWith("/?"))
+  ) {
+    return state.backTo;
+  }
+
   if (/^\/jobs\/[^/]+$/.test(pathname)) return "/?kind=job";
   if (/^\/market\/[^/]+$/.test(pathname)) return "/?kind=market";
-  if (/^\/services\/[^/]+$/.test(pathname)) return "/?kind=service";
-  return null;
+  return "/?kind=service";
 }
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
 
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (pathname !== prevPathname) {
@@ -25,7 +40,7 @@ export function Navbar() {
 
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const backTo = detailBackTo(pathname);
+  const backTo = detailBackTo(pathname, state);
 
   useEffect(() => {
     if (!open) return;

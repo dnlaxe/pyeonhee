@@ -1,8 +1,14 @@
+import { useDeferredValue, useMemo, useRef } from "react";
 import { ErrorMessage, LoadingState } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import cardStyles from "../listings/ListingCard.module.css";
-import { listingKindLabel, type FeedItem } from "../listings/types";
+import { listingKindLabel, type FeedKindFilter } from "../listings/types";
 import type { JobItem, MarketItem, Service } from "../listings";
+import {
+  filterFeedItems,
+  latestFirst,
+  toFeedItems,
+} from "./feedFilters";
 import styles from "./LatestPosts.module.css";
 
 const KIND_OPTIONS = [
@@ -19,11 +25,12 @@ type LatestPostsSectionProps = {
   isPending?: boolean;
   errors?: Array<Error | null>;
   apiUrl?: string;
+  kind: FeedKindFilter;
+  query: string;
+  onKindChange: (kind: FeedKindFilter) => void;
+  onQueryChange: (query: string) => void;
+  onResetFilters: () => void;
 };
-
-function latestFirst(posts: FeedItem[]) {
-  return posts.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-}
 
 export function LatestPostsSection({
   jobs,
@@ -32,102 +39,109 @@ export function LatestPostsSection({
   isPending,
   errors = [],
   apiUrl,
+  kind,
+  query,
+  onKindChange,
+  onQueryChange,
+  onResetFilters,
 }: LatestPostsSectionProps) {
-  const posts = latestFirst([
-    ...jobs.map(
-      (job): FeedItem => ({
-        kind: "job",
-        id: job.id,
-        title: job.title,
-        description: job.description,
-        thumbUrl: job.logo,
-        tags: job.tags,
-        pinned: job.pinned,
-        createdAt: job.createdAt,
-        href: `/jobs/${job.id}`,
-      }),
-    ),
-    ...items.map(
-      (item): FeedItem => ({
-        kind: "market",
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        thumbUrl: item.images[0],
-        tags: item.tags,
-        pinned: item.pinned,
-        createdAt: item.createdAt,
-        href: `/market/${item.id}`,
-      }),
-    ),
-    ...services.map(
-      (service): FeedItem => ({
-        kind: "service",
-        id: service.id,
-        title: service.company,
-        description: service.blurb,
-        thumbUrl: service.logo || undefined,
-        tags: service.tags,
-        pinned: false,
-        createdAt: service.createdAt,
-        href: `/services/${service.id}`,
-      }),
-    ),
-  ]);
+  const deferredQuery = useDeferredValue(query);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const visibleErrors = errors.filter((error): error is Error => Boolean(error));
+  const allPosts = useMemo(
+    () => latestFirst(toFeedItems(jobs, items, services)),
+    [jobs, items, services],
+  );
+
+  const filteredPosts = useMemo(
+    () => filterFeedItems(allPosts, { kind, q: deferredQuery }),
+    [allPosts, kind, deferredQuery],
+  );
+
+  const visibleErrors = Array.from(
+    new Map(
+      errors
+        .filter((error): error is Error => Boolean(error))
+        .map((error) => [error.message, error]),
+    ).values(),
+  );
+  const hasActiveFilters = kind !== "" || query.trim() !== "";
 
   return (
     <section className="w-full">
       <div className={styles.titleBar}>
         <div className={styles.titleBarInner}>
-          <h2 className="m-0 shrink-0 text-[20px] font-normal leading-[1.2] tracking-normal text-text max-[399px]:text-[18px] max-[374px]:text-[16px]">
+          <h2
+            className={`${styles.heading} m-0 text-[20px] font-normal leading-[1.2] tracking-normal text-text max-[399px]:text-[18px]`}
+          >
             Latest Posts
           </h2>
-          <div className={styles.tools}>
-            <label className={styles.search}>
-              <span className="sr-only">Search posts</span>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-              <input
-                type="search"
-                name="q"
-                placeholder="Search"
-                autoComplete="off"
-                defaultValue=""
-                readOnly
-              />
+
+          <div className={styles.search}>
+            <label htmlFor="latest-search" className="sr-only">
+              Search posts
             </label>
-            <label className="sr-only" htmlFor="latest-filter">
-              Filter by type
-            </label>
-            <select
-              id="latest-filter"
-              className={`select-input ${styles.filter}`}
-              name="kind"
-              defaultValue=""
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
             >
-              {KIND_OPTIONS.map((opt) => (
-                <option key={opt.value || "all"} value={opt.value}>
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input
+              ref={searchInputRef}
+              id="latest-search"
+              type="search"
+              name="q"
+              placeholder="Search posts..."
+              autoComplete="off"
+              value={query}
+              onChange={(e) => onQueryChange(e.target.value)}
+            />
+            {query.length > 0 && (
+              <button
+                type="button"
+                className={styles.clearBtn}
+                aria-label="Clear search"
+                onClick={() => {
+                  onQueryChange("");
+                  searchInputRef.current?.focus();
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <div
+            className={styles.pills}
+            role="group"
+            aria-label="Filter by type"
+          >
+            {KIND_OPTIONS.map((opt) => {
+              const isActive = kind === opt.value;
+              return (
+                <button
+                  key={opt.value || "all"}
+                  type="button"
+                  aria-pressed={isActive}
+                  className={`${styles.pill}${isActive ? ` ${styles.pillActive}` : ""}`}
+                  onClick={() => onKindChange(opt.value)}
+                >
                   {opt.label}
-                </option>
-              ))}
-            </select>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div className="w-full bg-bg pt-6 pb-20 max-md:pb-14">
+      <div className="w-full bg-bg pt-2 pb-20 max-md:pb-14">
         <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
           {!apiUrl && <p className="text-danger">VITE_API_URL is not set</p>}
 
@@ -143,16 +157,38 @@ export function LatestPostsSection({
 
           {!isPending &&
             apiUrl &&
-            posts.length === 0 &&
-            visibleErrors.length === 0 && (
-              <p className="mt-9 text-center text-[15px] leading-normal text-muted">
-                No posts yet.
+            visibleErrors.length === 0 &&
+            hasActiveFilters && (
+              <p className="sr-only" role="status" aria-live="polite">
+                {filteredPosts.length === 1
+                  ? "1 matching post"
+                  : `${filteredPosts.length} matching posts`}
               </p>
             )}
 
-          {!isPending && apiUrl && posts.length > 0 && (
+          {!isPending &&
+            apiUrl &&
+            filteredPosts.length === 0 &&
+            visibleErrors.length === 0 && (
+              <div className="mt-9 text-center">
+                <p className="m-0 text-[15px] leading-normal text-muted">
+                  {hasActiveFilters ? "No matching posts." : "No posts yet."}
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    className={styles.resetBtn}
+                    onClick={onResetFilters}
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
+
+          {!isPending && apiUrl && filteredPosts.length > 0 && (
             <div className={cardStyles.grid}>
-              {posts.map((item) => (
+              {filteredPosts.map((item) => (
                 <ListingCard key={`${item.kind}-${item.id}`} item={item} />
               ))}
             </div>

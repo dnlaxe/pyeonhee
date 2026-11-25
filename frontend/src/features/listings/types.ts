@@ -16,6 +16,7 @@ export type JobItem = {
 export type MarketItem = {
   id: string;
   title: string;
+  location: string;
   description: string;
   images: string[];
   tags: MarketTag[];
@@ -40,12 +41,14 @@ export type ServiceItem = {
 export type Service = ServiceItem;
 
 export type ListingKind = "job" | "market" | "service";
+export type FeedKindFilter = ListingKind | "";
 
 export type FeedItem = {
   kind: ListingKind;
   id: string;
   title: string;
   description: string;
+  location: string;
   thumbUrl?: string;
   tags: readonly string[];
   pinned: boolean;

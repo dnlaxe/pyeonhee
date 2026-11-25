@@ -108,7 +108,7 @@ export function MarketDetail() {
   }
 
   if (!market) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/?kind=market" replace />;
   }
 
   const paragraphs = market.description.split("\n").filter(Boolean);
