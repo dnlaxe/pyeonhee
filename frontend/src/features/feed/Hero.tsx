@@ -59,7 +59,7 @@ export function Hero() {
   }, []);
 
   return (
-    <div className={styles.heroBanner} aria-live="polite">
+    <div className={styles.heroBanner}>
       <div className={styles.heroBannerInner}>
         <div className={styles.heroBannerCopy}>
           <p className={styles.heroBannerLead}>Living in Korea?</p>
