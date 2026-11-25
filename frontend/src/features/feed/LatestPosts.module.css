@@ -1,61 +1,55 @@
-.titleBar {
+.titleBar,
+.titleBarInner {
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    height: 56px;
+}
+
+.titleBar {
+    justify-content: space-between;
+    gap: 16px;
     width: 100%;
-    padding: 20px 0 8px;
+    padding: 0;
     background-color: var(--color-bg);
 }
 
 .titleBarInner {
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-        "heading"
-        "search"
-        "pills";
-    gap: 12px;
-    width: min(100% - 32px, 1120px);
+    justify-content: space-between;
+    gap: 16px;
+    width: min(100% - 48px, 1120px);
     margin-inline: auto;
+    height: 100%;
 }
 
-@media (min-width: 640px) {
-    .titleBar {
-        padding: 28px 0 10px;
-    }
-
+@media (max-width: 767px) {
     .titleBarInner {
-        grid-template-columns: 1fr minmax(240px, 300px);
-        grid-template-areas:
-            "heading search"
-            "pills   pills";
-        align-items: center;
-        column-gap: 20px;
-        row-gap: 14px;
+        width: min(100% - 32px, 1120px);
     }
 }
 
-@media (min-width: 768px) {
-    .titleBarInner {
-        width: min(100% - 48px, 1120px);
-    }
-}
-
-.heading {
-    grid-area: heading;
+.tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .search {
-    grid-area: search;
     position: relative;
     display: flex;
     align-items: center;
+    flex: 1 1 220px;
     width: 100%;
     min-width: 0;
+    max-width: 220px;
 }
 
 .search svg {
     position: absolute;
-    left: 11px;
+    left: 10px;
     width: 16px;
     height: 16px;
     pointer-events: none;
@@ -65,27 +59,15 @@
 .search input {
     width: 100%;
     min-width: 0;
-    height: 42px;
+    height: 36px;
     margin: 0;
     border: 1px solid var(--color-border);
     border-radius: 0;
     background: var(--color-bg);
-    padding: 0 34px;
-    font-size: 16px;
+    padding: 0 12px 0 34px;
+    font-size: 14px;
     line-height: 1.2;
     color: var(--color-text);
-}
-
-@media (min-width: 640px) {
-    .search input {
-        height: 38px;
-        font-size: 14px;
-    }
-}
-
-.search input::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
 }
 
 .search input::placeholder {
@@ -93,91 +75,27 @@
 }
 
 .search input:focus {
-    border-color: var(--color-text);
-    outline: 2px solid var(--color-text);
-    outline-offset: -2px;
-}
-
-.clearBtn {
-    position: absolute;
-    right: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--color-muted);
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.clearBtn:hover {
-    color: var(--color-text);
-}
-
-.clearBtn:focus-visible {
     outline: 2px solid var(--color-text);
     outline-offset: 1px;
 }
 
-.pills {
-    grid-area: pills;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
-.pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.filter {
+    flex: 0 0 auto;
     height: 36px;
     margin: 0;
-    padding: 0 14px;
     border: 1px solid var(--color-border);
     border-radius: 0;
     background-color: var(--color-bg);
+    padding-left: 12px;
     font-size: 14px;
     line-height: 1.2;
-    color: var(--color-body);
-    cursor: pointer;
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease;
-}
-
-@media (max-width: 399px) {
-    .pills {
-        gap: 6px;
-    }
-
-    .pill {
-        padding: 0 12px;
-    }
-}
-
-.pill:hover {
-    border-color: var(--color-text);
-    background-color: var(--color-surface);
     color: var(--color-text);
+    cursor: pointer;
 }
 
-.pillActive,
-.pillActive:hover {
-    border-color: var(--color-text);
-    background-color: var(--color-text);
-    color: var(--color-bg);
-}
-
-.pill:focus-visible {
+.filter:focus {
     outline: 2px solid var(--color-text);
-    outline-offset: 2px;
+    outline-offset: 1px;
 }
 
 .resetBtn {
