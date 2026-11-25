@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { TagList } from "../../shared/ui/TagList.tsx";
 import { LogoPlaceholder } from "../../shared/icons/LogoPlaceholder.tsx";
 import { PinIcon } from "../../shared/icons/PinIcon.tsx";
@@ -7,7 +7,22 @@ import { formatTimeSince } from "../../shared/helpers/time.ts";
 import styles from "./ListingCard.module.css";
 import { type FeedItem, listingKindLabel } from "./types.ts";
 
+function readBackTo(state: unknown): string | undefined {
+  if (
+    typeof state === "object" &&
+    state !== null &&
+    "backTo" in state &&
+    typeof state.backTo === "string"
+  ) {
+    return state.backTo;
+  }
+  return undefined;
+}
+
 export function ListingCard({ item }: { item: FeedItem }) {
+  const { pathname, search, state } = useLocation();
+  const backTo = pathname === "/" ? `/${search}` : readBackTo(state);
+
   const thumbUrl = item.thumbUrl ?? "";
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const thumbReady = Boolean(thumbUrl) && loadedUrl === thumbUrl;
@@ -22,7 +37,11 @@ export function ListingCard({ item }: { item: FeedItem }) {
   );
 
   return (
-    <Link to={item.href} className={`${styles.card} group`}>
+    <Link
+      to={item.href}
+      state={backTo ? { backTo } : undefined}
+      className={`${styles.card} group`}
+    >
       <div className={styles.logo} aria-hidden={thumbReady ? undefined : true}>
         {!thumbReady ? <LogoPlaceholder /> : null}
         {thumbUrl ? (
