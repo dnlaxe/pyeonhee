@@ -3,11 +3,7 @@ import { useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Container, ErrorMessage } from "../../shared";
 import { AppError, throwIfNotOk } from "../../lib/httpError";
-import {
-  jobsQueryOptions,
-  marketQueryOptions,
-  servicesQueryOptions,
-} from "../listings";
+import { listingsQueryOptions } from "../listings";
 import { PaymentStep } from "./PaymentStep";
 import type { Order } from "./types";
 
@@ -90,19 +86,6 @@ function draftKeyFor(kind: PayKind): string {
       return "marketDraft";
     case "service":
       return "serviceDraft";
-    default:
-      return unexpectedKind(kind);
-  }
-}
-
-function listQueryKeyFor(kind: PayKind) {
-  switch (kind) {
-    case "job":
-      return jobsQueryOptions().queryKey;
-    case "market":
-      return marketQueryOptions().queryKey;
-    case "service":
-      return servicesQueryOptions().queryKey;
     default:
       return unexpectedKind(kind);
   }
@@ -204,7 +187,7 @@ export function PaySuccessPage() {
         sessionStorage.removeItem("payTarget");
       }
       return queryClient.invalidateQueries({
-        queryKey: listQueryKeyFor(confirmedKind),
+        queryKey: listingsQueryOptions().queryKey,
       });
     },
   });

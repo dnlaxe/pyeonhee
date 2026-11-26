@@ -14,7 +14,7 @@ type LatestPostsSectionProps = {
   items: MarketItem[];
   services: Service[];
   isPending?: boolean;
-  errors?: Array<Error | null>;
+  error?: Error | null;
   apiUrl?: string;
   kind: FeedKindFilter;
   query: string;
@@ -28,7 +28,7 @@ export function LatestPostsSection({
   items,
   services,
   isPending,
-  errors = [],
+  error = null,
   apiUrl,
   kind,
   query,
@@ -48,13 +48,6 @@ export function LatestPostsSection({
     [allPosts, kind, deferredQuery],
   );
 
-  const visibleErrors = Array.from(
-    new Map(
-      errors
-        .filter((error): error is Error => Boolean(error))
-        .map((error) => [error.message, error]),
-    ).values(),
-  );
   const hasActiveFilters = kind !== "" || query.trim() !== "";
 
   return (
@@ -76,13 +69,11 @@ export function LatestPostsSection({
 
           {apiUrl && isPending ? <ListingCardSkeletonGrid /> : null}
 
-          {visibleErrors.map((error) => (
-            <ErrorMessage key={error.message} error={error} />
-          ))}
+          {error && <ErrorMessage error={error} />}
 
           {!isPending &&
             apiUrl &&
-            visibleErrors.length === 0 &&
+            !error &&
             hasActiveFilters && (
               <p className="sr-only" role="status" aria-live="polite">
                 {filteredPosts.length === 1
@@ -94,7 +85,7 @@ export function LatestPostsSection({
           {!isPending &&
             apiUrl &&
             filteredPosts.length === 0 &&
-            visibleErrors.length === 0 && (
+            !error && (
               <div className="mt-9 text-center">
                 <p className="text-meta m-0">
                   {hasActiveFilters ? "No matching posts." : "No posts yet."}
