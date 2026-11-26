@@ -1,15 +1,15 @@
 import { Link, Navigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Container,
+  ListingLogo,
   Prose,
   TagList,
   formatTimeSince,
   ErrorMessage,
-  LogoPlaceholder,
 } from "../../shared";
 import { serviceDetailQueryOptions } from "./queries";
 import { SimilarPosts } from "../feed";
-import logoStyles from "./JobDetail.module.css";
 
 export function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,24 +25,30 @@ export function ServiceDetail() {
 
   if (!apiUrl) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <p className="text-danger">VITE_API_URL is not set</p>
+      <main>
+        <Container>
+          <p className="text-tone-danger">VITE_API_URL is not set</p>
+        </Container>
       </main>
     );
   }
 
   if (isPending) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <p className="text-muted">Loading…</p>
+      <main>
+        <Container>
+          <p className="text-meta">Loading…</p>
+        </Container>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <ErrorMessage error={error} />
+      <main>
+        <Container>
+          <ErrorMessage error={error} />
+        </Container>
       </main>
     );
   }
@@ -60,36 +66,28 @@ export function ServiceDetail() {
   return (
     <main>
       <article className="pt-5 pb-20 md:pt-7">
-        <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
+        <Container narrow>
           <div className="mb-5 flex items-start gap-5">
-            <div className={`${logoStyles.detailLogo} shrink-0`}>
-              {service.logo ? (
-                <img src={service.logo} alt="" />
-              ) : (
-                <LogoPlaceholder />
-              )}
-            </div>
+            <ListingLogo src={service.logo} />
             <div className="min-w-0 flex-1">
-              <h1 className="m-0 text-[clamp(24px,4vw,32px)] font-normal leading-[1.2] tracking-[-0.5px] text-text">
-                {service.company}
-              </h1>
-              <p className="m-0 mt-2 text-sm text-muted">
+              <h1 className="heading-page m-0">{service.company}</h1>
+              <p className="text-meta m-0 mt-2">
                 {formatTimeSince(service.createdAt)}
               </p>
               <TagList tags={detailTags} extraClass="mt-3" />
             </div>
           </div>
           <Prose paragraphs={paragraphs} />
-          <div className="mt-8 flex flex-col gap-2 text-[15px] leading-normal text-body">
+          <div className="text-intro mt-8 flex flex-col gap-2">
             <p className="m-0">
-              <span className="text-text">Location:</span> {service.location}
+              <span className="text-emphasis">Location:</span> {service.location}
             </p>
             {service.webpage ? (
               <p className="m-0">
-                <span className="text-text">Website:</span>{" "}
+                <span className="text-emphasis">Website:</span>{" "}
                 <a
                   href={service.webpage}
-                  className="underline underline-offset-[3px] hover:text-text"
+                  className="link-body"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -98,24 +96,18 @@ export function ServiceDetail() {
               </p>
             ) : null}
             <p className="m-0">
-              <span className="text-text">Email:</span>{" "}
-              <a
-                href={`mailto:${service.contact}`}
-                className="text-[13px] underline underline-offset-[3px] hover:text-text"
-              >
+              <span className="text-emphasis">Email:</span>{" "}
+              <a href={`mailto:${service.contact}`} className="link-body">
                 {service.contact}
               </a>
             </p>
           </div>
-          <p className="mt-4 m-0">
-            <Link
-              to={`/report/service/${service.id}`}
-              className="text-[13px] text-muted underline underline-offset-[3px]"
-            >
-              report this post
+          <p className="m-0 mt-4">
+            <Link to={`/report/service/${service.id}`} className="link-muted">
+              Report this post
             </Link>
           </p>
-        </div>
+        </Container>
       </article>
       <SimilarPosts kind="service" excludeId={service.id} />
     </main>

@@ -1,28 +1,9 @@
 .section {
   width: 100%;
   background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--border-subtle);
+  border-bottom: var(--border-subtle);
   padding: 40px 0 48px;
-}
-
-.inner {
-  width: min(100% - 48px, 1120px);
-  margin-inline: auto;
-}
-
-@media (max-width: 767px) {
-  .inner {
-    width: min(100% - 32px, 1120px);
-  }
-}
-
-.heading {
-  margin: 0 0 24px;
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 400;
-  line-height: 1.2;
-  color: var(--color-text);
 }
 
 .grid {
