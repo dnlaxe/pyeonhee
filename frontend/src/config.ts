@@ -175,12 +175,16 @@ export const postCopy = {
 export type NavLink = {
   path: string;
   label: string;
+  accent?: boolean;
 };
 
 export const navLinks: NavLink[] = [
-  { path: "/", label: "latest posts" },
-  { path: "/post", label: "post" },
-  { path: "/faq", label: "faq" },
+  { path: "/", label: "Latest posts" },
+  { path: "/?kind=job", label: "Work", accent: true },
+  { path: "/?kind=market", label: "For Sale", accent: true },
+  { path: "/?kind=service", label: "Services", accent: true },
+  { path: "/post", label: "Post" },
+  { path: "/faq", label: "FAQ" },
 ];
 
 export type FooterLink = {
@@ -189,7 +193,7 @@ export type FooterLink = {
 };
 
 export const footerLinks: FooterLink[] = [
-  { to: "/", label: "latest posts" },
-  { to: "/post", label: "post" },
-  { to: "/faq", label: "faq" },
+  { to: "/", label: "Latest posts" },
+  { to: "/post", label: "Post" },
+  { to: "/faq", label: "FAQ" },
 ];

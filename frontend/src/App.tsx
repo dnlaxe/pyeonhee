@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router";
 import { JobDetails, MarketDetail, ServiceDetail } from "./features/listings";
 import { ScrollToTop } from "./shared/layout/ScrollToTop";
 import { Navbar } from "./shared/layout/Navbar";
+import { ShareCta } from "./shared/layout/ShareCta";
 import { Footer } from "./shared/layout/Footer";
 import { PostFormPage, PostPage } from "./features/post";
 import { FaqPage } from "./features/faq";
@@ -43,6 +44,7 @@ export function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
+      <ShareCta />
       <Footer />
     </div>
   );
