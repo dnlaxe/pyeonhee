@@ -1,4 +1,5 @@
-import { useDeferredValue, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { config } from "../../config";
 import { Container, ErrorMessage } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import { ListingCardSkeletonGrid } from "../listings/ListingCardSkeleton";
@@ -47,6 +48,62 @@ export function LatestPostsSection({
     () => filterFeedItems(allPosts, { kind, q: deferredQuery }),
     [allPosts, kind, deferredQuery],
   );
+
+  const { initialCount, batchSize } = config.feed;
+  const filterKey = `${kind}:${deferredQuery}`;
+  const [paging, setPaging] = useState<{
+    filterKey: string;
+    visibleCount: number;
+    infinite: boolean;
+  }>({
+    filterKey,
+    visibleCount: initialCount,
+    infinite: false,
+  });
+
+  const visibleCount =
+    paging.filterKey === filterKey ? paging.visibleCount : initialCount;
+  const infinite = paging.filterKey === filterKey ? paging.infinite : false;
+
+  const visiblePosts = useMemo(
+    () => filteredPosts.slice(0, visibleCount),
+    [filteredPosts, visibleCount],
+  );
+  const hasMore = visibleCount < filteredPosts.length;
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!infinite || !hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setPaging((prev) => ({
+            filterKey,
+            infinite: true,
+            visibleCount:
+              (prev.filterKey === filterKey
+                ? prev.visibleCount
+                : initialCount) + batchSize,
+          }));
+        }
+      },
+      { rootMargin: "300px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [infinite, hasMore, filterKey, visibleCount, initialCount, batchSize]);
+
+  function handleShowMore() {
+    setPaging({
+      filterKey,
+      visibleCount: visibleCount + batchSize,
+      infinite: true,
+    });
+  }
 
   const hasActiveFilters = kind !== "" || query.trim() !== "";
 
@@ -105,13 +162,22 @@ export function LatestPostsSection({
           {!isPending && apiUrl && filteredPosts.length > 0 && (
             <>
               <div className={cardStyles.grid}>
-                {filteredPosts.map((item) => (
+                {visiblePosts.map((item) => (
                   <ListingCard key={`${item.kind}-${item.id}`} item={item} />
                 ))}
               </div>
-              <button type="button" className={styles.showMoreBtn}>
-                Show more
-              </button>
+              {hasMore && !infinite && (
+                <button
+                  type="button"
+                  className={styles.showMoreBtn}
+                  onClick={handleShowMore}
+                >
+                  Show more
+                </button>
+              )}
+              {hasMore && infinite && (
+                <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+              )}
             </>
           )}
         </Container>
