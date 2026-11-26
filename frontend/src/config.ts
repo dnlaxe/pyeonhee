@@ -193,7 +193,7 @@ export type FooterLink = {
 };
 
 export const footerLinks: FooterLink[] = [
-  { to: "/", label: "latest posts" },
-  { to: "/post", label: "post" },
-  { to: "/faq", label: "faq" },
+  { to: "/", label: "Latest posts" },
+  { to: "/post", label: "Post" },
+  { to: "/faq", label: "FAQ" },
 ];
