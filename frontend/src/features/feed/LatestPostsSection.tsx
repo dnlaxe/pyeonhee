@@ -1,23 +1,12 @@
 import { useDeferredValue, useMemo } from "react";
-import { ErrorMessage, LoadingState } from "../../shared";
+import { Container, ErrorMessage, LoadingState } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import cardStyles from "../listings/ListingCard.module.css";
-import { listingKindLabel, type FeedKindFilter } from "../listings/types";
+import type { FeedKindFilter } from "../listings/types";
 import type { JobItem, MarketItem, Service } from "../listings";
-import {
-  filterFeedItems,
-  latestFirst,
-  parseKindParam,
-  toFeedItems,
-} from "./feedFilters";
+import { filterFeedItems, latestFirst, toFeedItems } from "./feedFilters";
+import { FeedSearchBar } from "./FeedSearchBar";
 import styles from "./LatestPosts.module.css";
-
-const KIND_OPTIONS = [
-  { value: "", label: "All" },
-  { value: "job", label: listingKindLabel.job },
-  { value: "market", label: listingKindLabel.market },
-  { value: "service", label: listingKindLabel.service },
-] as const;
 
 type LatestPostsSectionProps = {
   jobs: JobItem[];
@@ -69,58 +58,20 @@ export function LatestPostsSection({
 
   return (
     <section className="w-full">
-      <div className={styles.titleBar}>
-        <div className={styles.titleBarInner}>
-          <h2 className="m-0 shrink-0 text-[20px] font-normal leading-[1.2] tracking-normal text-text max-[399px]:text-[18px] max-[374px]:text-[16px]">
-            Latest Posts
-          </h2>
-          <div className={styles.tools}>
-            <label className={styles.search}>
-              <span className="sr-only">Search posts</span>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-              <input
-                type="search"
-                name="q"
-                placeholder="Search"
-                autoComplete="off"
-                value={query}
-                onChange={(e) => onQueryChange(e.target.value)}
-              />
-            </label>
-            <label className="sr-only" htmlFor="latest-filter">
-              Filter by type
-            </label>
-            <select
-              id="latest-filter"
-              className={`select-input ${styles.filter}`}
-              name="kind"
-              value={kind}
-              onChange={(e) => onKindChange(parseKindParam(e.target.value))}
-            >
-              {KIND_OPTIONS.map((opt) => (
-                <option key={opt.value || "all"} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+      <FeedSearchBar
+        kind={kind}
+        query={query}
+        onKindChange={onKindChange}
+        onQueryChange={onQueryChange}
+      />
 
-      <div className="w-full bg-bg pt-6 pb-20 max-md:pb-14">
-        <div className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-          {!apiUrl && <p className="text-danger">VITE_API_URL is not set</p>}
+      <div className="surface-bg w-full pt-2 pb-20 max-md:pb-14">
+        <Container>
+          <h2 className="heading-section m-0 mt-3 mb-2">Latest Posts</h2>
+
+          {!apiUrl && (
+            <p className="text-tone-danger">VITE_API_URL is not set</p>
+          )}
 
           {apiUrl && isPending ? (
             <div className="flex min-h-[calc(100dvh-12rem)] w-full items-center justify-center pb-40">
@@ -148,7 +99,7 @@ export function LatestPostsSection({
             filteredPosts.length === 0 &&
             visibleErrors.length === 0 && (
               <div className="mt-9 text-center">
-                <p className="m-0 text-[15px] leading-normal text-muted">
+                <p className="text-meta m-0">
                   {hasActiveFilters ? "No matching posts." : "No posts yet."}
                 </p>
                 {hasActiveFilters && (
@@ -164,13 +115,18 @@ export function LatestPostsSection({
             )}
 
           {!isPending && apiUrl && filteredPosts.length > 0 && (
-            <div className={cardStyles.grid}>
-              {filteredPosts.map((item) => (
-                <ListingCard key={`${item.kind}-${item.id}`} item={item} />
-              ))}
-            </div>
+            <>
+              <div className={cardStyles.grid}>
+                {filteredPosts.map((item) => (
+                  <ListingCard key={`${item.kind}-${item.id}`} item={item} />
+                ))}
+              </div>
+              <button type="button" className={styles.showMoreBtn}>
+                Show more
+              </button>
+            </>
           )}
-        </div>
+        </Container>
       </div>
     </section>
   );

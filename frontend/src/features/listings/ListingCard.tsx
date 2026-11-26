@@ -40,7 +40,7 @@ export function ListingCard({ item }: { item: FeedItem }) {
     <Link
       to={item.href}
       state={backTo ? { backTo } : undefined}
-      className={`${styles.card} group`}
+      className={styles.card}
     >
       <div className={styles.logo} aria-hidden={thumbReady ? undefined : true}>
         {!thumbReady ? <LogoPlaceholder /> : null}
@@ -64,7 +64,7 @@ export function ListingCard({ item }: { item: FeedItem }) {
       </div>
       <div className={styles.body}>
         <div className={styles.titleRow}>
-          <h3 className="line-clamp-2">
+          <h3 className="text-clamp-2">
             {item.pinned ? (
               <span className={styles.pin} aria-label="Pinned">
                 <PinIcon />
@@ -73,7 +73,7 @@ export function ListingCard({ item }: { item: FeedItem }) {
             {item.title}
           </h3>
         </div>
-        <p className={`${styles.desc} line-clamp-2`}>
+        <p className={`${styles.desc} text-clamp-2`}>
           {item.description.replace(/\n+/g, " ").trim()}
         </p>
         <TagList tags={item.tags} extraClass="mt-3" />

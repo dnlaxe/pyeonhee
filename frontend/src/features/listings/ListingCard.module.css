@@ -19,6 +19,7 @@
   display: grid;
   place-items: center;
   overflow: hidden;
+  border-radius: var(--radius-sm);
   background: var(--color-accent);
 }
 
@@ -31,7 +32,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform var(--duration-media) var(--ease-default);
 }
 
 .card:hover .logo img,
@@ -66,11 +67,12 @@
   margin: 0;
   border: none;
   padding: 0;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1.3;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text);
+  color: var(--color-muted);
 }
 
 .meta {
@@ -80,8 +82,9 @@
 }
 
 .meta span {
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 12px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
   color: var(--color-muted);
 }
 
@@ -97,27 +100,22 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 10px;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
 .titleRow h3 {
   margin: 0;
   min-width: 0;
-  font-size: 18px;
-  line-height: 24px;
-  color: var(--color-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-card);
+  color: var(--color-text);
 }
 
 .card:hover .titleRow h3 {
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-@media (min-width: 1040px) {
-  .titleRow h3 {
-    font-size: 16px;
-    line-height: 24px;
-  }
 }
 
 .pin {
@@ -130,16 +128,10 @@
 
 .desc {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--color-muted);
-}
-
-@media (min-width: 1040px) {
-  .desc {
-    font-size: 14px;
-    line-height: 21px;
-  }
+  font-size: 14px;
+  line-height: 1.65;
+  letter-spacing: 0.005em;
+  color: color-mix(in srgb, var(--color-body) 82%, var(--color-bg));
 }
 
 .grid {
