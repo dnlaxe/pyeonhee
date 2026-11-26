@@ -10,6 +10,7 @@ import {
   PinIcon,
 } from "../../shared";
 import { marketDetailQueryOptions } from "./queries";
+import { DetailSkeleton } from "./DetailSkeleton";
 import { MediaGallery } from "./MediaGallery";
 import styles from "./MarketDetail.module.css";
 import { SimilarPosts } from "../feed";
@@ -25,13 +26,7 @@ export function MarketDetail() {
   } = useQuery(marketDetailQueryOptions(queryClient, id));
 
   if (isPending) {
-    return (
-      <main>
-        <Container>
-          <p className="text-meta">Loading…</p>
-        </Container>
-      </main>
-    );
+    return <DetailSkeleton kind="market" />;
   }
 
   if (error) {

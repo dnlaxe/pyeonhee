@@ -31,6 +31,5 @@ export { BriefcaseIcon } from "./icons/BriefcaseIcon";
 export { BagIcon } from "./icons/BagIcon";
 export { UsersIcon } from "./icons/UsersIcon";
 export { LogoPlaceholder } from "./icons/LogoPlaceholder";
-export { LoadingState } from "./icons/LoadingState";
 
 export { BotCheck } from "./bot-check/BotCheck";

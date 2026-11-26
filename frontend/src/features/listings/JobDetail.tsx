@@ -8,10 +8,10 @@ import {
   TagList,
   formatTimeSince,
   ErrorMessage,
-  LoadingState,
   PinIcon,
 } from "../../shared";
 import { jobDetailQueryOptions } from "./queries";
+import { DetailSkeleton } from "./DetailSkeleton";
 import { SimilarPosts } from "../feed";
 
 export function JobDetails() {
@@ -39,13 +39,7 @@ export function JobDetails() {
   }
 
   if (isPending) {
-    return (
-      <main>
-        <Container>
-          <LoadingState />
-        </Container>
-      </main>
-    );
+    return <DetailSkeleton kind="job" />;
   }
 
   if (error) {
