@@ -20,6 +20,9 @@
   place-items: center;
   overflow: hidden;
   border-radius: var(--radius-sm);
+}
+
+.logoEmpty {
   background: var(--color-accent);
 }
 

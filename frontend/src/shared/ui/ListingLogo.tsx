@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
 import { LogoPlaceholder } from "../icons/LogoPlaceholder";
+import { useImageStatus } from "../helpers/useImageStatus";
+import { Skeleton } from "./Skeleton";
 import styles from "./ListingLogo.module.css";
 
 type Props = {
@@ -9,32 +10,25 @@ type Props = {
 
 export function ListingLogo({ src, extraClass }: Props) {
   const logoUrl = src?.trim() || "";
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
-  const logoReady = Boolean(logoUrl) && loadedUrl === logoUrl;
-
-  const logoRef = useCallback(
-    (img: HTMLImageElement | null) => {
-      if (img?.complete && img.naturalWidth > 0) {
-        setLoadedUrl(logoUrl);
-      }
-    },
-    [logoUrl],
-  );
+  const { status, imgRef, onLoad, onError } = useImageStatus(logoUrl);
+  const logoReady = status === "loaded";
+  const showPlaceholder = status === "empty" || status === "error";
 
   return (
     <div
-      className={`${styles.detailLogo} shrink-0${extraClass ? ` ${extraClass}` : ""}`}
+      className={`${styles.detailLogo}${showPlaceholder ? ` ${styles.detailLogoEmpty}` : ""} shrink-0${extraClass ? ` ${extraClass}` : ""}`}
     >
-      {!logoReady ? <LogoPlaceholder /> : null}
-      {logoUrl ? (
+      {status === "loading" ? <Skeleton media extraClass="size-full" /> : null}
+      {showPlaceholder ? <LogoPlaceholder /> : null}
+      {logoUrl && status !== "error" ? (
         <img
           key={logoUrl}
-          ref={logoRef}
+          ref={imgRef}
           src={logoUrl}
           alt=""
-          hidden={!logoReady}
-          onLoad={() => setLoadedUrl(logoUrl)}
-          onError={() => setLoadedUrl(null)}
+          className={logoReady ? undefined : styles.logoPending}
+          onLoad={onLoad}
+          onError={onError}
         />
       ) : null}
     </div>
