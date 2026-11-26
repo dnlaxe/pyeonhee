@@ -9,6 +9,7 @@ import {
   Form,
   FormField,
   PageHeader,
+  Skeleton,
   TextareaInput,
   TextInput,
 } from "../../shared";
@@ -67,9 +68,30 @@ export function ReportPage() {
   if (isPending) {
     return (
       <main>
-        <Container>
-          <p className="text-meta">Loading…</p>
-        </Container>
+        <article
+          className="py-8 pb-20 md:py-10"
+          role="status"
+          aria-label="Loading report form"
+        >
+          <Container narrow>
+            <Skeleton extraClass="mb-4 h-8 w-2/3" />
+            <div className="mb-8 flex flex-col gap-2">
+              <Skeleton extraClass="h-4 w-full" />
+              <Skeleton extraClass="h-4 w-5/6" />
+            </div>
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <Skeleton extraClass="h-3.5 w-28" />
+                <Skeleton media extraClass="h-11 w-full" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Skeleton extraClass="h-3.5 w-20" />
+                <Skeleton media extraClass="h-40 w-full" />
+              </div>
+              <Skeleton media extraClass="mt-2 h-11 w-36" />
+            </div>
+          </Container>
+        </article>
       </main>
     );
   }

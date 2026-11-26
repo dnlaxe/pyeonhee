@@ -6,6 +6,7 @@ export { TagList } from "./ui/TagList";
 export { BackLink } from "./ui/BackLink";
 export { Prose } from "./ui/Prose";
 export { ErrorMessage } from "./ui/ErrorMessage";
+export { Skeleton } from "./ui/Skeleton";
 
 export { Form } from "./forms/Form";
 export { FormField } from "./forms/FormField";
@@ -30,6 +31,5 @@ export { BriefcaseIcon } from "./icons/BriefcaseIcon";
 export { BagIcon } from "./icons/BagIcon";
 export { UsersIcon } from "./icons/UsersIcon";
 export { LogoPlaceholder } from "./icons/LogoPlaceholder";
-export { LoadingState } from "./icons/LoadingState";
 
 export { BotCheck } from "./bot-check/BotCheck";

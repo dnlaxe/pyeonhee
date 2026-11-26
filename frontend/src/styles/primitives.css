@@ -459,4 +459,38 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  .skeleton-block {
+    display: block;
+    border-radius: 4px;
+    background-color: color-mix(in srgb, var(--color-ink) 7%, var(--color-bg));
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-ink) 7%, var(--color-bg)) 0%,
+      color-mix(in srgb, var(--color-ink) 3%, var(--color-bg)) 50%,
+      color-mix(in srgb, var(--color-ink) 7%, var(--color-bg)) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-media {
+    border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-block {
+      animation: none;
+      background-image: none;
+    }
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

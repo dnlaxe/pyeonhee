@@ -9,6 +9,7 @@ import {
   ErrorMessage,
 } from "../../shared";
 import { serviceDetailQueryOptions } from "./queries";
+import { DetailSkeleton } from "./DetailSkeleton";
 import { SimilarPosts } from "../feed";
 
 export function ServiceDetail() {
@@ -34,13 +35,7 @@ export function ServiceDetail() {
   }
 
   if (isPending) {
-    return (
-      <main>
-        <Container>
-          <p className="text-meta">Loading…</p>
-        </Container>
-      </main>
-    );
+    return <DetailSkeleton kind="service" />;
   }
 
   if (error) {

@@ -1,6 +1,7 @@
 import { useDeferredValue, useMemo } from "react";
-import { Container, ErrorMessage, LoadingState } from "../../shared";
+import { Container, ErrorMessage } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
+import { ListingCardSkeletonGrid } from "../listings/ListingCardSkeleton";
 import cardStyles from "../listings/ListingCard.module.css";
 import type { FeedKindFilter } from "../listings/types";
 import type { JobItem, MarketItem, Service } from "../listings";
@@ -73,11 +74,7 @@ export function LatestPostsSection({
             <p className="text-tone-danger">VITE_API_URL is not set</p>
           )}
 
-          {apiUrl && isPending ? (
-            <div className="flex min-h-[calc(100dvh-12rem)] w-full items-center justify-center pb-40">
-              <LoadingState size={240} />
-            </div>
-          ) : null}
+          {apiUrl && isPending ? <ListingCardSkeletonGrid /> : null}
 
           {visibleErrors.map((error) => (
             <ErrorMessage key={error.message} error={error} />
