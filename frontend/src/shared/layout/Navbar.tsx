@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { navLinks } from "../../config";
 import { ArrowLeftIcon } from "../icons/ArrowLeftIcon";
 import { Logo } from "../icons/Logo";
+import { Container } from "./Container";
 import { Hamburger } from "./Hamburger";
-import menu from "./MenuIsland.module.css";
+import { MenuIsland, MenuOverlay } from "./MenuIsland";
 
 function detailBackTo(pathname: string, state: unknown): string | null {
   const isDetail =
@@ -65,12 +65,12 @@ export function Navbar() {
 
   return (
     <>
-      <header className="relative z-[80]">
-        <div className="mx-auto flex h-14 w-[min(100%-48px,1120px)] items-center justify-between max-md:w-[min(100%-32px,1120px)]">
+      <header className="relative">
+        <Container extraClass="flex h-14 items-center justify-between">
           {backTo ? (
             <Link
               to={backTo}
-              className="inline-flex shrink-0 items-center text-text no-underline"
+              className="icon-link inline-flex shrink-0 items-center"
               aria-label="Back to latest posts"
             >
               <ArrowLeftIcon />
@@ -87,39 +87,19 @@ export function Navbar() {
                 extraClass="relative z-71"
               />
 
-              <div
-                id="site-menu"
-                className={`${menu.island}${open ? ` ${menu.isOpen}` : ""}`}
-                role="menu"
-                aria-hidden={!open}
-              >
-                <ul className={menu.list}>
-                  {navLinks.map((l) => (
-                    <li key={l.path} role="none">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setOpen(false);
-                          navigate(l.path);
-                        }}
-                      >
-                        {l.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <MenuIsland
+                open={open}
+                onSelect={(path) => {
+                  setOpen(false);
+                  navigate(path);
+                }}
+              />
             </div>
           </nav>
-        </div>
+        </Container>
       </header>
 
-      <div
-        className={`${menu.overlay}${open ? ` ${menu.isOpen}` : ""}`}
-        aria-hidden={!open}
-        onClick={() => setOpen(false)}
-      />
+      <MenuOverlay open={open} onClose={() => setOpen(false)} />
     </>
   );
 }
