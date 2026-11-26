@@ -1,6 +1,7 @@
 import { Navigate, useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
+import { LIST_STALE_TIME, listingsQueryOptions } from "../listings";
 import {
   Button,
   Container,
@@ -17,6 +18,7 @@ import {
 export function ReportPage() {
   const { kind, id } = useParams<{ kind: string; id: string }>();
   const apiUrl = import.meta.env.VITE_API_URL;
+  const queryClient = useQueryClient();
 
   const path =
     kind === "job"
@@ -42,13 +44,26 @@ export function ReportPage() {
         : "back to market";
 
   const { data, isPending, error } = useQuery({
-    queryKey: [queryKey, id],
+    queryKey: [queryKey, id] as const,
     enabled: Boolean(apiUrl) && Boolean(path),
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}${path}`);
+    staleTime: LIST_STALE_TIME,
+    queryFn: async ({ signal }) => {
+      const res = await fetch(`${apiUrl}${path}`, { signal });
       throwIfNotOk(res);
-      return (await res.json()) as Promise<{ title?: string; company?: string }>;
+      return (await res.json()) as { title?: string; company?: string };
     },
+    initialData: () => {
+      const listings = queryClient.getQueryData(
+        listingsQueryOptions().queryKey,
+      );
+      if (!listings || !id) return undefined;
+      if (kind === "job") return listings.jobs.find((j) => j.id === id);
+      if (kind === "market") return listings.market.find((m) => m.id === id);
+      if (kind === "service") return listings.services.find((s) => s.id === id);
+      return undefined;
+    },
+    initialDataUpdatedAt: () =>
+      queryClient.getQueryState(listingsQueryOptions().queryKey)?.dataUpdatedAt,
   });
 
   if (!path) {
