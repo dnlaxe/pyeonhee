@@ -64,6 +64,11 @@
   outline: none;
 }
 
+.kindSelect option {
+  background-color: var(--color-elevated);
+  color: var(--color-text);
+}
+
 .divider {
   width: 1px;
   height: 22px;
@@ -108,7 +113,7 @@
   border: 0;
   border-radius: var(--radius-pill);
   background-color: var(--color-accent);
-  color: var(--color-text);
+  color: var(--color-on-accent);
   cursor: pointer;
   transition: background-color var(--duration-fast) var(--ease-default);
 }
