@@ -1,6 +1,6 @@
 import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
-import type { JobItem, MarketItem, Service } from "./types";
+import type { JobItem, ListingsResponse, MarketItem, Service } from "./types";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 export const LIST_STALE_TIME = 5 * 60 * 1000;
@@ -11,28 +11,12 @@ async function fetchJson<T>(path: string, signal: AbortSignal): Promise<T> {
   return (await res.json()) as T;
 }
 
-export const jobsQueryOptions = () =>
+export const listingsQueryOptions = () =>
   queryOptions({
-    queryKey: ["jobs"] as const,
+    queryKey: ["listings"] as const,
     enabled: Boolean(apiUrl),
     staleTime: LIST_STALE_TIME,
-    queryFn: ({ signal }) => fetchJson<JobItem[]>("/jobs", signal),
-  });
-
-export const marketQueryOptions = () =>
-  queryOptions({
-    queryKey: ["market"] as const,
-    enabled: Boolean(apiUrl),
-    staleTime: LIST_STALE_TIME,
-    queryFn: ({ signal }) => fetchJson<MarketItem[]>("/market", signal),
-  });
-
-export const servicesQueryOptions = () =>
-  queryOptions({
-    queryKey: ["services"] as const,
-    enabled: Boolean(apiUrl),
-    staleTime: LIST_STALE_TIME,
-    queryFn: ({ signal }) => fetchJson<Service[]>("/services", signal),
+    queryFn: ({ signal }) => fetchJson<ListingsResponse>("/listings", signal),
   });
 
 export const jobDetailQueryOptions = (
@@ -46,10 +30,10 @@ export const jobDetailQueryOptions = (
     queryFn: ({ signal }) => fetchJson<JobItem>(`/jobs/${id}`, signal),
     initialData: () =>
       queryClient
-        .getQueryData(jobsQueryOptions().queryKey)
-        ?.find((j) => j.id === id),
+        .getQueryData(listingsQueryOptions().queryKey)
+        ?.jobs.find((j) => j.id === id),
     initialDataUpdatedAt: () =>
-      queryClient.getQueryState(jobsQueryOptions().queryKey)?.dataUpdatedAt,
+      queryClient.getQueryState(listingsQueryOptions().queryKey)?.dataUpdatedAt,
   });
 
 export const marketDetailQueryOptions = (
@@ -63,10 +47,10 @@ export const marketDetailQueryOptions = (
     queryFn: ({ signal }) => fetchJson<MarketItem>(`/market/${id}`, signal),
     initialData: () =>
       queryClient
-        .getQueryData(marketQueryOptions().queryKey)
-        ?.find((m) => m.id === id),
+        .getQueryData(listingsQueryOptions().queryKey)
+        ?.market.find((m) => m.id === id),
     initialDataUpdatedAt: () =>
-      queryClient.getQueryState(marketQueryOptions().queryKey)?.dataUpdatedAt,
+      queryClient.getQueryState(listingsQueryOptions().queryKey)?.dataUpdatedAt,
   });
 
 export const serviceDetailQueryOptions = (
@@ -80,8 +64,8 @@ export const serviceDetailQueryOptions = (
     queryFn: ({ signal }) => fetchJson<Service>(`/services/${id}`, signal),
     initialData: () =>
       queryClient
-        .getQueryData(servicesQueryOptions().queryKey)
-        ?.find((s) => s.id === id),
+        .getQueryData(listingsQueryOptions().queryKey)
+        ?.services.find((s) => s.id === id),
     initialDataUpdatedAt: () =>
-      queryClient.getQueryState(servicesQueryOptions().queryKey)?.dataUpdatedAt,
+      queryClient.getQueryState(listingsQueryOptions().queryKey)?.dataUpdatedAt,
   });

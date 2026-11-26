@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
-import {
-  jobsQueryOptions,
-  marketQueryOptions,
-  servicesQueryOptions,
-} from "../listings";
+import { listingsQueryOptions } from "../listings";
 import type { FeedKindFilter } from "../listings/types";
 import { buildFeedSearchParams, parseKindParam } from "./feedFilters";
 import { Hero } from "./Hero";
@@ -19,22 +15,7 @@ export function FeedPage() {
   const kind = parseKindParam(searchParams.get("kind"));
   const query = searchParams.get("q") ?? "";
 
-  const needJobs = kind === "" || kind === "job";
-  const needMarket = kind === "" || kind === "market";
-  const needServices = kind === "" || kind === "service";
-
-  const jobsQuery = useQuery({
-    ...jobsQueryOptions(),
-    enabled: Boolean(apiUrl) && needJobs,
-  });
-  const servicesQuery = useQuery({
-    ...servicesQueryOptions(),
-    enabled: Boolean(apiUrl) && needServices,
-  });
-  const marketQuery = useQuery({
-    ...marketQueryOptions(),
-    enabled: Boolean(apiUrl) && needMarket,
-  });
+  const listingsQuery = useQuery(listingsQueryOptions());
 
   function handleKindChange(nextKind: FeedKindFilter) {
     setSearchParams((prev) => buildFeedSearchParams(prev, { kind: nextKind }));
@@ -51,26 +32,15 @@ export function FeedPage() {
     setSearchParams((prev) => buildFeedSearchParams(prev, { kind: "", q: "" }));
   }
 
-  const isPending =
-    (needJobs && jobsQuery.isPending) ||
-    (needMarket && marketQuery.isPending) ||
-    (needServices && servicesQuery.isPending);
-
-  const errors = [
-    needJobs ? jobsQuery.error : null,
-    needMarket ? marketQuery.error : null,
-    needServices ? servicesQuery.error : null,
-  ];
-
   return (
     <main>
       <Hero />
       <LatestPostsSection
-        jobs={needJobs ? (jobsQuery.data ?? EMPTY) : EMPTY}
-        items={needMarket ? (marketQuery.data ?? EMPTY) : EMPTY}
-        services={needServices ? (servicesQuery.data ?? EMPTY) : EMPTY}
-        isPending={isPending}
-        errors={errors}
+        jobs={listingsQuery.data?.jobs ?? EMPTY}
+        items={listingsQuery.data?.market ?? EMPTY}
+        services={listingsQuery.data?.services ?? EMPTY}
+        isPending={listingsQuery.isPending}
+        error={listingsQuery.error}
         apiUrl={apiUrl}
         kind={kind}
         query={query}

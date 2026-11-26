@@ -40,6 +40,12 @@ export type ServiceItem = {
 
 export type Service = ServiceItem;
 
+export type ListingsResponse = {
+  jobs: JobItem[];
+  market: MarketItem[];
+  services: Service[];
+};
+
 export type ListingKind = "job" | "market" | "service";
 export type FeedKindFilter = ListingKind | "";
 

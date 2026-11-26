@@ -74,14 +74,68 @@ func TestGetJobNotFound(t *testing.T) {
 	}
 }
 
-func TestListPublishedFiltersByEntity(t *testing.T) {
-	db := &fakeDB{}
-	if _, err := New(db, "t").ListPublishedMarket(context.Background()); err != nil {
+func TestListPublishedListings(t *testing.T) {
+	jobAV, err := attributevalue.MarshalMap(JobItem{
+		PK:         JobPK("J1"),
+		SK:         SortKeyMeta,
+		EntityType: EntityJob,
+		ID:         "J1",
+		Title:      "Engineer",
+		Status:     StatusPublished,
+	})
+	if err != nil {
 		t.Fatal(err)
 	}
+	marketAV, err := attributevalue.MarshalMap(MarketItem{
+		PK:         MarketPK("M1"),
+		SK:         SortKeyMeta,
+		EntityType: EntityMarket,
+		ID:         "M1",
+		Title:      "Desk",
+		Status:     StatusPublished,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	serviceAV, err := attributevalue.MarshalMap(ServiceItem{
+		PK:         ServicePK("S1"),
+		SK:         SortKeyMeta,
+		EntityType: EntityService,
+		ID:         "S1",
+		Company:    "Visa Help",
+		Status:     StatusPublished,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	unknownAV := map[string]types.AttributeValue{
+		"PK":         &types.AttributeValueMemberS{Value: "OTHER#1"},
+		"SK":         &types.AttributeValueMemberS{Value: SortKeyMeta},
+		"entityType": &types.AttributeValueMemberS{Value: "other"},
+		"status":     &types.AttributeValueMemberS{Value: StatusPublished},
+	}
+
+	db := &fakeDB{items: []map[string]types.AttributeValue{jobAV, marketAV, serviceAV, unknownAV}}
+	got, err := New(db, "t").ListPublishedListings(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	values := db.scan.ExpressionAttributeValues
-	if str(values[":entity"]) != EntityMarket || str(values[":published"]) != StatusPublished {
+	if str(values[":meta"]) != SortKeyMeta || str(values[":published"]) != StatusPublished {
 		t.Fatalf("scan values = %v", values)
+	}
+	if _, hasEntity := values[":entity"]; hasEntity {
+		t.Fatalf("unexpected :entity filter in scan values: %v", values)
+	}
+	if len(got.Jobs) != 1 || got.Jobs[0].ID != "J1" {
+		t.Fatalf("jobs = %+v", got.Jobs)
+	}
+	if len(got.Market) != 1 || got.Market[0].ID != "M1" {
+		t.Fatalf("market = %+v", got.Market)
+	}
+	if len(got.Services) != 1 || got.Services[0].ID != "S1" {
+		t.Fatalf("services = %+v", got.Services)
 	}
 }
 

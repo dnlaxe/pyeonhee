@@ -1,12 +1,8 @@
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Container } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import type { ListingKind } from "../listings/types";
-import {
-  jobsQueryOptions,
-  marketQueryOptions,
-  servicesQueryOptions,
-} from "../listings";
+import { listingsQueryOptions } from "../listings";
 import { toFeedItems } from "./feedFilters";
 import styles from "./SimilarPosts.module.css";
 
@@ -18,31 +14,19 @@ type Props = {
 const LIMIT = 4;
 
 export function SimilarPosts({ kind, excludeId }: Props) {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const [jobsQ, marketQ, servicesQ] = useQueries({
-    queries: [
-      { ...jobsQueryOptions(), enabled: Boolean(apiUrl) && kind === "job" },
-      { ...marketQueryOptions(), enabled: Boolean(apiUrl) && kind === "market" },
-      {
-        ...servicesQueryOptions(),
-        enabled: Boolean(apiUrl) && kind === "service",
-      },
-    ],
+  const { data: similar } = useQuery({
+    ...listingsQueryOptions(),
+    select: (data) => {
+      const jobs = kind === "job" ? data.jobs : [];
+      const market = kind === "market" ? data.market : [];
+      const services = kind === "service" ? data.services : [];
+      return toFeedItems(jobs, market, services)
+        .filter((item) => item.id !== excludeId)
+        .slice(0, LIMIT);
+    },
   });
 
-  const jobs = kind === "job" ? (jobsQ.data ?? []) : [];
-  const market = kind === "market" ? (marketQ.data ?? []) : [];
-  const services = kind === "service" ? (servicesQ.data ?? []) : [];
-
-  if (!jobsQ.data && !marketQ.data && !servicesQ.data) return null;
-
-  const items = toFeedItems(jobs, market, services);
-
-  const similar = items
-    .filter((item) => item.kind === kind && item.id !== excludeId)
-    .slice(0, LIMIT);
-
-  if (similar.length === 0) return null;
+  if (!similar || similar.length === 0) return null;
 
   return (
     <section className={styles.section} aria-label="Similar posts">
