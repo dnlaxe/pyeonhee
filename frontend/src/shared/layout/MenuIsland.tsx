@@ -20,6 +20,7 @@ export function MenuIsland({ open, onSelect }: IslandProps) {
             <button
               type="button"
               role="menuitem"
+              className={l.accent ? menu.accentItem : undefined}
               onClick={() => onSelect(l.path)}
             >
               {l.label}
