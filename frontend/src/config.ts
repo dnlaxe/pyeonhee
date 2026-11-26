@@ -1,5 +1,9 @@
 export const config = {
   postKinds: ["job", "market", "service"],
+  feed: {
+    initialCount: 20,
+    batchSize: 20,
+  },
 } as const;
 
 export const formRules = {
