@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +16,9 @@ import (
 
 type fakeStore struct {
 	Store
+	listings    store.PublishedListings
+	listingsErr error
+
 	job     *store.JobItem
 	market  *store.MarketItem
 	service *store.ServiceItem
@@ -26,6 +31,13 @@ type fakeStore struct {
 	publishErr   error
 	published    bool
 	publishedKey string
+}
+
+func (f *fakeStore) ListPublishedListings(_ context.Context) (store.PublishedListings, error) {
+	if f.listingsErr != nil {
+		return store.PublishedListings{}, f.listingsErr
+	}
+	return f.listings, nil
 }
 
 func (f *fakeStore) GetJob(_ context.Context, _ string) (store.JobItem, error) {
@@ -57,6 +69,83 @@ func (f *fakeStore) SetOrder(_ context.Context, pk, orderID string, amount int64
 func (f *fakeStore) Publish(_ context.Context, _, _, paymentKey string) error {
 	f.published, f.publishedKey = true, paymentKey
 	return f.publishErr
+}
+
+func TestListListings(t *testing.T) {
+	a := &App{
+		Store: &fakeStore{listings: store.PublishedListings{
+			Jobs: []store.JobItem{
+				{ID: "j-old", Title: "Old", CreatedAt: "2026-01-01T00:00:00Z", Status: store.StatusPublished},
+				{ID: "j-pin", Title: "Pinned", Logo: "media/jobs/logo.png", Pinned: true, CreatedAt: "2026-01-01T00:00:00Z", Status: store.StatusPublished},
+				{ID: "j-new", Title: "New", CreatedAt: "2026-01-02T00:00:00Z", Status: store.StatusPublished},
+			},
+			Market: []store.MarketItem{
+				{ID: "m1", Title: "Bike", Images: []string{"media/market/1.png"}, CreatedAt: "2026-01-01T00:00:00Z", Status: store.StatusPublished},
+				{ID: "m2", Title: "Chair", Pinned: true, CreatedAt: "2026-01-01T00:00:00Z", Status: store.StatusPublished},
+			},
+			Services: []store.ServiceItem{
+				{ID: "s1", Company: "Old Co", CreatedAt: "2026-01-01T00:00:00Z", Status: store.StatusPublished},
+				{ID: "s2", Company: "New Co", Logo: "media/services/s2.png", CreatedAt: "2026-01-03T00:00:00Z", Status: store.StatusPublished},
+			},
+		}},
+		MediaBaseURL: "https://cdn.example",
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	rec := httptest.NewRecorder()
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body.String())
+	}
+
+	var resp ListingsResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(resp.Jobs) != 3 || resp.Jobs[0].ID != "j-pin" || resp.Jobs[1].ID != "j-new" || resp.Jobs[2].ID != "j-old" {
+		t.Fatalf("jobs order = %+v", resp.Jobs)
+	}
+	if resp.Jobs[0].Logo != "https://cdn.example/media/jobs/logo.png" {
+		t.Fatalf("job logo = %q", resp.Jobs[0].Logo)
+	}
+	if len(resp.Market) != 2 || resp.Market[0].ID != "m2" || resp.Market[1].ID != "m1" {
+		t.Fatalf("market order = %+v", resp.Market)
+	}
+	if len(resp.Market[1].Images) != 1 || resp.Market[1].Images[0] != "https://cdn.example/media/market/1.png" {
+		t.Fatalf("market images = %+v", resp.Market[1].Images)
+	}
+	if len(resp.Services) != 2 || resp.Services[0].ID != "s2" || resp.Services[1].ID != "s1" {
+		t.Fatalf("services order = %+v", resp.Services)
+	}
+	if resp.Services[0].Logo != "https://cdn.example/media/services/s2.png" {
+		t.Fatalf("service logo = %q", resp.Services[0].Logo)
+	}
+}
+
+func TestListListingsEmptyArrays(t *testing.T) {
+	a := &App{Store: &fakeStore{}}
+	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	rec := httptest.NewRecorder()
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body.String())
+	}
+	if got := strings.TrimSpace(rec.Body.String()); got != `{"jobs":[],"market":[],"services":[]}` {
+		t.Fatalf("body = %s", got)
+	}
+}
+
+func TestListListingsStoreError(t *testing.T) {
+	a := &App{Store: &fakeStore{listingsErr: errors.New("boom")}}
+	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	rec := httptest.NewRecorder()
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+	}
 }
 
 func TestGetService(t *testing.T) {

@@ -14,6 +14,8 @@ import (
 )
 
 type Store interface {
+	ListPublishedListings(ctx context.Context) (store.PublishedListings, error)
+
 	ListPublishedJob(ctx context.Context) ([]store.JobItem, error)
 	GetJob(ctx context.Context, id string) (store.JobItem, error)
 	PutJob(ctx context.Context, item store.JobItem) error

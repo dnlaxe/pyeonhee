@@ -17,6 +17,8 @@ func (a *App) NewRouter() *chi.Mux {
 		MaxAge:         300,
 	}))
 
+	r.Get("/listings", a.listListings)
+
 	r.Get("/jobs", a.listJob)
 	r.Get("/jobs/{id}", a.getJob)
 	r.Get("/services", a.listService)
