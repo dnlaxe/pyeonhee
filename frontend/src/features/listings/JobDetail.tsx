@@ -1,18 +1,17 @@
 import { Link, Navigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Container,
+  ListingLogo,
   Prose,
   ContactForm,
   TagList,
   formatTimeSince,
   ErrorMessage,
   LoadingState,
-  LogoPlaceholder,
   PinIcon,
 } from "../../shared";
 import { jobDetailQueryOptions } from "./queries";
-import { useCallback, useState } from "react";
-import styles from "./JobDetail.module.css";
 import { SimilarPosts } from "../feed";
 
 export function JobDetails() {
@@ -27,41 +26,34 @@ export function JobDetails() {
     error,
   } = useQuery(jobDetailQueryOptions(queryClient, id));
 
-  const logoUrl = job?.logo?.trim() || "";
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
-  const logoReady = Boolean(logoUrl) && loadedUrl === logoUrl;
-
-  const logoRef = useCallback(
-    (img: HTMLImageElement | null) => {
-      if (img?.complete && img.naturalWidth > 0) {
-        setLoadedUrl(logoUrl);
-      }
-    },
-    [logoUrl],
-  );
-
   if (!apiUrl) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <p className="m-0 text-[20px] leading-[1.2] text-danger max-[399px]:text-[18px]">
-          VITE_API_URL is not set
-        </p>
+      <main>
+        <Container>
+          <p className="heading-section text-tone-danger m-0">
+            VITE_API_URL is not set
+          </p>
+        </Container>
       </main>
     );
   }
 
   if (isPending) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <LoadingState />
+      <main>
+        <Container>
+          <LoadingState />
+        </Container>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main className="mx-auto w-[min(100%-48px,1120px)] max-md:w-[min(100%-32px,1120px)]">
-        <ErrorMessage error={error} />
+      <main>
+        <Container>
+          <ErrorMessage error={error} />
+        </Container>
       </main>
     );
   }
@@ -75,32 +67,19 @@ export function JobDetails() {
   return (
     <main>
       <article className="pt-5 pb-20 md:pt-7">
-        <div className="mx-auto w-[min(100%-48px,1120px)] max-w-essay max-md:w-[min(100%-32px,1120px)]">
+        <Container narrow>
           <div className="mb-5 flex items-start gap-5">
-            <div className={`${styles.detailLogo} shrink-0`}>
-              {!logoReady ? <LogoPlaceholder /> : null}
-              {logoUrl ? (
-                <img
-                  key={logoUrl}
-                  ref={logoRef}
-                  src={logoUrl}
-                  alt=""
-                  hidden={!logoReady}
-                  onLoad={() => setLoadedUrl(logoUrl)}
-                  onError={() => setLoadedUrl(null)}
-                />
-              ) : null}
-            </div>
+            <ListingLogo src={job.logo} />
             <div className="min-w-0 flex-1">
-              <h1 className="m-0 text-[clamp(24px,4vw,32px)] leading-[1.2] tracking-[-0.5px] text-text">
+              <h1 className="heading-page m-0">
                 {job.pinned ? (
-                  <span className="mr-[0.35em] inline-flex align-middle" aria-label="Pinned">
+                  <span className="pin-detail" aria-label="Pinned">
                     <PinIcon />
                   </span>
                 ) : null}
                 {job.title}
               </h1>
-              <p className="m-0 mt-2 text-sm text-muted">
+              <p className="text-meta m-0 mt-2">
                 {formatTimeSince(job.createdAt)}
               </p>
               <TagList tags={job.tags} extraClass="mt-3" />
@@ -114,15 +93,12 @@ export function JobDetails() {
             kind="job"
             id={job.id}
           />
-          <p className="mt-4 m-0">
-            <Link
-              to={`/report/job/${job.id}`}
-              className="text-[13px] text-muted underline underline-offset-[3px]"
-            >
-              report this post
+          <p className="m-0 mt-4">
+            <Link to={`/report/job/${job.id}`} className="link-muted">
+              Report this post
             </Link>
           </p>
-        </div>
+        </Container>
       </article>
       <SimilarPosts kind="job" excludeId={job.id} />
     </main>
