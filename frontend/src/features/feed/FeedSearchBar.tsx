@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { suggestedSearches } from "../../config";
 import { listingKindLabel, type FeedKindFilter } from "../listings/types";
 import { parseKindParam } from "./feedFilters";
@@ -25,6 +25,13 @@ export function FeedSearchBar({
   onQueryChange,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(query);
+  const [prevQuery, setPrevQuery] = useState(query);
+
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setDraft(query);
+  }
 
   return (
     <div className={styles.bar}>
@@ -33,7 +40,8 @@ export function FeedSearchBar({
           className={styles.searchBar}
           onSubmit={(e) => {
             e.preventDefault();
-            inputRef.current?.focus();
+            onQueryChange(draft);
+            inputRef.current?.blur();
           }}
         >
           <label htmlFor="latest-kind" className="sr-only">
@@ -66,8 +74,8 @@ export function FeedSearchBar({
             placeholder="What are you looking for?"
             autoComplete="off"
             className={styles.searchInput}
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
           />
 
           <button
@@ -99,8 +107,9 @@ export function FeedSearchBar({
               type="button"
               className={styles.pill}
               onClick={() => {
+                setDraft(word);
                 onQueryChange(word);
-                inputRef.current?.focus();
+                inputRef.current?.blur();
               }}
             >
               {word}
