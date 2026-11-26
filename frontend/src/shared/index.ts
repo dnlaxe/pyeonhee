@@ -14,6 +14,8 @@ export { SelectInput } from "./forms/SelectInput";
 export { TextInput } from "./forms/TextInput";
 export { TextareaInput } from "./forms/TextareaInput";
 export { FormErrorSummary } from "./forms/FormErrorSummary";
+export { PhotoUpload } from "./forms/PhotoUpload";
+export { usePhotoFiles, type PhotoFile } from "./forms/usePhotoFiles";
 
 export { ContactForm } from "../features/listings/ContactForm.tsx";
 

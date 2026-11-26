@@ -226,28 +226,6 @@
     text-decoration: none;
   }
 
-  .primaryBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 140px;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background-color: var(--color-accent);
-    padding: 12px 24px;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-ui);
-    color: var(--color-text);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-default);
-  }
-
-  .primaryBtn:hover {
-    background-color: var(--color-accent-hover);
-  }
-
   .btn-primary {
     min-width: 140px;
     border: 0;
@@ -286,7 +264,6 @@
   }
 
   @media (max-width: 399px) {
-    .primaryBtn,
     .btn-primary,
     .btn-secondary {
       font-size: 16px;

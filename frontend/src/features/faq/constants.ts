@@ -57,7 +57,7 @@ export const faqSections: FaqSection[] = [
       {
         question: "I found a suspicious listing. What should I do?",
         answer:
-          "Don't send money up front or share sensitive documents. Use **report this post** on the listing and skip anything that feels off.",
+          "Don't send money up front or share sensitive documents. Use **Report this post** on the listing and skip anything that feels off.",
       },
     ],
   },

@@ -12,15 +12,18 @@
 
 .heading {
   margin: 0 0 16px;
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
   color: var(--color-muted);
 }
 
 .grid {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--color-text);
+  border-top: var(--border-ink);
 }
 
 .item {
@@ -30,31 +33,34 @@
   gap: 8px;
   width: 100%;
   margin: 0;
-  padding: 14px 0;
+  padding: 16px 0;
   text-align: left;
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--border-subtle);
   color: inherit;
   font-size: 16px;
 }
 
 .open {
-  padding-bottom: 16px;
+  padding-bottom: 18px;
 }
 
 .q {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 500;
   line-height: 1.4;
+  letter-spacing: var(--tracking-ui);
   color: var(--color-text);
 }
 
 .a {
   display: none;
   font-size: 16px;
-  line-height: 1.6;
-  color: var(--color-muted);
+  line-height: var(--leading-prose);
+  letter-spacing: var(--tracking-prose);
+  color: var(--color-body);
 }
 
 .aOpen {
