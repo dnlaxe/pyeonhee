@@ -12,7 +12,7 @@ export function BackLink({ to, children, extraClass }: Props) {
     <Link
       to={to}
       className={
-        extraClass ?? "mb-7 inline-flex shrink-0 text-text"
+        extraClass ?? "icon-link mb-7 inline-flex shrink-0"
       }
     >
       <ArrowLeftIcon />
