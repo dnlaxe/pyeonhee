@@ -1,5 +1,4 @@
 @theme {
-  /* Colors */
   --color-bg: #ffffff;
   --color-text: #1a1a1a;
   --color-muted: #767676;
@@ -12,34 +11,26 @@
   --color-warning: #b45309;
   --color-success: #16a34a;
   --color-ink: #000000;
-
-  /* Typography */
   --font-sans: "Lexend Deca", system-ui, sans-serif;
-
-  /* Layout widths */
   --max-width-essay: 680px;
 }
 
 :root {
-  /* Layout widths & gutters */
   --width-page: 1120px;
-  --width-essay: 680px;
+  --width-narrow: 680px;
   --gutter-page: 48px;
   --gutter-mobile: 32px;
   --gutter-search-mobile: 56px;
 
-  /* Radii */
   --radius-sm: 8px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
 
-  /* Borders */
   --border-subtle: 1px solid var(--color-border);
   --border-strong: 1.5px solid var(--color-text);
   --border-danger: 1.5px solid var(--color-danger);
   --border-ink: 1px solid var(--color-text);
 
-  /* Typography tracking & leading */
   --tracking-404: -0.04em;
   --tracking-display: -0.03em;
   --tracking-title: -0.025em;
@@ -57,7 +48,6 @@
   --leading-body: 1.6;
   --leading-prose: 1.8;
 
-  /* Motion */
   --duration-fast: 150ms;
   --duration-menu: 280ms;
   --duration-media: 300ms;

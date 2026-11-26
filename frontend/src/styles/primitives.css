@@ -1,5 +1,4 @@
 @layer components {
-  /* Containers */
   .page-container {
     width: min(100% - var(--gutter-page), var(--width-page));
     margin-inline: auto;
@@ -11,11 +10,10 @@
     }
   }
 
-  .page-essay {
-    max-width: var(--width-essay);
+  .page-narrow {
+    max-width: var(--width-narrow);
   }
 
-  /* Surfaces & Chrome */
   .surface-bg {
     background-color: var(--color-bg);
   }
@@ -45,7 +43,6 @@
     background-color: var(--color-accent);
   }
 
-  /* Brand Logo */
   .logo-link {
     color: var(--color-text);
     text-decoration: none;
@@ -76,7 +73,6 @@
     color: var(--color-text);
   }
 
-  /* Typography */
   .heading-page {
     font-size: clamp(24px, 3.8vw, 34px);
     font-weight: 600;
@@ -177,7 +173,6 @@
     color: var(--color-success);
   }
 
-  /* Prose (Long-form listing descriptions) */
   .prose p {
     margin: 0 0 1.35em;
     max-width: 62ch;
@@ -193,7 +188,6 @@
     margin-bottom: 0;
   }
 
-  /* Links */
   .link-inline {
     color: var(--color-text);
     text-decoration: underline;
@@ -232,7 +226,6 @@
     text-decoration: none;
   }
 
-  /* Buttons */
   .primaryBtn {
     display: inline-flex;
     align-items: center;
@@ -320,7 +313,6 @@
     opacity: 0.5;
   }
 
-  /* Forms */
   .field-label {
     font-size: 14px;
     font-weight: 500;
@@ -425,7 +417,6 @@
     padding-right: 36px;
   }
 
-  /* Photo upload previews */
   .photo-thumb {
     width: 80px;
     height: 80px;
@@ -446,7 +437,6 @@
     cursor: pointer;
   }
 
-  /* Tags & Pins */
   .tag-item {
     border-bottom: var(--border-ink);
     padding-bottom: 2px;
