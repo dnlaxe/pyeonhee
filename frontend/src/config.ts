@@ -213,3 +213,19 @@ export const heroPhrases: readonly [string, string][] = [
   ["Giving away", "free furniture"],
   ["Looking for", "private tutoring"],
 ];
+
+export const suggestedSearches: readonly string[] = [
+  "english teaching",
+  "seongsu",
+  "furniture",
+  "visa",
+  "free",
+  "bike",
+  "monitor",
+  "housing",
+  "moving",
+  "part time",
+  "itaewon",
+  "gangnam",
+  "electronics",
+];
