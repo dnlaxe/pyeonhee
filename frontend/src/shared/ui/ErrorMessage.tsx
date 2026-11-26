@@ -5,12 +5,12 @@ function errorStyle(error: Error): string {
 
 	switch (tone) {
 		case "warning":
-			return "text-warning";
+			return "text-tone-warning";
 		case "neutral":
-			return "text-success";
+			return "text-tone-success";
 		case "danger":
 		default:
-			return "text-danger";
+			return "text-tone-danger";
 	}
 }
 
