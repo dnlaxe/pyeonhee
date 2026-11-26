@@ -60,6 +60,7 @@ export function Hero() {
             >
               {part1}
             </span>{" "}
+            <br className="sm:hidden" />
             <span
               className={`inline-block ${motionClass(part2Phase, styles.heroOutDown, styles.heroInDown)}`}
             >

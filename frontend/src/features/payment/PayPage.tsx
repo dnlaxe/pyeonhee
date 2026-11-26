@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ErrorMessage } from "../../shared";
+import { Button, Container, ErrorMessage } from "../../shared";
 import { AppError, throwIfNotOk } from "../../lib/httpError";
 import {
   jobsQueryOptions,
@@ -10,9 +10,6 @@ import {
 } from "../listings";
 import { PaymentStep } from "./PaymentStep";
 import type { Order } from "./types";
-
-const devLinkClass =
-  "inline-flex cursor-pointer items-center justify-center border-[1.5px] border-text bg-accent px-7 py-3 text-base leading-[1.2] text-text hover:bg-accent-hover";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -131,12 +128,10 @@ function PayLayout({ title, children }: { title: string; children: ReactNode }) 
   return (
     <main>
       <article className="py-8 pb-20 md:py-10">
-        <div className="mx-auto flex w-[min(100%-48px,1120px)] max-w-essay flex-col gap-4 max-md:w-[min(100%-32px,1120px)]">
-          <h1 className="text-[clamp(24px,4vw,32px)] leading-[1.2] tracking-[-0.5px] text-text">
-            {title}
-          </h1>
+        <Container narrow extraClass="flex flex-col gap-4">
+          <h1 className="heading-page m-0">{title}</h1>
           {children}
-        </div>
+        </Container>
       </article>
     </main>
   );
@@ -149,7 +144,9 @@ export function PayPage() {
   if (!draft) {
     return (
       <PayLayout title="Payment">
-        <p className="text-[15px] leading-normal text-body">Start from the job, market, or service form.</p>
+        <p className="text-intro m-0">
+          Start from the job, market, or service form.
+        </p>
       </PayLayout>
     );
   }
@@ -168,20 +165,18 @@ export function PayPage() {
 
   return (
     <PayLayout title="Payment">
-      <p className="text-[15px] leading-normal text-body">Pay for {draft.title}.</p>
+      <p className="text-intro m-0">Pay for {draft.title}.</p>
       {start.error && <ErrorMessage error={start.error} />}
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          className="primaryBtn"
+        <Button
           disabled={start.isPending}
           onClick={() => start.mutate(draft)}
         >
           {start.isPending ? "Starting…" : "Continue to payment"}
-        </button>
-        <Link to={draft.cancelTo} className={devLinkClass}>
+        </Button>
+        <Button to={draft.cancelTo} variant="secondary">
           Cancel
-        </Link>
+        </Button>
       </div>
     </PayLayout>
   );
@@ -229,7 +224,7 @@ export function PaySuccessPage() {
   if (!kind || !id || !orderId || !paymentKey || !amount) {
     return (
       <PayLayout title="Payment">
-        <p className="text-[15px] leading-normal text-body">Missing payment details.</p>
+        <p className="text-intro m-0">Missing payment details.</p>
       </PayLayout>
     );
   }
@@ -237,7 +232,7 @@ export function PaySuccessPage() {
   if (confirm.isIdle || confirm.isPending) {
     return (
       <PayLayout title="Payment">
-        <p className="text-[15px] leading-normal text-body">Confirming payment…</p>
+        <p className="text-intro m-0">Confirming payment…</p>
       </PayLayout>
     );
   }
@@ -247,9 +242,7 @@ export function PaySuccessPage() {
       <PayLayout title="Payment not completed">
         <ErrorMessage error={confirm.error} />
         <div>
-          <Link to="/pay" className={devLinkClass}>
-            Try again
-          </Link>
+          <Button to="/pay">Try again</Button>
         </div>
       </PayLayout>
     );
@@ -275,13 +268,11 @@ export function PaySuccessPage() {
   }
   return (
     <PayLayout title="Thank you">
-      <p className="text-[15px] leading-normal text-body">
+      <p className="text-intro m-0">
         Payment received. Your {liveLabel} is now live.
       </p>
       <div>
-        <Link to={viewTo} className={devLinkClass}>
-          View your {liveLabel}
-        </Link>
+        <Button to={viewTo}>View your {liveLabel}</Button>
       </div>
     </PayLayout>
   );
@@ -293,13 +284,13 @@ export function PayFailPage() {
 
   return (
     <PayLayout title="Payment not completed">
-      <p className="text-[15px] leading-normal text-body">
-        {cancelled ? "You cancelled the payment." : "The payment did not go through."}
+      <p className="text-intro m-0">
+        {cancelled
+          ? "You cancelled the payment."
+          : "The payment did not go through."}
       </p>
       <div>
-        <Link to="/pay" className={devLinkClass}>
-          Try again
-        </Link>
+        <Button to="/pay">Try again</Button>
       </div>
     </PayLayout>
   );
