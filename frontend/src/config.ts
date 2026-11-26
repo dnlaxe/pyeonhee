@@ -197,3 +197,35 @@ export const footerLinks: FooterLink[] = [
   { to: "/post", label: "Post" },
   { to: "/faq", label: "FAQ" },
 ];
+
+export const heroPhrases: readonly [string, string][] = [
+  ["Want to share", "things to do"],
+  ["Looking for", "work"],
+  ["Want to sell", "used items"],
+  ["Need", "help in English"],
+  ["Hiring for", "your team"],
+  ["Hunting for", "secondhand deals"],
+  ["Offering", "local services"],
+  ["Looking for", "part-time work"],
+  ["Moving out of", "your apartment"],
+  ["Searching for", "teaching jobs"],
+  ["Need", "class cover"],
+  ["Giving away", "free furniture"],
+  ["Looking for", "private tutoring"],
+];
+
+export const suggestedSearches: readonly string[] = [
+  "english teaching",
+  "seongsu",
+  "furniture",
+  "visa",
+  "free",
+  "bike",
+  "monitor",
+  "housing",
+  "moving",
+  "part time",
+  "itaewon",
+  "gangnam",
+  "electronics",
+];

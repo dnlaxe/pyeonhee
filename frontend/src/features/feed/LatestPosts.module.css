@@ -1,121 +1,50 @@
-.titleBar,
-.titleBarInner {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    height: 56px;
-}
-
-.titleBar {
-    justify-content: space-between;
-    gap: 16px;
-    width: 100%;
-    padding: 0;
-    background-color: var(--color-bg);
-}
-
-.titleBarInner {
-    justify-content: space-between;
-    gap: 16px;
-    width: min(100% - 48px, 1120px);
-    margin-inline: auto;
-    height: 100%;
-}
-
-@media (max-width: 767px) {
-    .titleBarInner {
-        width: min(100% - 32px, 1120px);
-    }
-}
-
-.tools {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.search {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: 1 1 220px;
-    width: 100%;
-    min-width: 0;
-    max-width: 220px;
-}
-
-.search svg {
-    position: absolute;
-    left: 10px;
-    width: 16px;
-    height: 16px;
-    pointer-events: none;
-    color: var(--color-muted);
-}
-
-.search input {
-    width: 100%;
-    min-width: 0;
-    height: 36px;
-    margin: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 0;
-    background: var(--color-bg);
-    padding: 0 12px 0 34px;
-    font-size: 14px;
-    line-height: 1.2;
-    color: var(--color-text);
-}
-
-.search input::placeholder {
-    color: var(--color-muted);
-}
-
-.search input:focus {
-    outline: 2px solid var(--color-text);
-    outline-offset: 1px;
-}
-
-.filter {
-    flex: 0 0 auto;
-    height: 36px;
-    margin: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 0;
-    background-color: var(--color-bg);
-    padding-left: 12px;
-    font-size: 14px;
-    line-height: 1.2;
-    color: var(--color-text);
-    cursor: pointer;
-}
-
-.filter:focus {
-    outline: 2px solid var(--color-text);
-    outline-offset: 1px;
-}
-
 .resetBtn {
-    margin-top: 14px;
-    height: 36px;
-    padding: 0 14px;
-    border: 1px solid var(--color-border);
-    border-radius: 0;
-    background-color: var(--color-bg);
-    font-size: 14px;
-    line-height: 1.2;
-    color: var(--color-text);
-    cursor: pointer;
+  margin-top: 14px;
+  height: 36px;
+  padding: 0 14px;
+  border: var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font-size: 14px;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  cursor: pointer;
 }
 
 .resetBtn:hover {
-    background-color: var(--color-surface);
+  background-color: var(--color-surface);
 }
 
 .resetBtn:focus-visible {
-    outline: 2px solid var(--color-text);
-    outline-offset: 1px;
+  outline: 2px solid var(--color-text);
+  outline-offset: 1px;
+}
+
+.showMoreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  margin-top: 36px;
+  padding: 0 16px;
+  border: var(--border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-subtle);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.showMoreBtn:hover {
+  background-color: var(--color-surface);
+}
+
+.showMoreBtn:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
 }

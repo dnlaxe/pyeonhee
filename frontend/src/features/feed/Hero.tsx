@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { heroPhrases } from "../../config";
 import styles from "./Hero.module.css";
-
-const part1Words = ["Want to share", "Looking for"];
-const part2Words = ["things to do", "work", "used items", "English help"];
 
 const INTERVAL_MS = 2500;
 const EXIT_MS = 200;
@@ -16,39 +14,30 @@ function motionClass(phase: Phase, outClass: string, inClass: string) {
 }
 
 export function Hero() {
-  const [part1Index, setPart1Index] = useState(0);
-  const [part2Index, setPart2Index] = useState(0);
+  const [index, setIndex] = useState(0);
   const [part1Phase, setPart1Phase] = useState<Phase>("idle");
   const [part2Phase, setPart2Phase] = useState<Phase>("idle");
-  const part1IndexRef = useRef(0);
-  const part2IndexRef = useRef(0);
+  const indexRef = useRef(0);
 
   useEffect(() => {
     let swapTimer = 0;
 
     const interval = window.setInterval(() => {
-      const prevPart1 = part1IndexRef.current;
-      const prevPart2 = part2IndexRef.current;
-      const nextPart1 = (prevPart1 + 1) % part1Words.length;
-      const nextPart2 = (prevPart2 + 1) % part2Words.length;
-      const part1Changed = nextPart1 !== prevPart1;
-      const part2Changed = nextPart2 !== prevPart2;
+      const prev = heroPhrases[indexRef.current];
+      const nextIndex = (indexRef.current + 1) % heroPhrases.length;
+      const next = heroPhrases[nextIndex];
+      const part1Changed = next[0] !== prev[0];
+      const part2Changed = next[1] !== prev[1];
 
       if (part1Changed) setPart1Phase("out");
       if (part2Changed) setPart2Phase("out");
 
       window.clearTimeout(swapTimer);
       swapTimer = window.setTimeout(() => {
-        if (part1Changed) {
-          part1IndexRef.current = nextPart1;
-          setPart1Index(nextPart1);
-          setPart1Phase("in");
-        }
-        if (part2Changed) {
-          part2IndexRef.current = nextPart2;
-          setPart2Index(nextPart2);
-          setPart2Phase("in");
-        }
+        indexRef.current = nextIndex;
+        setIndex(nextIndex);
+        if (part1Changed) setPart1Phase("in");
+        if (part2Changed) setPart2Phase("in");
       }, EXIT_MS);
     }, INTERVAL_MS);
 
@@ -57,6 +46,8 @@ export function Hero() {
       window.clearTimeout(swapTimer);
     };
   }, []);
+
+  const [part1, part2] = heroPhrases[index];
 
   return (
     <div className={styles.heroBanner}>
@@ -67,12 +58,12 @@ export function Hero() {
             <span
               className={`inline-block ${motionClass(part1Phase, styles.heroOutUp, styles.heroInUp)}`}
             >
-              {part1Words[part1Index]}
+              {part1}
             </span>{" "}
             <span
               className={`inline-block ${motionClass(part2Phase, styles.heroOutDown, styles.heroInDown)}`}
             >
-              {part2Words[part2Index]}
+              {part2}
             </span>
             ?
           </p>
