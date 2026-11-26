@@ -10,7 +10,7 @@ export function TagList({ tags, extraClass }: Props) {
       className={`flex flex-wrap gap-1.5${extraClass ? ` ${extraClass}` : ""}`}
     >
       {tags.map((t) => (
-        <span key={t} className="tag-item inline-flex items-center">
+        <span key={t} className="tag-item">
           {t}
         </span>
       ))}

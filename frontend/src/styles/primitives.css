@@ -415,11 +415,14 @@
   }
 
   .tag-item {
-    border-bottom: var(--border-ink);
-    padding-bottom: 2px;
     font-size: 12px;
-    line-height: var(--leading-tight);
+    line-height: 1.5;
     color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-text);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-skip-ink: none;
   }
 
   .pin-icon {
