@@ -4,13 +4,13 @@
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: var(--radius-sm);
-  background-color: color-mix(in srgb, var(--color-ink) 50%, transparent);
-  color: var(--color-bg);
+  background-color: var(--color-choice-bg);
+  color: var(--color-choice-fg);
   transition: background-color var(--duration-fast) var(--ease-default);
 }
 
 .choice:hover {
-  background-color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+  background-color: var(--color-choice-hover);
 }
 
 .choiceIcon {
@@ -19,7 +19,7 @@
   right: 2%;
   bottom: 4%;
   width: 56%;
-  color: var(--color-bg);
+  color: var(--color-choice-fg);
   transition: transform var(--duration-media) var(--ease-default);
 }
 

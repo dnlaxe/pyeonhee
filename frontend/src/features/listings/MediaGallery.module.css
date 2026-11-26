@@ -82,7 +82,7 @@
   display: grid;
   place-items: center;
   padding: 12px;
-  background: color-mix(in srgb, var(--color-text) 72%, transparent);
+  background: color-mix(in srgb, var(--color-scrim) 76%, transparent);
   cursor: zoom-out;
 }
 
