@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError.ts";
-import { Form, FormField, TextInput, TextareaInput, BotCheck, FaqLink } from "../../shared";
+import {
+  Button,
+  Form,
+  FormField,
+  TextInput,
+  TextareaInput,
+  BotCheck,
+  FaqLink,
+} from "../../shared";
 
-const boxClass = "mt-4 border border-border bg-surface p-5";
+const boxClass = "card-bordered mt-4 p-5";
 
 type Props = {
   actionLabel: string;
@@ -75,9 +83,7 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
   if (open && revealEmail) {
     return (
       <p
-        className={`m-0 text-[15px] leading-[1.2] text-text${
-          extraClass ? ` ${extraClass}` : ""
-        }`}
+        className={`text-email-reveal m-0${extraClass ? ` ${extraClass}` : ""}`}
       >
         {email}
       </p>
@@ -87,33 +93,27 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
   return (
     <div className={extraClass}>
       {!open ? (
-        <button type="button" className="primaryBtn" onClick={() => setOpen(true)}>
-          {label}
-        </button>
+        <Button onClick={() => setOpen(true)}>{label}</Button>
       ) : null}
 
       {open && !revealEmail && sent ? (
         <div className={boxClass}>
-          <p className="mb-2 m-0 text-[20px] leading-[1.2] text-text max-[399px]:text-[18px]">
-            Message sent!
-          </p>
-          <p className="m-0 text-[14px] leading-normal text-body">
-            We emailed the poster your message. If they reply, you&apos;ll get their
-            response in your inbox — then you can write each other directly. Check
-            spam if nothing shows up soon.
+          <p className="heading-card m-0 mb-2">Message sent!</p>
+          <p className="text-body-sm m-0">
+            We emailed the poster your message. If they reply, you&apos;ll get
+            their response in your inbox — then you can write each other
+            directly. Check spam if nothing shows up soon.
           </p>
         </div>
       ) : null}
 
       {open && !revealEmail && !sent ? (
         <div className={boxClass}>
-          <p className="mb-2 m-0 text-[20px] leading-[1.2] text-text max-[399px]:text-[18px]">
-            Message the poster
-          </p>
-          <p className="mb-5 m-0 text-[14px] leading-normal text-body">
-            Your email is not given to the poster — they only receive your message.
-            It is shared only if you later respond to their reply. See our{" "}
-            <FaqLink>FAQs</FaqLink> for details.
+          <p className="heading-card m-0 mb-2">Message the poster</p>
+          <p className="text-body-sm m-0 mb-5">
+            Your email is not given to the poster — they only receive your
+            message. It is shared only if you later respond to their reply. See
+            our <FaqLink>FAQs</FaqLink> for details.
           </p>
           <Form
             noValidate
@@ -132,7 +132,7 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
           >
             <fieldset
               disabled={ready}
-              className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0"
+              className="field-fieldset m-0 flex min-w-0 flex-col gap-5 p-0"
             >
               <FormField label="Your email:" error={errors.email}>
                 <TextInput
@@ -147,16 +147,12 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
                   name="message"
                   rows={5}
                   required
-                  extraClass="min-h-[120px]"
+                  extraClass="field-textarea-sm"
                   invalid={Boolean(errors.message)}
                 />
               </FormField>
             </fieldset>
-            {!ready ? (
-              <button type="submit" className="primaryBtn">
-                Send
-              </button>
-            ) : null}
+            {!ready ? <Button type="submit">Send</Button> : null}
           </Form>
           {ready ? (
             <BotCheck

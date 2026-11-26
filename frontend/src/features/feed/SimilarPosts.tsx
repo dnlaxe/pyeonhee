@@ -1,4 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
+import { Container } from "../../shared";
 import { ListingCard } from "../listings/ListingCard.tsx";
 import type { ListingKind } from "../listings/types";
 import {
@@ -45,14 +46,14 @@ export function SimilarPosts({ kind, excludeId }: Props) {
 
   return (
     <section className={styles.section} aria-label="Similar posts">
-      <div className={styles.inner}>
-        <h2 className={styles.heading}>Similar posts</h2>
+      <Container>
+        <h2 className="heading-section m-0 mb-6">Similar posts</h2>
         <div className={styles.grid}>
           {similar.map((item) => (
             <ListingCard key={`${item.kind}-${item.id}`} item={item} />
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
