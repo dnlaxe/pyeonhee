@@ -126,28 +126,6 @@ func (s *Store) ListPublishedListings(ctx context.Context) (PublishedListings, e
 	return out, nil
 }
 
-func (s *Store) scanPublished(ctx context.Context, entity string, out any) error {
-	res, err := s.db.Scan(ctx, &dynamodb.ScanInput{
-		TableName:        &s.table,
-		FilterExpression: new("SK = :meta AND #status = :published AND entityType = :entity"),
-		ExpressionAttributeNames: map[string]string{
-			"#status": "status",
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":meta":      &types.AttributeValueMemberS{Value: SortKeyMeta},
-			":published": &types.AttributeValueMemberS{Value: StatusPublished},
-			":entity":    &types.AttributeValueMemberS{Value: entity},
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("scan %s: %w", entity, err)
-	}
-	if err := attributevalue.UnmarshalListOfMaps(res.Items, out); err != nil {
-		return fmt.Errorf("unmarshal %s: %w", entity, err)
-	}
-	return nil
-}
-
 func (s *Store) getMeta(ctx context.Context, pk string, out any) error {
 	res, err := s.db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &s.table,

@@ -19,11 +19,8 @@ func (a *App) NewRouter() *chi.Mux {
 
 	r.Get("/listings", a.listListings)
 
-	r.Get("/jobs", a.listJob)
 	r.Get("/jobs/{id}", a.getJob)
-	r.Get("/services", a.listService)
 	r.Get("/services/{id}", a.getService)
-	r.Get("/market", a.listMarket)
 	r.Get("/market/{id}", a.getMarket)
 
 	r.Post("/photos", a.createPhoto)

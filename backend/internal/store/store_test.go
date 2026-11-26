@@ -74,17 +74,6 @@ func TestGetJobNotFound(t *testing.T) {
 	}
 }
 
-func TestListPublishedFiltersByEntity(t *testing.T) {
-	db := &fakeDB{}
-	if _, err := New(db, "t").ListPublishedMarket(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	values := db.scan.ExpressionAttributeValues
-	if str(values[":entity"]) != EntityMarket || str(values[":published"]) != StatusPublished {
-		t.Fatalf("scan values = %v", values)
-	}
-}
-
 func TestListPublishedListings(t *testing.T) {
 	jobAV, err := attributevalue.MarshalMap(JobItem{
 		PK:         JobPK("J1"),

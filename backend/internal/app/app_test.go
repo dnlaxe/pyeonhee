@@ -246,7 +246,7 @@ func TestNewRequiresTableName(t *testing.T) {
 	}
 }
 
-func TestListJobsAgainstDynamoDB(t *testing.T) {
+func TestListListingsAgainstDynamoDB(t *testing.T) {
 	if os.Getenv("TABLE_NAME") == "" {
 		t.Skip("TABLE_NAME not set; skipping live DynamoDB check")
 	}
@@ -257,7 +257,7 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/jobs", nil)
+	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)
@@ -265,8 +265,11 @@ func TestListJobsAgainstDynamoDB(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d body = %q", rec.Code, rec.Body.String())
 	}
-	body := rec.Body.String()
-	if body == "" || body[0] != '[' {
-		t.Fatalf("expected JSON array, got %q", body)
+	var resp ListingsResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("expected JSON listings object, got %q: %v", rec.Body.String(), err)
+	}
+	if resp.Jobs == nil || resp.Market == nil || resp.Services == nil {
+		t.Fatalf("expected non-nil listing slices, got %+v", resp)
 	}
 }

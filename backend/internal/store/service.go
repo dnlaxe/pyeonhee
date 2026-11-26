@@ -27,14 +27,6 @@ type ServiceItem struct {
 	PaymentKey string   `dynamodbav:"paymentKey,omitempty"`
 }
 
-func (s *Store) ListPublishedService(ctx context.Context) ([]ServiceItem, error) {
-	var items []ServiceItem
-	if err := s.scanPublished(ctx, EntityService, &items); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 func (s *Store) PutService(ctx context.Context, service ServiceItem) error {
 	av, err := attributevalue.MarshalMap(service)
 	if err != nil {
