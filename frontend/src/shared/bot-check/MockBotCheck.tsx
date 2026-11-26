@@ -2,6 +2,8 @@ import { useState } from "react";
 import { FormField } from "../forms/FormField.tsx";
 import { Form } from "../forms/Form.tsx";
 import { TextInput } from "../forms/TextInput.tsx";
+import { Button } from "../ui/Button.tsx";
+
 type Props = {
   onSubmit: (password: string) => void;
   pending: boolean;
@@ -27,9 +29,9 @@ export function MockBotCheck({ onSubmit, pending, error }: Props) {
           invalid={Boolean(error)}
         />
       </FormField>
-      <button type="submit" className="primaryBtn" disabled={pending}>
+      <Button type="submit" disabled={pending}>
         {pending ? "Checking…" : "Continue"}
-      </button>
+      </Button>
     </Form>
   );
 }

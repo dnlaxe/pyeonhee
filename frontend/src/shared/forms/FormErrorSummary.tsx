@@ -11,10 +11,7 @@ export function FormErrorSummary({ count }: Props) {
       : `${count} fields still need a fix.`;
 
   return (
-    <div
-      role="alert"
-      className="border-[1.5px] border-text bg-danger px-3 py-2.5 text-sm leading-[1.4] text-text rounded-lg"
-    >
+    <div role="alert" className="alert-error">
       {text}
     </div>
   );
