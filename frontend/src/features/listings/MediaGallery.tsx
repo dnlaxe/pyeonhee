@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { MouseEvent } from "react";
-import { LogoPlaceholder } from "../../shared";
+import { LogoPlaceholder, Skeleton, useImageStatus } from "../../shared";
 import styles from "./MediaGallery.module.css";
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
@@ -43,8 +43,11 @@ export function MediaGallery({ images = [] }: MediaGalleryProps) {
   const [zoomed, setZoomed] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  const photo = images[photoIndex] ?? images[0];
+  const photo = images[photoIndex] ?? images[0] ?? "";
   const hasMany = images.length > 1;
+  const { status, imgRef, onLoad, onError } = useImageStatus(photo);
+  const photoReady = status === "loaded";
+  const showPlaceholder = status === "empty" || status === "error";
 
   useEffect(() => {
     if (!zoomed || images.length === 0) return;
@@ -81,48 +84,57 @@ export function MediaGallery({ images = [] }: MediaGalleryProps) {
   return (
     <>
       <div className={styles.mediaWrap}>
-        {photo ? (
-          <>
-            <button
-              type="button"
-              className={styles.mediaFrame}
-              onClick={() => setZoomed(true)}
-              aria-label="View larger image"
-            >
-              <img src={photo} alt="" className={styles.image} />
-            </button>
-            {hasMany && (
-              <>
-                <button
-                  type="button"
-                  className={`${styles.navBtn} ${styles.navPrev}`}
-                  onClick={prevPhoto}
-                  aria-label="Previous photo"
-                >
-                  <Chevron dir="left" />
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.navBtn} ${styles.navNext}`}
-                  onClick={nextPhoto}
-                  aria-label="Next photo"
-                >
-                  <Chevron dir="right" />
-                </button>
-                <p className={styles.counter}>
-                  {photoIndex + 1} / {images.length}
-                </p>
-              </>
-            )}
-          </>
+        {!showPlaceholder ? (
+          <button
+            type="button"
+            className={styles.mediaFrame}
+            onClick={() => setZoomed(true)}
+            aria-label="View larger image"
+          >
+            {status === "loading" ? (
+              <Skeleton media extraClass="size-full" />
+            ) : null}
+            <img
+              key={photo}
+              ref={imgRef}
+              src={photo}
+              alt=""
+              className={photoReady ? styles.image : styles.imagePending}
+              onLoad={onLoad}
+              onError={onError}
+            />
+          </button>
         ) : (
           <div className={`${styles.mediaFrame} ${styles.mediaFrameEmpty}`}>
             <LogoPlaceholder />
           </div>
         )}
+        {hasMany && (
+          <>
+            <button
+              type="button"
+              className={`${styles.navBtn} ${styles.navPrev}`}
+              onClick={prevPhoto}
+              aria-label="Previous photo"
+            >
+              <Chevron dir="left" />
+            </button>
+            <button
+              type="button"
+              className={`${styles.navBtn} ${styles.navNext}`}
+              onClick={nextPhoto}
+              aria-label="Next photo"
+            >
+              <Chevron dir="right" />
+            </button>
+            <p className={styles.counter}>
+              {photoIndex + 1} / {images.length}
+            </p>
+          </>
+        )}
       </div>
 
-      {zoomed && photo && (
+      {zoomed && photo && !showPlaceholder && (
         <div
           className={styles.lightbox}
           role="dialog"

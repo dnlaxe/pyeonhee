@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
 import { Link, useLocation } from "react-router";
+import { Skeleton, useImageStatus } from "../../shared";
 import { TagList } from "../../shared/ui/TagList.tsx";
 import { LogoPlaceholder } from "../../shared/icons/LogoPlaceholder.tsx";
 import { PinIcon } from "../../shared/icons/PinIcon.tsx";
@@ -24,17 +24,9 @@ export function ListingCard({ item }: { item: FeedItem }) {
   const backTo = pathname === "/" ? `/${search}` : readBackTo(state);
 
   const thumbUrl = item.thumbUrl ?? "";
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
-  const thumbReady = Boolean(thumbUrl) && loadedUrl === thumbUrl;
-
-  const imgRef = useCallback(
-    (img: HTMLImageElement | null) => {
-      if (img?.complete && img.naturalWidth > 0) {
-        setLoadedUrl(thumbUrl);
-      }
-    },
-    [thumbUrl],
-  );
+  const { status, imgRef, onLoad, onError } = useImageStatus(thumbUrl);
+  const thumbReady = status === "loaded";
+  const showPlaceholder = status === "empty" || status === "error";
 
   return (
     <Link
@@ -42,17 +34,21 @@ export function ListingCard({ item }: { item: FeedItem }) {
       state={backTo ? { backTo } : undefined}
       className={styles.card}
     >
-      <div className={styles.logo} aria-hidden={thumbReady ? undefined : true}>
-        {!thumbReady ? <LogoPlaceholder /> : null}
-        {thumbUrl ? (
+      <div
+        className={`${styles.logo}${showPlaceholder ? ` ${styles.logoEmpty}` : ""}`}
+        aria-hidden={thumbReady ? undefined : true}
+      >
+        {status === "loading" ? <Skeleton media extraClass="size-full" /> : null}
+        {showPlaceholder ? <LogoPlaceholder /> : null}
+        {thumbUrl && status !== "error" ? (
           <img
             key={thumbUrl}
             ref={imgRef}
             src={thumbUrl}
             alt=""
             className={thumbReady ? undefined : styles.thumbPending}
-            onLoad={() => setLoadedUrl(thumbUrl)}
-            onError={() => setLoadedUrl(null)}
+            onLoad={onLoad}
+            onError={onError}
           />
         ) : null}
       </div>

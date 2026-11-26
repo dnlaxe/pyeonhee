@@ -3,6 +3,7 @@
 }
 
 .mediaFrame {
+  position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 16 / 11;
@@ -20,6 +21,14 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.imagePending {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .navBtn {

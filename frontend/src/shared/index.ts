@@ -23,6 +23,7 @@ export { ContactForm } from "../features/listings/ContactForm.tsx";
 export { FaqLink } from "./ui/FaqLink.tsx";
 
 export { formatTimeSince } from "./helpers/time.ts";
+export { useImageStatus } from "./helpers/useImageStatus";
 export { richText, richParagraphs } from "./helpers/richText";
 
 export { PinIcon } from "./icons/PinIcon";
