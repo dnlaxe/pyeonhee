@@ -7,8 +7,6 @@ import { listingsQueryOptions } from "../listings";
 import { PaymentStep } from "./PaymentStep";
 import type { Order } from "./types";
 
-const API = import.meta.env.VITE_API_URL;
-
 type PayKind = "job" | "market" | "service";
 
 function unexpectedKind(kind: never): never {
@@ -61,7 +59,7 @@ function payUrl(path: string, kind: PayKind, id: string) {
 }
 
 async function checkout(draft: PayDraft): Promise<Order> {
-  const res = await fetch(`${API}/payments/checkout`, {
+  const res = await fetch("/api/payments/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ kind: draft.kind, id: draft.id }),
@@ -92,7 +90,7 @@ function draftKeyFor(kind: PayKind): string {
 }
 
 async function confirmPayment(body: ConfirmVars): Promise<PayKind> {
-  const res = await fetch(`${API}/payments/confirm`, {
+  const res = await fetch("/api/payments/confirm", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

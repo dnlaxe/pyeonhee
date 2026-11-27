@@ -41,11 +41,6 @@ jobs:
           role-to-assume: arn:aws:iam::993939946685:role/github-actions-deploy
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Resolve API URL from stack
-        id: api
-        working-directory: scripts/get-api-url
-        run: go run .
-
       - name: Install frontend deps
         working-directory: frontend
         run: npm ci
@@ -53,7 +48,6 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          VITE_API_URL: ${{ steps.api.outputs.url }}
           VITE_PAYMENT: ${{ vars.VITE_PAYMENT }}
         run: npm run build
 

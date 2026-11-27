@@ -9,7 +9,6 @@ import { LatestPostsSection } from "./LatestPostsSection";
 const EMPTY: never[] = [];
 
 export function FeedPage() {
-  const apiUrl = import.meta.env.VITE_API_URL;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const kind = parseKindParam(searchParams.get("kind"));
@@ -44,7 +43,6 @@ export function FeedPage() {
         onRetry={() => {
           void listingsQuery.refetch();
         }}
-        apiUrl={apiUrl}
         kind={kind}
         query={query}
         onKindChange={handleKindChange}

@@ -49,7 +49,7 @@ export async function createListing<Errors>(
   fields: object,
   password: string,
 ): Promise<CreateResult<Errors>> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
+  const res = await fetch(`/api${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...fields, password }),
@@ -73,7 +73,7 @@ export async function uploadPhoto(
   file: File,
   password: string,
 ): Promise<UploadResult> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
+  const res = await fetch(`/api${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -2,11 +2,10 @@ import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError";
 import type { JobItem, ListingsResponse, MarketItem, Service } from "./types";
 
-const apiUrl = import.meta.env.VITE_API_URL;
 export const LIST_STALE_TIME = 5 * 60 * 1000;
 
 async function fetchJson<T>(path: string, signal: AbortSignal): Promise<T> {
-  const res = await fetch(`${apiUrl}${path}`, { signal });
+  const res = await fetch(`/api${path}`, { signal });
   throwIfNotOk(res);
   return (await res.json()) as T;
 }
@@ -14,7 +13,6 @@ async function fetchJson<T>(path: string, signal: AbortSignal): Promise<T> {
 export const listingsQueryOptions = () =>
   queryOptions({
     queryKey: ["listings"] as const,
-    enabled: Boolean(apiUrl),
     staleTime: LIST_STALE_TIME,
     queryFn: ({ signal }) => fetchJson<ListingsResponse>("/listings", signal),
   });
@@ -25,7 +23,7 @@ export const jobDetailQueryOptions = (
 ) =>
   queryOptions({
     queryKey: ["jobs", id] as const,
-    enabled: Boolean(apiUrl) && Boolean(id),
+    enabled: Boolean(id),
     staleTime: LIST_STALE_TIME,
     queryFn: ({ signal }) => fetchJson<JobItem>(`/jobs/${id}`, signal),
     initialData: () =>
@@ -42,7 +40,7 @@ export const marketDetailQueryOptions = (
 ) =>
   queryOptions({
     queryKey: ["market", id] as const,
-    enabled: Boolean(apiUrl) && Boolean(id),
+    enabled: Boolean(id),
     staleTime: LIST_STALE_TIME,
     queryFn: ({ signal }) => fetchJson<MarketItem>(`/market/${id}`, signal),
     initialData: () =>
@@ -59,7 +57,7 @@ export const serviceDetailQueryOptions = (
 ) =>
   queryOptions({
     queryKey: ["services", id] as const,
-    enabled: Boolean(apiUrl) && Boolean(id),
+    enabled: Boolean(id),
     staleTime: LIST_STALE_TIME,
     queryFn: ({ signal }) => fetchJson<Service>(`/services/${id}`, signal),
     initialData: () =>
