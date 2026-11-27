@@ -91,7 +91,7 @@ func TestListListings(t *testing.T) {
 		MediaBaseURL: "https://cdn.example",
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/listings", nil)
 	rec := httptest.NewRecorder()
 	a.NewRouter().ServeHTTP(rec, req)
 
@@ -125,7 +125,7 @@ func TestListListings(t *testing.T) {
 
 func TestListListingsEmptyArrays(t *testing.T) {
 	a := &App{Store: &fakeStore{}}
-	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/listings", nil)
 	rec := httptest.NewRecorder()
 	a.NewRouter().ServeHTTP(rec, req)
 
@@ -139,7 +139,7 @@ func TestListListingsEmptyArrays(t *testing.T) {
 
 func TestListListingsStoreError(t *testing.T) {
 	a := &App{Store: &fakeStore{listingsErr: errors.New("boom")}}
-	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/listings", nil)
 	rec := httptest.NewRecorder()
 	a.NewRouter().ServeHTTP(rec, req)
 
@@ -163,7 +163,7 @@ func TestGetService(t *testing.T) {
 		}},
 		MediaBaseURL: "https://cdn.example",
 	}
-	req := httptest.NewRequest(http.MethodGet, "/services/svc1", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/services/svc1", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)
@@ -182,7 +182,7 @@ func TestGetService(t *testing.T) {
 
 func TestGetServiceNotFound(t *testing.T) {
 	a := &App{Store: &fakeStore{}}
-	req := httptest.NewRequest(http.MethodGet, "/services/missing", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/services/missing", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)
@@ -197,7 +197,7 @@ func TestGetServiceUnpublished(t *testing.T) {
 		ID:     "svc1",
 		Status: store.StatusPending,
 	}}}
-	req := httptest.NewRequest(http.MethodGet, "/services/svc1", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/services/svc1", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)
@@ -223,7 +223,7 @@ func TestCreateListingRejectsOversizedBody(t *testing.T) {
 	a := &App{}
 	router := a.NewRouter()
 
-	for _, path := range []string{"/jobs", "/market", "/services"} {
+	for _, path := range []string{"/api/jobs", "/api/market", "/api/services"} {
 		t.Run(path, func(t *testing.T) {
 			body := `{"description":"` + strings.Repeat("a", maxListingBodyBytes+1) + `"}`
 			req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
@@ -257,7 +257,7 @@ func TestListListingsAgainstDynamoDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/listings", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/listings", nil)
 	rec := httptest.NewRecorder()
 
 	a.NewRouter().ServeHTTP(rec, req)

@@ -17,7 +17,6 @@ import { SimilarPosts } from "../feed";
 
 export function MarketDetail() {
   const { id } = useParams<{ id: string }>();
-  const apiUrl = import.meta.env.VITE_API_URL;
   const queryClient = useQueryClient();
 
   const {
@@ -26,18 +25,6 @@ export function MarketDetail() {
     error,
     refetch,
   } = useQuery(marketDetailQueryOptions(queryClient, id));
-
-  if (!apiUrl) {
-    return (
-      <main>
-        <Container>
-          <p className="text-tone-danger">
-            Something went wrong. Please try again later.
-          </p>
-        </Container>
-      </main>
-    );
-  }
 
   if (isPending) {
     return <DetailSkeleton kind="market" />;

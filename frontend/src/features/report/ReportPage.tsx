@@ -17,7 +17,6 @@ import {
 
 export function ReportPage() {
   const { kind, id } = useParams<{ kind: string; id: string }>();
-  const apiUrl = import.meta.env.VITE_API_URL;
   const queryClient = useQueryClient();
 
   const path =
@@ -45,10 +44,10 @@ export function ReportPage() {
 
   const { data, isPending, error, refetch } = useQuery({
     queryKey: [queryKey, id] as const,
-    enabled: Boolean(apiUrl) && Boolean(path),
+    enabled: Boolean(path),
     staleTime: LIST_STALE_TIME,
     queryFn: async ({ signal }) => {
-      const res = await fetch(`${apiUrl}${path}`, { signal });
+      const res = await fetch(`/api${path}`, { signal });
       throwIfNotOk(res);
       return (await res.json()) as { title?: string; company?: string };
     },
@@ -68,18 +67,6 @@ export function ReportPage() {
 
   if (!path) {
     return <Navigate to="/" replace />;
-  }
-
-  if (!apiUrl) {
-    return (
-      <main>
-        <Container>
-          <p className="text-tone-danger">
-            Something went wrong. Please try again later.
-          </p>
-        </Container>
-      </main>
-    );
   }
 
   if (isPending) {

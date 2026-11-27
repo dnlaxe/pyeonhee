@@ -17,7 +17,7 @@ func postContact(body string) *httptest.ResponseRecorder {
 		BotCheck: botcheck.Mock{Password: "secret"},
 		Mail:     mail.Nop{},
 	}
-	req := httptest.NewRequest(http.MethodPost, "/contact", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/api/contact", strings.NewReader(body))
 	rec := httptest.NewRecorder()
 	a.contact(rec, req)
 	return rec

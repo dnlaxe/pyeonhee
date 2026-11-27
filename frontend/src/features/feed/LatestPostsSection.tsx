@@ -17,7 +17,6 @@ type LatestPostsSectionProps = {
   isPending?: boolean;
   error?: Error | null;
   onRetry?: () => void;
-  apiUrl?: string;
   kind: FeedKindFilter;
   query: string;
   onKindChange: (kind: FeedKindFilter) => void;
@@ -32,7 +31,6 @@ export function LatestPostsSection({
   isPending,
   error = null,
   onRetry,
-  apiUrl,
   kind,
   query,
   onKindChange,
@@ -122,13 +120,7 @@ export function LatestPostsSection({
         <Container>
           <h2 className="heading-section m-0 mt-3 mb-2">Latest Posts</h2>
 
-          {!apiUrl && (
-            <p className="text-tone-danger">
-              Something went wrong. Please try again later.
-            </p>
-          )}
-
-          {apiUrl && isPending ? <ListingCardSkeletonGrid /> : null}
+          {isPending ? <ListingCardSkeletonGrid /> : null}
 
           {error && (
             <div className="mt-4">
@@ -137,7 +129,6 @@ export function LatestPostsSection({
           )}
 
           {!isPending &&
-            apiUrl &&
             !error &&
             hasActiveFilters && (
               <p className="sr-only" role="status" aria-live="polite">
@@ -148,7 +139,6 @@ export function LatestPostsSection({
             )}
 
           {!isPending &&
-            apiUrl &&
             filteredPosts.length === 0 &&
             !error && (
               <div className="mt-9 text-center">
@@ -167,7 +157,7 @@ export function LatestPostsSection({
               </div>
             )}
 
-          {!isPending && apiUrl && filteredPosts.length > 0 && (
+          {!isPending && filteredPosts.length > 0 && (
             <>
               <div className={cardStyles.grid}>
                 {visiblePosts.map((item) => (

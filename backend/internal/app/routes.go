@@ -17,22 +17,24 @@ func (a *App) NewRouter() *chi.Mux {
 		MaxAge:         300,
 	}))
 
-	r.Get("/listings", a.listListings)
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/listings", a.listListings)
 
-	r.Get("/jobs/{id}", a.getJob)
-	r.Get("/services/{id}", a.getService)
-	r.Get("/market/{id}", a.getMarket)
+		r.Get("/jobs/{id}", a.getJob)
+		r.Get("/services/{id}", a.getService)
+		r.Get("/market/{id}", a.getMarket)
 
-	r.Post("/photos", a.createPhoto)
+		r.Post("/photos", a.createPhoto)
 
-	r.Post("/jobs", a.createJob)
-	r.Post("/market", a.createMarket)
-	r.Post("/services", a.createService)
+		r.Post("/jobs", a.createJob)
+		r.Post("/market", a.createMarket)
+		r.Post("/services", a.createService)
 
-	r.Post("/payments/checkout", a.checkout)
-	r.Post("/payments/confirm", a.confirmPayment)
+		r.Post("/payments/checkout", a.checkout)
+		r.Post("/payments/confirm", a.confirmPayment)
 
-	r.Post("/contact", a.contact)
+		r.Post("/contact", a.contact)
+	})
 
 	return r
 }
