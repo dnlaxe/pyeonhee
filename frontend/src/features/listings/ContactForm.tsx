@@ -55,6 +55,7 @@ function validateContact(data: FormData): ContactErrors {
 export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props) {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<ContactErrors>({});
+  const [submitted, setSubmitted] = useState(false);
   const [ready, setReady] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -126,6 +127,7 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
             onSubmit={(e) => {
               const data = new FormData(e.currentTarget);
               const next = validateContact(data);
+              setSubmitted(true);
               setErrors(next);
               if (Object.keys(next).length > 0) return;
               setFields({
@@ -134,6 +136,10 @@ export function ContactForm({ actionLabel, extraClass, email, kind, id }: Props)
               });
               setBotCheckError("");
               setReady(true);
+            }}
+            onChange={(e) => {
+              if (!submitted) return;
+              setErrors(validateContact(new FormData(e.currentTarget)));
             }}
           >
             <fieldset
