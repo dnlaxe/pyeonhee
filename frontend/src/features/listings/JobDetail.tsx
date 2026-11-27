@@ -30,8 +30,8 @@ export function JobDetails() {
     return (
       <main>
         <Container>
-          <p className="heading-section text-tone-danger m-0">
-            VITE_API_URL is not set
+          <p className="text-tone-danger">
+            Something went wrong. Please try again later.
           </p>
         </Container>
       </main>

@@ -28,7 +28,9 @@ export function ServiceDetail() {
     return (
       <main>
         <Container>
-          <p className="text-tone-danger">VITE_API_URL is not set</p>
+          <p className="text-tone-danger">
+            Something went wrong. Please try again later.
+          </p>
         </Container>
       </main>
     );
