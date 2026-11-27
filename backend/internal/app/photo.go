@@ -41,6 +41,31 @@ type PhotoUpload struct {
 	UploadURL string `json:"uploadUrl"`
 }
 
+type createListingResponse struct {
+	ID      string        `json:"id"`
+	Uploads []PhotoUpload `json:"uploads,omitempty"`
+}
+
+func (a *App) presignPhotos(ctx context.Context, specs []PhotoSpec) ([]string, []PhotoUpload, error) {
+	if len(specs) == 0 {
+		return nil, nil, nil
+	}
+	if a.Photos == nil {
+		return nil, nil, errors.New("UPLOADS_BUCKET not set")
+	}
+	keys := make([]string, 0, len(specs))
+	uploads := make([]PhotoUpload, 0, len(specs))
+	for _, spec := range specs {
+		key, upload, err := a.Photos.PresignUpload(ctx, spec)
+		if err != nil {
+			return nil, nil, err
+		}
+		keys = append(keys, key)
+		uploads = append(uploads, upload)
+	}
+	return keys, uploads, nil
+}
+
 type PhotoStore interface {
 	PresignUpload(ctx context.Context, spec PhotoSpec) (mediaKey string, upload PhotoUpload, err error)
 	CheckUpload(ctx context.Context, mediaKey string) error

@@ -25,9 +25,9 @@ type CreateServiceRequest struct {
 	Location string `json:"location"`
 	Email    string `json:"email"`
 	Webpage  string `json:"webpage,omitempty"`
-	Message  string `json:"message"`
-	Logo     string `json:"logo,omitempty"`
-	Password string `json:"password"`
+	Message  string     `json:"message"`
+	Logo     *PhotoSpec `json:"logo,omitempty"`
+	Password string     `json:"password"`
 }
 
 func toServiceResponse(item store.ServiceItem) ServiceResponse {
@@ -49,7 +49,7 @@ func toServiceResponse(item store.ServiceItem) ServiceResponse {
 	}
 }
 
-func (r CreateServiceRequest) toServiceItem(id string, now time.Time) store.ServiceItem {
+func (r CreateServiceRequest) toServiceItem(id, logo string, now time.Time) store.ServiceItem {
 	return store.ServiceItem{
 		PK:         store.ServicePK(id),
 		SK:         store.SortKeyMeta,
@@ -57,7 +57,7 @@ func (r CreateServiceRequest) toServiceItem(id string, now time.Time) store.Serv
 		ID:         id,
 		Company:    r.Company,
 		Location:   r.Location,
-		Logo:       r.Logo,
+		Logo:       logo,
 		Blurb:      r.Message,
 		Contact:    r.Email,
 		Webpage:    r.Webpage,

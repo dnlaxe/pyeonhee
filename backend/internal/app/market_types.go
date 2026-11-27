@@ -28,9 +28,9 @@ type CreateMarketRequest struct {
 	ListingType string   `json:"listingType"`
 	Category    string   `json:"category"`
 	Price       string   `json:"price"`
-	Description string   `json:"description"`
-	Images      []string `json:"images,omitempty"`
-	Pinned      bool     `json:"pinned"`
+	Description string      `json:"description"`
+	Images      []PhotoSpec `json:"images,omitempty"`
+	Pinned      bool        `json:"pinned"`
 	Password    string   `json:"password"`
 }
 
@@ -61,7 +61,7 @@ func toMarketResponse(item store.MarketItem) MarketResponse {
 	return market
 }
 
-func (r CreateMarketRequest) toMarketItem(id string, now time.Time) store.MarketItem {
+func (r CreateMarketRequest) toMarketItem(id string, images []string, now time.Time) store.MarketItem {
 	return store.MarketItem{
 		PK:          store.MarketPK(id),
 		SK:          store.SortKeyMeta,
@@ -71,7 +71,7 @@ func (r CreateMarketRequest) toMarketItem(id string, now time.Time) store.Market
 		Location:    r.Location,
 		Price:       r.Price,
 		Description: r.Description,
-		Images:      r.Images,
+		Images:      images,
 		Tags:        []string{r.ListingType, r.Category},
 		PosterEmail: r.Email,
 		EmailOption: r.EmailOption,

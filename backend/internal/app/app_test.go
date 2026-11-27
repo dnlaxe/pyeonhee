@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dnlaxe/pyeonhee/backend/internal/botcheck"
 	"github.com/dnlaxe/pyeonhee/backend/internal/config"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
@@ -47,6 +48,11 @@ func (f *fakeStore) GetJob(_ context.Context, _ string) (store.JobItem, error) {
 	return *f.job, nil
 }
 
+func (f *fakeStore) PutJob(_ context.Context, item store.JobItem) error {
+	f.job = &item
+	return nil
+}
+
 func (f *fakeStore) GetMarket(_ context.Context, _ string) (store.MarketItem, error) {
 	if f.market == nil {
 		return store.MarketItem{}, store.ErrNotFound
@@ -54,11 +60,21 @@ func (f *fakeStore) GetMarket(_ context.Context, _ string) (store.MarketItem, er
 	return *f.market, nil
 }
 
+func (f *fakeStore) PutMarket(_ context.Context, item store.MarketItem) error {
+	f.market = &item
+	return nil
+}
+
 func (f *fakeStore) GetService(_ context.Context, _ string) (store.ServiceItem, error) {
 	if f.service == nil {
 		return store.ServiceItem{}, store.ErrNotFound
 	}
 	return *f.service, nil
+}
+
+func (f *fakeStore) PutService(_ context.Context, item store.ServiceItem) error {
+	f.service = &item
+	return nil
 }
 
 func (f *fakeStore) SetOrder(_ context.Context, pk, orderID string, amount int64) error {
@@ -235,6 +251,81 @@ func TestCreateListingRejectsOversizedBody(t *testing.T) {
 				t.Fatalf("status = %d, want %d, body = %q", rec.Code, http.StatusRequestEntityTooLarge, rec.Body.String())
 			}
 		})
+	}
+}
+
+type fakePhotoStore struct {
+	next      int
+	presigned []PhotoSpec
+	checkErr  error
+	checked   []string
+	promoteErr error
+	promoted  []string
+}
+
+func (f *fakePhotoStore) PresignUpload(_ context.Context, spec PhotoSpec) (string, PhotoUpload, error) {
+	f.next++
+	f.presigned = append(f.presigned, spec)
+	ext := photoExt[spec.ContentType]
+	key := photoPrefix + "p" + string(rune('0'+f.next)) + "." + ext
+	return key, PhotoUpload{Key: key, UploadURL: "https://s3.example/tmp/" + key}, nil
+}
+
+func (f *fakePhotoStore) CheckUpload(_ context.Context, mediaKey string) error {
+	f.checked = append(f.checked, mediaKey)
+	return f.checkErr
+}
+
+func (f *fakePhotoStore) Promote(_ context.Context, mediaKey string) error {
+	f.promoted = append(f.promoted, mediaKey)
+	return f.promoteErr
+}
+
+func TestCreateMarketPresignsPhotosOnce(t *testing.T) {
+	st := &fakeStore{}
+	photos := &fakePhotoStore{}
+	a := &App{
+		Store:    st,
+		BotCheck: botcheck.Mock{Password: "secret"},
+		Photos:   photos,
+	}
+
+	body := `{
+		"email":"seller@example.com",
+		"emailOption":"hide",
+		"title":"IKEA Desk",
+		"location":"Seoul",
+		"listingType":"Selling",
+		"category":"Furniture",
+		"price":"50000",
+		"description":"` + strings.Repeat("a", minBodyLength) + `",
+		"images":[
+			{"contentType":"image/jpeg","contentLength":1000},
+			{"contentType":"image/png","contentLength":2000}
+		],
+		"password":"secret"
+	}`
+
+	req := httptest.NewRequest(http.MethodPost, "/api/market", strings.NewReader(body))
+	rec := httptest.NewRecorder()
+	a.NewRouter().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d body = %s", rec.Code, rec.Body.String())
+	}
+
+	var resp createListingResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.ID == "" || len(resp.Uploads) != 2 {
+		t.Fatalf("resp = %+v", resp)
+	}
+	if st.market == nil || len(st.market.Images) != 2 || st.market.Images[0] != resp.Uploads[0].Key {
+		t.Fatalf("saved market = %+v", st.market)
+	}
+	if st.market.TTL == 0 {
+		t.Fatal("expected pending market TTL to be set")
 	}
 }
 

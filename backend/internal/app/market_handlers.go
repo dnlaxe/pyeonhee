@@ -56,22 +56,17 @@ func (a *App) createMarket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, img := range req.Images {
-		if err := a.checkPhoto(r.Context(), img); err != nil {
-			if errors.Is(err, errBadPhoto) {
-				writeValidationErrors(w, map[string]string{"images": "Upload the photo again."})
-				return
-			}
-			writeInternalError(w, "createMarket", err)
-			return
-		}
-	}
-
-	id := rand.Text()
-	if err := a.Store.PutMarket(r.Context(), req.toMarketItem(id, time.Now())); err != nil {
+	keys, uploads, err := a.presignPhotos(r.Context(), req.Images)
+	if err != nil {
 		writeInternalError(w, "createMarket", err)
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]string{"id": id})
+	id := rand.Text()
+	if err := a.Store.PutMarket(r.Context(), req.toMarketItem(id, keys, time.Now())); err != nil {
+		writeInternalError(w, "createMarket", err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, createListingResponse{ID: id, Uploads: uploads})
 }

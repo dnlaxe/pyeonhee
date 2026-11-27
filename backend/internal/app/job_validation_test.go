@@ -40,6 +40,8 @@ func TestCreateJobRequestValidate(t *testing.T) {
 		{"unknown korean level", func(r *CreateJobRequest) { r.Korean = "no korean lol" }, "korean"},
 		{"short description", func(r *CreateJobRequest) { r.Description = "too short" }, "description"},
 		{"korean description counts characters", func(r *CreateJobRequest) { r.Description = strings.Repeat("가", 20) }, "description"},
+		{"bad logo type", func(r *CreateJobRequest) { r.Logo = &PhotoSpec{ContentType: "image/gif", ContentLength: 100} }, "logo"},
+		{"oversized logo", func(r *CreateJobRequest) { r.Logo = &PhotoSpec{ContentType: "image/png", ContentLength: maxPhotoBytes + 1} }, "logo"},
 	}
 
 	for _, tt := range tests {

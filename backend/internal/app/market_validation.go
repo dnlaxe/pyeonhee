@@ -15,8 +15,8 @@ func (r *CreateMarketRequest) normalize() {
 	r.Category = strings.TrimSpace(r.Category)
 	r.Price = strings.TrimSpace(r.Price)
 	r.Description = strings.TrimSpace(r.Description)
-	for i, image := range r.Images {
-		r.Images[i] = strings.TrimSpace(image)
+	for i := range r.Images {
+		r.Images[i].ContentType = strings.TrimSpace(r.Images[i].ContentType)
 	}
 }
 
@@ -82,8 +82,11 @@ func (r CreateMarketRequest) validate() map[string]string {
 	if len(r.Images) > maxMarketImages {
 		errs["images"] = "Attach up to 3 photos."
 	} else {
-		if slices.Contains(r.Images, "") {
-			errs["images"] = "Upload the photo again."
+		for _, img := range r.Images {
+			if _, msg := img.validate(); msg != "" {
+				errs["images"] = msg
+				break
+			}
 		}
 	}
 
