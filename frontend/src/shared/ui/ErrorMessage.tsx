@@ -7,7 +7,7 @@ function errorStyle(error: Error): string {
 		case "warning":
 			return "text-tone-warning";
 		case "neutral":
-			return "text-tone-success";
+			return "text-tone-neutral";
 		case "danger":
 		default:
 			return "text-tone-danger";

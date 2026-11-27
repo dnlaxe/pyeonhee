@@ -177,6 +177,10 @@
     color: var(--color-success);
   }
 
+  .text-tone-neutral {
+    color: var(--color-muted);
+  }
+
   .prose p {
     margin: 0 0 1.35em;
     max-width: 62ch;
@@ -382,7 +386,7 @@
     padding: 10px 12px;
     font-size: 14px;
     line-height: 1.4;
-    color: var(--color-on-accent);
+    color: var(--color-on-danger);
   }
 
   .select-input {
