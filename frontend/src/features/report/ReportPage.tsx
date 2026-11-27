@@ -53,6 +53,7 @@ export function ReportPage() {
   const queryClient = useQueryClient();
 
   const [errors, setErrors] = useState<ReportErrors>({});
+  const [submitted, setSubmitted] = useState(false);
   const [ready, setReady] = useState(false);
   const [sent, setSent] = useState(false);
   const [fields, setFields] = useState<{ email: string; message: string } | null>(
@@ -223,6 +224,7 @@ export function ReportPage() {
                 onSubmit={(e) => {
                   const formData = new FormData(e.currentTarget);
                   const next = validateReport(formData);
+                  setSubmitted(true);
                   setErrors(next);
                   if (Object.keys(next).length > 0) return;
                   setFields({
@@ -231,6 +233,10 @@ export function ReportPage() {
                   });
                   setBotCheckError("");
                   setReady(true);
+                }}
+                onChange={(e) => {
+                  if (!submitted) return;
+                  setErrors(validateReport(new FormData(e.currentTarget)));
                 }}
               >
                 <fieldset
