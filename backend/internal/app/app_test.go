@@ -20,9 +20,11 @@ type fakeStore struct {
 	listings    store.PublishedListings
 	listingsErr error
 
-	job     *store.JobItem
-	market  *store.MarketItem
-	service *store.ServiceItem
+	job       *store.JobItem
+	market    *store.MarketItem
+	service   *store.ServiceItem
+	report    *store.ReportItem
+	reportErr error
 
 	orderErr    error
 	orderJobID  string
@@ -74,6 +76,14 @@ func (f *fakeStore) GetService(_ context.Context, _ string) (store.ServiceItem, 
 
 func (f *fakeStore) PutService(_ context.Context, item store.ServiceItem) error {
 	f.service = &item
+	return nil
+}
+
+func (f *fakeStore) PutReport(_ context.Context, item store.ReportItem) error {
+	if f.reportErr != nil {
+		return f.reportErr
+	}
+	f.report = &item
 	return nil
 }
 

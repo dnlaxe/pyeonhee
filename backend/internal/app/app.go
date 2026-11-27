@@ -23,6 +23,8 @@ type Store interface {
 	GetService(ctx context.Context, id string) (store.ServiceItem, error)
 	PutService(ctx context.Context, item store.ServiceItem) error
 
+	PutReport(ctx context.Context, item store.ReportItem) error
+
 	SetOrder(ctx context.Context, pk, orderID string, amount int64) error
 	Publish(ctx context.Context, pk, orderID, paymentKey string) error
 }
