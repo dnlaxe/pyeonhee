@@ -107,12 +107,6 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/api/photos"),
-		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
-		Integration: integration,
-	})
-
-	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
 		Path:        jsii.String("/api/jobs/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
