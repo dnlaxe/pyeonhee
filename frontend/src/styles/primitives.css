@@ -389,6 +389,31 @@
     color: var(--color-on-danger);
   }
 
+  .error-box {
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    padding: 16px 18px;
+  }
+
+  .error-box-danger {
+    border: var(--border-danger);
+  }
+
+  .error-box-warning {
+    border: 1.5px solid var(--color-warning);
+  }
+
+  .error-box-neutral {
+    border: var(--border-subtle);
+  }
+
+  .error-box-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: var(--tracking-card);
+  }
+
   .select-input {
     appearance: none;
     background-image:

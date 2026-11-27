@@ -16,6 +16,7 @@ type LatestPostsSectionProps = {
   services: Service[];
   isPending?: boolean;
   error?: Error | null;
+  onRetry?: () => void;
   apiUrl?: string;
   kind: FeedKindFilter;
   query: string;
@@ -30,6 +31,7 @@ export function LatestPostsSection({
   services,
   isPending,
   error = null,
+  onRetry,
   apiUrl,
   kind,
   query,
@@ -128,7 +130,11 @@ export function LatestPostsSection({
 
           {apiUrl && isPending ? <ListingCardSkeletonGrid /> : null}
 
-          {error && <ErrorMessage error={error} />}
+          {error && (
+            <div className="mt-4">
+              <ErrorMessage error={error} onRetry={onRetry} />
+            </div>
+          )}
 
           {!isPending &&
             apiUrl &&

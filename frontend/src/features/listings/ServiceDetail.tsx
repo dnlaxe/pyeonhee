@@ -22,6 +22,7 @@ export function ServiceDetail() {
     data: service,
     isPending,
     error,
+    refetch,
   } = useQuery(serviceDetailQueryOptions(queryClient, id));
 
   if (!apiUrl) {
@@ -43,9 +44,13 @@ export function ServiceDetail() {
   if (error) {
     return (
       <main>
-        <Container>
-          <ErrorMessage error={error} />
-        </Container>
+        <ErrorMessage
+          error={error}
+          variant="page"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </main>
     );
   }

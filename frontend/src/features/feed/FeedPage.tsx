@@ -41,6 +41,9 @@ export function FeedPage() {
         services={listingsQuery.data?.services ?? EMPTY}
         isPending={listingsQuery.isPending}
         error={listingsQuery.error}
+        onRetry={() => {
+          void listingsQuery.refetch();
+        }}
         apiUrl={apiUrl}
         kind={kind}
         query={query}

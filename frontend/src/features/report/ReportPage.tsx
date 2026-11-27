@@ -43,7 +43,7 @@ export function ReportPage() {
         ? "back to service"
         : "back to market";
 
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: [queryKey, id] as const,
     enabled: Boolean(apiUrl) && Boolean(path),
     staleTime: LIST_STALE_TIME,
@@ -116,9 +116,13 @@ export function ReportPage() {
   if (error) {
     return (
       <main>
-        <Container>
-          <ErrorMessage error={error} />
-        </Container>
+        <ErrorMessage
+          error={error}
+          variant="page"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </main>
     );
   }

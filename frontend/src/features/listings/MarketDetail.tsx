@@ -24,6 +24,7 @@ export function MarketDetail() {
     data: market,
     isPending,
     error,
+    refetch,
   } = useQuery(marketDetailQueryOptions(queryClient, id));
 
   if (!apiUrl) {
@@ -45,9 +46,13 @@ export function MarketDetail() {
   if (error) {
     return (
       <main>
-        <Container>
-          <ErrorMessage error={error} />
-        </Container>
+        <ErrorMessage
+          error={error}
+          variant="page"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </main>
     );
   }
