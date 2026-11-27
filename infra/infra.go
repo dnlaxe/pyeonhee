@@ -42,8 +42,9 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 			Name: jsii.String("SK"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
-		BillingMode:   awsdynamodb.BillingMode_PAY_PER_REQUEST,
-		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+		BillingMode:         awsdynamodb.BillingMode_PAY_PER_REQUEST,
+		TimeToLiveAttribute: jsii.String("ttl"),
+		RemovalPolicy:       awscdk.RemovalPolicy_DESTROY,
 	})
 
 	fn := awscdklambdagoalpha.NewGoFunction(stack, jsii.String("JobsFunction"), &awscdklambdagoalpha.GoFunctionProps{
@@ -172,6 +173,14 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		Encryption:        awss3.BucketEncryption_S3_MANAGED,
 		EnforceSSL:        jsii.Bool(true),
 		RemovalPolicy:     awscdk.RemovalPolicy_RETAIN,
+		LifecycleRules: &[]*awss3.LifecycleRule{
+			{
+				Id:                                  jsii.String("ExpireTmpUploads"),
+				Prefix:                              jsii.String("tmp/"),
+				Expiration:                          awscdk.Duration_Days(jsii.Number(1)),
+				AbortIncompleteMultipartUploadAfter: awscdk.Duration_Days(jsii.Number(1)),
+			},
+		},
 		Cors: &[]*awss3.CorsRule{
 			{
 				AllowedMethods: &[]awss3.HttpMethods{awss3.HttpMethods_PUT},
@@ -182,6 +191,8 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		},
 	})
 
+	uploadsBucket.GrantPut(fn, jsii.String("tmp/*"))
+	uploadsBucket.GrantRead(fn, jsii.String("tmp/*"))
 	uploadsBucket.GrantPut(fn, jsii.String("media/*"))
 	uploadsBucket.GrantRead(fn, jsii.String("media/*"))
 	fn.AddEnvironment(jsii.String("UPLOADS_BUCKET"), uploadsBucket.BucketName(), nil)
