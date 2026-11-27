@@ -25,6 +25,7 @@ type ServiceItem struct {
 	OrderID    string   `dynamodbav:"orderId,omitempty"`
 	Amount     int64    `dynamodbav:"amount,omitempty"`
 	PaymentKey string   `dynamodbav:"paymentKey,omitempty"`
+	TTL        int64    `dynamodbav:"ttl,omitempty"`
 }
 
 func (s *Store) PutService(ctx context.Context, service ServiceItem) error {

@@ -80,4 +80,7 @@ func TestCreateJobRequestToItem(t *testing.T) {
 	if item.PosterEmail != req.Email || item.EmailOption != req.EmailOption {
 		t.Fatalf("email fields = %q %q", item.PosterEmail, item.EmailOption)
 	}
+	if wantTTL := now.Add(store.PendingTTL).Unix(); item.TTL != wantTTL {
+		t.Fatalf("ttl = %d, want %d", item.TTL, wantTTL)
+	}
 }

@@ -64,5 +64,6 @@ func (r CreateServiceRequest) toServiceItem(id string, now time.Time) store.Serv
 		Tags:       []string{r.Category},
 		Status:     store.StatusPending,
 		CreatedAt:  now.UTC().Format(time.RFC3339),
+		TTL:        now.Add(store.PendingTTL).Unix(),
 	}
 }

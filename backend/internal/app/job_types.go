@@ -76,5 +76,6 @@ func (r CreateJobRequest) toJobItem(id string, now time.Time) store.JobItem {
 		CreatedAt:      now.UTC().Format(time.RFC3339),
 		PosterEmail:    r.Email,
 		EmailOption:    r.EmailOption,
+		TTL:            now.Add(store.PendingTTL).Unix(),
 	}
 }

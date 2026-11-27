@@ -78,5 +78,6 @@ func (r CreateMarketRequest) toMarketItem(id string, now time.Time) store.Market
 		Pinned:      r.Pinned,
 		Status:      store.StatusPending,
 		CreatedAt:   now.UTC().Format(time.RFC3339),
+		TTL:         now.Add(store.PendingTTL).Unix(),
 	}
 }
