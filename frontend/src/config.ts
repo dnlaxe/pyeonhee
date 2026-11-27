@@ -15,11 +15,9 @@ export const formRules = {
         "Your job post may appear on the job board for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
     email: {
-      required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     emailOption: {
-      required: true,
       options: [
         {
           value: "hide",
@@ -31,20 +29,17 @@ export const formRules = {
         },
       ],
     },
-    title: { required: true, minLength: 5, maxLength: 120 },
+    title: { minLength: 5, maxLength: 120 },
     photos: {
-      required: false,
       max: 1,
       maxBytes: 2 * 1024 * 1024,
       allowedTypes: ["image/jpeg", "image/png", "image/webp"],
     },
-    location: { required: true, maxLength: 100 },
+    location: { maxLength: 100 },
     employmentType: {
-      required: true,
       options: ["Full Time", "Part Time", "Internship"] as readonly string[],
     },
     track: {
-      required: true,
       options: {
         Teaching: [
           "English Teaching",
@@ -67,7 +62,6 @@ export const formRules = {
       } as Record<string, readonly string[]>,
     },
     korean: {
-      required: true,
       options: [
         "No Korean required",
         "Basic Korean required",
@@ -75,7 +69,7 @@ export const formRules = {
         "Fluent Korean required",
       ] as readonly string[],
     },
-    description: { required: true, minLength: 40, maxLength: 5000 },
+    description: { minLength: 40, maxLength: 5000 },
   },
   market: {
     copy: {
@@ -85,11 +79,9 @@ export const formRules = {
         "Your listing may appear on the market for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
     email: {
-      required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     emailOption: {
-      required: true,
       options: [
         {
           value: "hide",
@@ -101,24 +93,21 @@ export const formRules = {
         },
       ],
     },
-    title: { required: true, maxLength: 120 },
+    title: { maxLength: 120 },
     photos: {
-      required: false,
       max: 3,
       maxBytes: 2 * 1024 * 1024,
       allowedTypes: ["image/jpeg", "image/png", "image/webp"],
     },
-    location: { required: true, maxLength: 100 },
+    location: { maxLength: 100 },
     listingType: {
-      required: true,
       options: ["Selling", "Wanted", "Free"] as readonly string[],
     },
     category: {
-      required: true,
       options: ["Furniture", "Electronics", "Clothing", "Kitchen", "Books", "Sports"] as readonly string[],
     },
-    price: { required: true, maxLength: 120 },
-    description: { required: true, minLength: 40, maxLength: 5000 },
+    price: { maxLength: 120 },
+    description: { minLength: 40, maxLength: 5000 },
   },
   service: {
     copy: {
@@ -127,9 +116,8 @@ export const formRules = {
       privacy:
         "Your service may appear on English Services for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
-    company: { required: true, maxLength: 120 },
+    company: { maxLength: 120 },
     category: {
-      required: true,
       options: [
         "Visa",
         "Translation",
@@ -143,29 +131,21 @@ export const formRules = {
         "Business setup",
       ] as readonly string[],
     },
-    location: { required: true, maxLength: 100 },
+    location: { maxLength: 100 },
     email: {
-      required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     webpage: {
-      required: false,
       pattern: /^https?:\/\/.+/i,
     },
-    message: { required: true, minLength: 40, maxLength: 5000 },
+    message: { minLength: 40, maxLength: 5000 },
     photos: {
-      required: false,
       max: 1,
       maxBytes: 2 * 1024 * 1024,
       allowedTypes: ["image/jpeg", "image/png", "image/webp"],
     },
   },
-  promotion: {
-    required: true,
-    options: ["standard", "pinned"],
-  },
   payment: {
-    required: true,
     options: [{ value: "mock", label: "Mock" }],
   },
 } as const;

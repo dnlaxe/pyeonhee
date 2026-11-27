@@ -27,28 +27,14 @@ type Props = {
 };
 
 export function Logo({ to = "/", showWordmark = true, extraClass }: Props) {
-  const inner = (
-    <>
-      <LogoMark />
-      {showWordmark ? (
-        <span className="logo-wordmark">
-          pyeonhee
-        </span>
-      ) : null}
-    </>
-  );
-
   const logoClass = `logo-link inline-flex items-center gap-2${
     extraClass ? ` ${extraClass}` : ""
   }`;
 
-  if (to) {
-    return (
-      <Link to={to} className={logoClass}>
-        {inner}
-      </Link>
-    );
-  }
-
-  return <span className={logoClass}>{inner}</span>;
+  return (
+    <Link to={to} className={logoClass}>
+      <LogoMark />
+      {showWordmark ? <span className="logo-wordmark">pyeonhee</span> : null}
+    </Link>
+  );
 }
