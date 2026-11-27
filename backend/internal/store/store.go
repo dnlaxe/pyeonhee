@@ -22,6 +22,10 @@ const (
 	EntityJob     = "job"
 	EntityMarket  = "market"
 	EntityService = "service"
+	EntityReport  = "report"
+
+	ReportPartitionKey = "REPORT"
+	ReportStatusOpen   = "open"
 
 	PendingTTL = 24 * time.Hour
 )
@@ -55,9 +59,10 @@ func NewFromAWS(ctx context.Context, table string) (*Store, error) {
 	return New(dynamodb.NewFromConfig(cfg), table), nil
 }
 
-func JobPK(id string) string     { return "JOB#" + id }
-func MarketPK(id string) string  { return "MARKET#" + id }
-func ServicePK(id string) string { return "SERVICE#" + id }
+func JobPK(id string) string               { return "JOB#" + id }
+func MarketPK(id string) string            { return "MARKET#" + id }
+func ServicePK(id string) string           { return "SERVICE#" + id }
+func ReportSK(createdAt, id string) string { return createdAt + "#" + id }
 
 func metaKey(pk string) map[string]types.AttributeValue {
 	return map[string]types.AttributeValue{

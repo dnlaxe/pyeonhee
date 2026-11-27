@@ -15,6 +15,8 @@ type fakeDB struct {
 	DynamoDB
 	get       *dynamodb.GetItemInput
 	item      map[string]types.AttributeValue
+	put       *dynamodb.PutItemInput
+	putErr    error
 	scan      *dynamodb.ScanInput
 	items     []map[string]types.AttributeValue
 	update    *dynamodb.UpdateItemInput
@@ -24,6 +26,11 @@ type fakeDB struct {
 func (f *fakeDB) GetItem(_ context.Context, in *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 	f.get = in
 	return &dynamodb.GetItemOutput{Item: f.item}, nil
+}
+
+func (f *fakeDB) PutItem(_ context.Context, in *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	f.put = in
+	return &dynamodb.PutItemOutput{}, f.putErr
 }
 
 func (f *fakeDB) Scan(_ context.Context, in *dynamodb.ScanInput, _ ...func(*dynamodb.Options)) (*dynamodb.ScanOutput, error) {
@@ -180,5 +187,41 @@ func TestUpdatesMapConditionFailureToNotPending(t *testing.T) {
 	}
 	if err := s.Publish(context.Background(), JobPK("JOB1"), "ORDER1", "k"); !errors.Is(err, ErrNotPending) {
 		t.Fatalf("Publish err = %v", err)
+	}
+}
+
+func TestPutReport(t *testing.T) {
+	db := &fakeDB{}
+	item := ReportItem{
+		PK:            ReportPartitionKey,
+		SK:            ReportSK("2026-01-01T00:00:00Z", "REP1"),
+		EntityType:    EntityReport,
+		ID:            "REP1",
+		ListingKind:   EntityJob,
+		ListingID:     "JOB1",
+		ListingTitle:  "English Teacher",
+		ReporterEmail: "alice@example.com",
+		Message:       "This listing looks like a scam.",
+		Status:        ReportStatusOpen,
+		CreatedAt:     "2026-01-01T00:00:00Z",
+	}
+
+	if err := New(db, "t").PutReport(context.Background(), item); err != nil {
+		t.Fatal(err)
+	}
+	if db.put == nil {
+		t.Fatal("expected PutItem call")
+	}
+	if pk := str(db.put.Item["PK"]); pk != ReportPartitionKey {
+		t.Fatalf("PK = %q, want %q", pk, ReportPartitionKey)
+	}
+	if sk := str(db.put.Item["SK"]); sk != "2026-01-01T00:00:00Z#REP1" {
+		t.Fatalf("SK = %q", sk)
+	}
+	if entity := str(db.put.Item["entityType"]); entity != EntityReport {
+		t.Fatalf("entityType = %q", entity)
+	}
+	if status := str(db.put.Item["status"]); status != ReportStatusOpen {
+		t.Fatalf("status = %q", status)
 	}
 }

@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Navigate, useParams } from "react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formRules } from "../../config";
 import { throwIfNotOk } from "../../lib/httpError";
 import { LIST_STALE_TIME, listingsQueryOptions } from "../listings";
 import {
+  BotCheck,
   Button,
   Container,
   ErrorMessage,
@@ -15,9 +18,47 @@ import {
   TextInput,
 } from "../../shared";
 
+type ReportErrors = {
+  email?: string;
+  message?: string;
+};
+
+function validateReport(data: FormData): ReportErrors {
+  const errors: ReportErrors = {};
+  const rules = formRules.report;
+  const email = String(data.get("email") ?? "").trim();
+  const message = String(data.get("message") ?? "").trim();
+
+  if (email === "") {
+    errors.email = "Enter an email address.";
+  } else if (email.length > rules.email.maxLength) {
+    errors.email = "Shorten the email address.";
+  } else if (!rules.email.pattern.test(email)) {
+    errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (message === "") {
+    errors.message = "Enter a message.";
+  } else if (message.length < rules.message.minLength) {
+    errors.message = "Make the message a little longer.";
+  } else if (message.length > rules.message.maxLength) {
+    errors.message = "Shorten the message.";
+  }
+
+  return errors;
+}
+
 export function ReportPage() {
   const { kind, id } = useParams<{ kind: string; id: string }>();
   const queryClient = useQueryClient();
+
+  const [errors, setErrors] = useState<ReportErrors>({});
+  const [ready, setReady] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [fields, setFields] = useState<{ email: string; message: string } | null>(
+    null,
+  );
+  const [botCheckError, setBotCheckError] = useState("");
 
   const path =
     kind === "job"
@@ -63,6 +104,34 @@ export function ReportPage() {
     },
     initialDataUpdatedAt: () =>
       queryClient.getQueryState(listingsQueryOptions().queryKey)?.dataUpdatedAt,
+  });
+
+  const submit = useMutation({
+    mutationFn: async (password: string) => {
+      if (!fields || !kind || !id) throw new Error("missing fields");
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind,
+          id,
+          email: fields.email,
+          message: fields.message,
+          password,
+        }),
+      });
+      if (res.status === 401) return { kind: "botCheckFailed" as const };
+      if (res.status === 400) {
+        const body = (await res.json().catch(() => null)) as {
+          errors?: ReportErrors;
+        } | null;
+        if (body?.errors) {
+          return { kind: "invalid" as const, errors: body.errors };
+        }
+      }
+      throwIfNotOk(res);
+      return { kind: "received" as const };
+    },
   });
 
   if (!path) {
@@ -127,34 +196,99 @@ export function ReportPage() {
             backLabel={backLabel}
             title={`Reporting ${data.title ?? data.company}`}
             intro={
-              <>
-                Describe what is wrong with this post, such as a scam,
-                harassment, or a misleading listing. Your email is only used so
-                pyeonhee can follow up. Reports are read by hand, and the post
-                may be edited or removed. See our <FaqLink>FAQs</FaqLink> for
-                safety tips.
-              </>
+              sent ? undefined : (
+                <>
+                  Describe what is wrong with this post, such as a scam,
+                  harassment, or a misleading listing. Your email is only used
+                  so pyeonhee can follow up. Reports are read by hand, and the
+                  post may be edited or removed. See our <FaqLink>FAQs</FaqLink>{" "}
+                  for safety tips.
+                </>
+              )
             }
           />
 
-          <Form>
-            <FormField label="Email address:">
-              <TextInput type="email" name="email" required />
-            </FormField>
+          {sent ? (
+            <div className="card-bordered p-5">
+              <p className="heading-card m-0 mb-2">Report received</p>
+              <p className="text-body-sm m-0">
+                Thanks for letting us know. Reports are read by hand, and we
+                will follow up at {fields?.email} if we need more details.
+              </p>
+            </div>
+          ) : (
+            <>
+              <Form
+                noValidate
+                onSubmit={(e) => {
+                  const formData = new FormData(e.currentTarget);
+                  const next = validateReport(formData);
+                  setErrors(next);
+                  if (Object.keys(next).length > 0) return;
+                  setFields({
+                    email: String(formData.get("email") ?? "").trim(),
+                    message: String(formData.get("message") ?? "").trim(),
+                  });
+                  setBotCheckError("");
+                  setReady(true);
+                }}
+              >
+                <fieldset
+                  disabled={ready}
+                  className="field-fieldset m-0 flex min-w-0 flex-col gap-5 p-0"
+                >
+                  <FormField label="Email address:" error={errors.email}>
+                    <TextInput
+                      type="email"
+                      name="email"
+                      required
+                      invalid={Boolean(errors.email)}
+                    />
+                  </FormField>
 
-            <FormField label="Message:">
-              <TextareaInput
-                name="message"
-                rows={8}
-                required
-                extraClass="field-textarea-lg"
-              />
-            </FormField>
+                  <FormField label="Message:" error={errors.message}>
+                    <TextareaInput
+                      name="message"
+                      rows={8}
+                      required
+                      extraClass="field-textarea-lg"
+                      invalid={Boolean(errors.message)}
+                    />
+                  </FormField>
+                </fieldset>
 
-            <Button type="submit" extraClass="mt-2">
-              Send
-            </Button>
-          </Form>
+                {!ready ? (
+                  <Button type="submit" extraClass="mt-2">
+                    Send
+                  </Button>
+                ) : null}
+              </Form>
+
+              {ready ? (
+                <BotCheck
+                  onSubmit={(password) => {
+                    setBotCheckError("");
+                    submit.mutate(password, {
+                      onSuccess: (result) => {
+                        if (result.kind === "botCheckFailed") {
+                          setBotCheckError("That password is wrong.");
+                          return;
+                        }
+                        if (result.kind === "invalid") {
+                          setErrors(result.errors);
+                          setReady(false);
+                          return;
+                        }
+                        setSent(true);
+                      },
+                    });
+                  }}
+                  pending={submit.isPending}
+                  error={botCheckError || submit.error?.message || ""}
+                />
+              ) : null}
+            </>
+          )}
         </Container>
       </article>
     </main>
