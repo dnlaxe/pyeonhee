@@ -94,67 +94,67 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	)
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/listings"),
+		Path:        jsii.String("/api/listings"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/jobs"),
+		Path:        jsii.String("/api/jobs"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/photos"),
+		Path:        jsii.String("/api/photos"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/jobs/{id}"),
+		Path:        jsii.String("/api/jobs/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/market"),
+		Path:        jsii.String("/api/market"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/services"),
+		Path:        jsii.String("/api/services"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/services/{id}"),
+		Path:        jsii.String("/api/services/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/market/{id}"),
+		Path:        jsii.String("/api/market/{id}"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_GET},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/payments/checkout"),
+		Path:        jsii.String("/api/payments/checkout"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/payments/confirm"),
+		Path:        jsii.String("/api/payments/confirm"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
 
 	httpApi.AddRoutes(&awsapigatewayv2.AddRoutesOptions{
-		Path:        jsii.String("/contact"),
+		Path:        jsii.String("/api/contact"),
 		Methods:     &[]awsapigatewayv2.HttpMethod{awsapigatewayv2.HttpMethod_POST},
 		Integration: integration,
 	})
@@ -186,6 +186,20 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 	uploadsBucket.GrantRead(fn, jsii.String("media/*"))
 	fn.AddEnvironment(jsii.String("UPLOADS_BUCKET"), uploadsBucket.BucketName(), nil)
 
+	spaRewriteFn := awscloudfront.NewFunction(stack, jsii.String("SpaRewriteFunction"), &awscloudfront.FunctionProps{
+		Runtime: awscloudfront.FunctionRuntime_JS_2_0(),
+		Code: awscloudfront.FunctionCode_FromInline(jsii.String(`
+function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+  if (uri.endsWith('/') || !uri.includes('.')) {
+    request.uri = '/index.html';
+  }
+  return request;
+}
+`)),
+	})
+
 	distribution := awscloudfront.NewDistribution(stack, jsii.String("SiteDistribution"), &awscloudfront.DistributionProps{
 		DefaultRootObject: jsii.String("index.html"),
 		DefaultBehavior: &awscloudfront.BehaviorOptions{
@@ -194,19 +208,11 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 				nil,
 			),
 			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
-		},
-		ErrorResponses: &[]*awscloudfront.ErrorResponse{
-			{
-				HttpStatus:         jsii.Number(403),
-				ResponseHttpStatus: jsii.Number(200),
-				ResponsePagePath:   jsii.String("/index.html"),
-				Ttl:                awscdk.Duration_Seconds(jsii.Number(0)),
-			},
-			{
-				HttpStatus:         jsii.Number(404),
-				ResponseHttpStatus: jsii.Number(200),
-				ResponsePagePath:   jsii.String("/index.html"),
-				Ttl:                awscdk.Duration_Seconds(jsii.Number(0)),
+			FunctionAssociations: &[]*awscloudfront.FunctionAssociation{
+				{
+					EventType: awscloudfront.FunctionEventType_VIEWER_REQUEST,
+					Function:  spaRewriteFn,
+				},
 			},
 		},
 	})
@@ -220,6 +226,25 @@ func NewInfraStack(scope constructs.Construct, id string, props *InfraStackProps
 		jsii.String("/media/*"),
 		uploadsOrigin,
 		&awscloudfront.AddBehaviorOptions{
+			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
+		},
+	)
+
+	apiDomain := awscdk.Fn_Select(jsii.Number(2), awscdk.Fn_Split(jsii.String("/"), httpApi.ApiEndpoint(), nil))
+	apiOrigin := awscloudfrontorigins.NewHttpOrigin(apiDomain, &awscloudfrontorigins.HttpOriginProps{
+		ProtocolPolicy: awscloudfront.OriginProtocolPolicy_HTTPS_ONLY,
+		OriginSslProtocols: &[]awscloudfront.OriginSslPolicy{
+			awscloudfront.OriginSslPolicy_TLS_V1_2,
+		},
+	})
+
+	distribution.AddBehavior(
+		jsii.String("/api/*"),
+		apiOrigin,
+		&awscloudfront.AddBehaviorOptions{
+			AllowedMethods:       awscloudfront.AllowedMethods_ALLOW_ALL(),
+			CachePolicy:          awscloudfront.CachePolicy_CACHING_DISABLED(),
+			OriginRequestPolicy:  awscloudfront.OriginRequestPolicy_ALL_VIEWER_EXCEPT_HOST_HEADER(),
 			ViewerProtocolPolicy: awscloudfront.ViewerProtocolPolicy_REDIRECT_TO_HTTPS,
 		},
 	)
