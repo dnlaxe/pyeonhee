@@ -2,6 +2,7 @@ import { formRules } from "../../config";
 
 export type JobErrors = {
   email?: string;
+  emailOption?: string;
   title?: string;
   location?: string;
   employmentType?: string;
@@ -17,6 +18,7 @@ export function validateJob(data: FormData): JobErrors {
   const rules = formRules.jobs;
 
   const email = String(data.get("email") ?? "").trim();
+  const emailOption = String(data.get("emailOption") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
   const location = String(data.get("location") ?? "").trim();
   const employmentType = String(data.get("employmentType") ?? "").trim();
@@ -31,6 +33,10 @@ export function validateJob(data: FormData): JobErrors {
     errors.email = "Shorten the email address.";
   } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (!rules.emailOption.options.some((o) => o.value === emailOption)) {
+    errors.emailOption = "Choose whether to show your email.";
   }
 
   if (title === "") {
@@ -76,6 +82,7 @@ export function validateJob(data: FormData): JobErrors {
 
 export type MarketErrors = {
   email?: string;
+  emailOption?: string;
   title?: string;
   location?: string;
   listingType?: string;
@@ -90,6 +97,7 @@ export function validateMarket(data: FormData): MarketErrors {
   const rules = formRules.market;
 
   const email = String(data.get("email") ?? "").trim();
+  const emailOption = String(data.get("emailOption") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
   const location = String(data.get("location") ?? "").trim();
   const listingType = String(data.get("listingType") ?? "").trim();
@@ -103,6 +111,10 @@ export function validateMarket(data: FormData): MarketErrors {
     errors.email = "Shorten the email address.";
   } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (!rules.emailOption.options.some((o) => o.value === emailOption)) {
+    errors.emailOption = "Choose whether to show your email.";
   }
 
   if (title === "") {

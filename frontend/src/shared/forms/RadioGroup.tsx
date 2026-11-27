@@ -10,9 +10,16 @@ type Props = {
   name: string;
   options: readonly Option[];
   defaultValue?: string;
+  error?: string;
 };
 
-export function RadioGroup({ legend, name, options, defaultValue }: Props) {
+export function RadioGroup({
+  legend,
+  name,
+  options,
+  defaultValue,
+  error,
+}: Props) {
   return (
     <fieldset className="field-fieldset m-0 flex flex-col gap-2 p-0">
       <legend className="field-label mb-2 p-0">{legend}</legend>
@@ -33,6 +40,7 @@ export function RadioGroup({ legend, name, options, defaultValue }: Props) {
           </label>
         ))}
       </div>
+      {error ? <span className="field-error">{error}</span> : null}
     </fieldset>
   );
 }

@@ -192,6 +192,7 @@ export function MarketPostForm() {
             name="emailOption"
             options={formRules.market.emailOption.options}
             defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
+            error={errors.emailOption}
           />
 
           <FormField label="Post title:" error={errors.title}>
