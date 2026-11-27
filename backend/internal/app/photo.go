@@ -63,7 +63,7 @@ func (a *App) createPhoto(w http.ResponseWriter, r *http.Request) {
 		errs["contentType"] = "Use a JPEG, PNG, or WebP image."
 	}
 	if req.ContentLength < 1 || req.ContentLength > maxPhotoBytes {
-		errs["contentLength"] = "Image must be 2 MB or smaller."
+		errs["contentLength"] = "Use a photo smaller than 2 MB."
 	}
 	if len(errs) > 0 {
 		writeValidationErrors(w, errs)
