@@ -15,7 +15,13 @@ import {
   usePhotoFiles,
 } from "../../shared";
 import { formRules } from "../../config";
-import { createListing, uploadPhoto, type MarketFields } from "./api";
+import {
+  createListing,
+  toPhotoSpec,
+  uploadAllPhotos,
+  type MarketFields,
+  type PendingUpload,
+} from "./api";
 import { validateMarket, type MarketErrors } from "./validation";
 import { PinField } from "./PinField";
 
@@ -53,6 +59,10 @@ export function MarketPostForm() {
   const [fields, setFields] = useState<MarketDraft | null>(null);
   const [ready, setReady] = useState(false);
   const [botCheckError, setBotCheckError] = useState("");
+  const [failedUpload, setFailedUpload] = useState<{
+    id: string;
+    remaining: PendingUpload[];
+  } | null>(null);
   const navigate = useNavigate();
 
   const mutation = useMutation({
@@ -65,13 +75,7 @@ export function MarketPostForm() {
       password: string;
       files: File[];
     }) => {
-      const images: string[] = [];
-      for (const file of files) {
-        const uploaded = await uploadPhoto("/photos", file, password);
-        if (uploaded.kind !== "uploaded") return uploaded;
-        images.push(uploaded.key);
-      }
-      return createListing<MarketErrors>(
+      const created = await createListing<MarketErrors>(
         "/market",
         {
           email: fields.email,
@@ -83,16 +87,45 @@ export function MarketPostForm() {
           price: fields.price,
           description: fields.description,
           pinned: fields.pinned,
-          images,
+          images: files.length > 0 ? files.map(toPhotoSpec) : undefined,
         },
         password,
       );
+      if (created.kind !== "created") return created;
+
+      if (files.length > 0) {
+        if (created.uploads.length !== files.length) {
+          throw new Error("Missing upload URL.");
+        }
+        const remaining = await uploadAllPhotos(
+          files.map((file, i) => ({
+            file,
+            uploadUrl: created.uploads[i].uploadUrl,
+          })),
+        );
+        if (remaining.length > 0) {
+          return { kind: "uploadFailed" as const, id: created.id, remaining };
+        }
+      }
+      return { kind: "created" as const, id: created.id };
     },
   });
+
+  const retryUpload = useMutation({
+    mutationFn: (remaining: PendingUpload[]) => uploadAllPhotos(remaining),
+  });
+
+  function proceedToPay(id: string) {
+    if (!fields) return;
+    sessionStorage.setItem("marketDraft", JSON.stringify({ ...fields, id }));
+    sessionStorage.setItem("payTarget", "market");
+    navigate(`/pay/market/${id}`);
+  }
 
   function submitMarket(password: string) {
     if (!fields) return;
     setBotCheckError("");
+    setFailedUpload(null);
     mutation.mutate(
       {
         fields,
@@ -111,15 +144,27 @@ export function MarketPostForm() {
             window.scrollTo({ top: 0, behavior: "smooth" });
             return;
           }
-          sessionStorage.setItem(
-            "marketDraft",
-            JSON.stringify({ ...fields, id: result.id }),
-          );
-          sessionStorage.setItem("payTarget", "market");
-          navigate("/pay");
+          if (result.kind === "uploadFailed") {
+            setFailedUpload({ id: result.id, remaining: result.remaining });
+            return;
+          }
+          proceedToPay(result.id);
         },
       },
     );
+  }
+
+  function handleRetryUpload() {
+    if (!failedUpload) return;
+    retryUpload.mutate(failedUpload.remaining, {
+      onSuccess: (remaining) => {
+        if (remaining.length > 0) {
+          setFailedUpload({ id: failedUpload.id, remaining });
+          return;
+        }
+        proceedToPay(failedUpload.id);
+      },
+    });
   }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
@@ -304,7 +349,20 @@ export function MarketPostForm() {
           </Button>
         ) : null}
       </Form>
-      {ready && fields ? (
+      {ready && fields && failedUpload ? (
+        <div className="pt-6 flex flex-col gap-3">
+          <p className="text-tone-danger m-0">
+            Photo upload failed. Your post is saved — retry uploading below.
+          </p>
+          <Button
+            type="button"
+            disabled={retryUpload.isPending}
+            onClick={handleRetryUpload}
+          >
+            {retryUpload.isPending ? "Uploading…" : "Retry photo upload"}
+          </Button>
+        </div>
+      ) : ready && fields ? (
         <BotCheck
           onSubmit={submitMarket}
           pending={mutation.isPending}

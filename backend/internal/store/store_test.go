@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -161,6 +162,12 @@ func TestPublish(t *testing.T) {
 	values := db.update.ExpressionAttributeValues
 	if str(values[":paymentKey"]) != "mock_abc" || str(values[":orderId"]) != "ORDER1" {
 		t.Fatalf("update values = %v", values)
+	}
+	if db.update.UpdateExpression == nil || !strings.Contains(*db.update.UpdateExpression, "REMOVE #ttl") {
+		t.Fatalf("update expression = %v, want REMOVE #ttl", db.update.UpdateExpression)
+	}
+	if db.update.ExpressionAttributeNames["#ttl"] != "ttl" {
+		t.Fatalf("expression attribute names = %v", db.update.ExpressionAttributeNames)
 	}
 }
 

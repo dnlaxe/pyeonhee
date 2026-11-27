@@ -56,22 +56,25 @@ func (a *App) createJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Logo != "" {
-		if err := a.checkPhoto(r.Context(), req.Logo); err != nil {
-			if errors.Is(err, errBadPhoto) {
-				writeValidationErrors(w, map[string]string{"logo": "Upload the photo again."})
-				return
-			}
-			writeInternalError(w, "createJob", err)
-			return
-		}
+	var specs []PhotoSpec
+	if req.Logo != nil {
+		specs = []PhotoSpec{*req.Logo}
+	}
+	keys, uploads, err := a.presignPhotos(r.Context(), specs)
+	if err != nil {
+		writeInternalError(w, "createJob", err)
+		return
+	}
+	var logo string
+	if len(keys) == 1 {
+		logo = keys[0]
 	}
 
 	id := rand.Text()
-	if err := a.Store.PutJob(r.Context(), req.toJobItem(id, time.Now())); err != nil {
+	if err := a.Store.PutJob(r.Context(), req.toJobItem(id, logo, time.Now())); err != nil {
 		writeInternalError(w, "createJob", err)
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]string{"id": id})
+	writeJSON(w, http.StatusCreated, createListingResponse{ID: id, Uploads: uploads})
 }

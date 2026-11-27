@@ -9,8 +9,6 @@ import (
 	"github.com/dnlaxe/pyeonhee/backend/internal/mail"
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
-
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type Store interface {
@@ -30,14 +28,13 @@ type Store interface {
 }
 
 type App struct {
-	Store         Store
-	CORSOrigins   []string
-	MediaBaseURL  string
-	Payments      payment.Provider
-	BotCheck      botcheck.Checker
-	Uploads       *s3.Client
-	UploadsBucket string
-	Mail          mail.Sender
+	Store        Store
+	CORSOrigins  []string
+	MediaBaseURL string
+	Payments     payment.Provider
+	BotCheck     botcheck.Checker
+	Photos       PhotoStore
+	Mail         mail.Sender
 }
 
 func New(ctx context.Context, cfg config.Config) (*App, error) {
@@ -66,22 +63,22 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
-	var uploads *s3.Client
+	var photos PhotoStore
 	if cfg.UploadsBucket != "" {
-		uploads, err = newS3Client(ctx)
+		uploads, err := newS3Client(ctx)
 		if err != nil {
 			return nil, err
 		}
+		photos = newS3PhotoStore(uploads, cfg.UploadsBucket)
 	}
 
 	return &App{
-		Store:         st,
-		CORSOrigins:   cfg.CORSOrigins,
-		MediaBaseURL:  cfg.MediaBaseURL,
-		Payments:      payments,
-		BotCheck:      botCheck,
-		Uploads:       uploads,
-		UploadsBucket: cfg.UploadsBucket,
-		Mail:          mailer,
+		Store:        st,
+		CORSOrigins:  cfg.CORSOrigins,
+		MediaBaseURL: cfg.MediaBaseURL,
+		Payments:     payments,
+		BotCheck:     botCheck,
+		Photos:       photos,
+		Mail:         mailer,
 	}, nil
 }

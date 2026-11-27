@@ -15,7 +15,13 @@ import {
   usePhotoFiles,
 } from "../../shared";
 import { formRules } from "../../config";
-import { createListing, uploadPhoto, type JobFields } from "./api";
+import {
+  createListing,
+  toPhotoSpec,
+  uploadAllPhotos,
+  type JobFields,
+  type PendingUpload,
+} from "./api";
 import { validateJob, type JobErrors } from "./validation";
 import { PinField } from "./PinField";
 
@@ -60,6 +66,10 @@ export function JobPostForm() {
 
   const [fields, setFields] = useState<JobDraft | null>(null);
   const [botCheckError, setBotCheckError] = useState("");
+  const [failedUpload, setFailedUpload] = useState<{
+    id: string;
+    remaining: PendingUpload[];
+  } | null>(null);
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -71,13 +81,7 @@ export function JobPostForm() {
       password: string;
       file?: File;
     }) => {
-      let logo: string | undefined;
-      if (file) {
-        const uploaded = await uploadPhoto("/photos", file, password);
-        if (uploaded.kind !== "uploaded") return uploaded;
-        logo = uploaded.key;
-      }
-      return createListing<JobErrors>(
+      const created = await createListing<JobErrors>(
         "/jobs",
         {
           email: fields.email,
@@ -90,16 +94,41 @@ export function JobPostForm() {
           korean: fields.korean,
           description: fields.description,
           pinned: fields.pinned,
-          logo,
+          logo: file ? toPhotoSpec(file) : undefined,
         },
         password,
       );
+      if (created.kind !== "created") return created;
+
+      if (file) {
+        const upload = created.uploads[0];
+        if (!upload) throw new Error("Missing upload URL.");
+        const remaining = await uploadAllPhotos([
+          { file, uploadUrl: upload.uploadUrl },
+        ]);
+        if (remaining.length > 0) {
+          return { kind: "uploadFailed" as const, id: created.id, remaining };
+        }
+      }
+      return { kind: "created" as const, id: created.id };
     },
   });
+
+  const retryUpload = useMutation({
+    mutationFn: (remaining: PendingUpload[]) => uploadAllPhotos(remaining),
+  });
+
+  function proceedToPay(id: string) {
+    if (!fields) return;
+    sessionStorage.setItem("jobDraft", JSON.stringify({ ...fields, id }));
+    sessionStorage.setItem("payTarget", "job");
+    navigate(`/pay/job/${id}`);
+  }
 
   function submitJob(password: string) {
     if (!fields) return;
     setBotCheckError("");
+    setFailedUpload(null);
     mutation.mutate(
       { fields, password, file: photos[0]?.file },
       {
@@ -114,15 +143,27 @@ export function JobPostForm() {
             window.scrollTo({ top: 0, behavior: "smooth" });
             return;
           }
-          sessionStorage.setItem(
-            "jobDraft",
-            JSON.stringify({ ...fields, id: result.id }),
-          );
-          sessionStorage.setItem("payTarget", "job");
-          navigate("/pay");
+          if (result.kind === "uploadFailed") {
+            setFailedUpload({ id: result.id, remaining: result.remaining });
+            return;
+          }
+          proceedToPay(result.id);
         },
       },
     );
+  }
+
+  function handleRetryUpload() {
+    if (!failedUpload) return;
+    retryUpload.mutate(failedUpload.remaining, {
+      onSuccess: (remaining) => {
+        if (remaining.length > 0) {
+          setFailedUpload({ id: failedUpload.id, remaining });
+          return;
+        }
+        proceedToPay(failedUpload.id);
+      },
+    });
   }
 
   function handlePhotosChange(e: ChangeEvent<HTMLInputElement>) {
@@ -338,7 +379,20 @@ export function JobPostForm() {
           </Button>
         ) : null}
       </Form>
-      {ready && fields ? (
+      {ready && fields && failedUpload ? (
+        <div className="pt-6 flex flex-col gap-3">
+          <p className="text-tone-danger m-0">
+            Photo upload failed. Your post is saved — retry uploading below.
+          </p>
+          <Button
+            type="button"
+            disabled={retryUpload.isPending}
+            onClick={handleRetryUpload}
+          >
+            {retryUpload.isPending ? "Uploading…" : "Retry photo upload"}
+          </Button>
+        </div>
+      ) : ready && fields ? (
         <BotCheck
           onSubmit={submitJob}
           pending={mutation.isPending}

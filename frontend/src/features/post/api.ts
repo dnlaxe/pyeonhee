@@ -1,5 +1,24 @@
 import { throwIfNotOk } from "../../lib/httpError";
 
+export type PhotoSpec = {
+  contentType: string;
+  contentLength: number;
+};
+
+export type PhotoUpload = {
+  key: string;
+  uploadUrl: string;
+};
+
+export type PendingUpload = {
+  file: File;
+  uploadUrl: string;
+};
+
+export function toPhotoSpec(file: File): PhotoSpec {
+  return { contentType: file.type, contentLength: file.size };
+}
+
 export type JobFields = {
   email: string;
   emailOption: string;
@@ -10,7 +29,7 @@ export type JobFields = {
   area: string;
   korean: string;
   description: string;
-  logo?: string,
+  logo?: PhotoSpec;
   pinned: boolean;
 };
 
@@ -23,7 +42,7 @@ export type MarketFields = {
   category: string;
   price: string;
   description: string;
-  images?: string[];
+  images?: PhotoSpec[];
   pinned: boolean;
 };
 
@@ -34,15 +53,13 @@ export type ServiceFields = {
   email: string;
   webpage: string;
   message: string;
-  logo?: string;
+  logo?: PhotoSpec;
 };
 
 type CreateResult<Errors> =
-  | { kind: "created"; id: string }
+  | { kind: "created"; id: string; uploads: PhotoUpload[] }
   | { kind: "invalid"; errors: Errors }
   | { kind: "botCheckFailed" };
-
-type UploadResult = { kind: "uploaded"; key: string } | { kind: "botCheckFailed" };
 
 export async function createListing<Errors>(
   path: string,
@@ -63,35 +80,25 @@ export async function createListing<Errors>(
   if (res.status === 401) return { kind: "botCheckFailed" };
   throwIfNotOk(res);
 
-  const { id } = (await res.json()) as { id: string };
-  return { kind: "created", id };
+  const { id, uploads = [] } = (await res.json()) as {
+    id: string;
+    uploads?: PhotoUpload[];
+  };
+  return { kind: "created", id, uploads };
 }
 
-
-export async function uploadPhoto(
-  path: string,
-  file: File,
-  password: string,
-): Promise<UploadResult> {
-  const res = await fetch(`/api${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contentType: file.type,
-      contentLength: file.size,
-      password,
+export async function uploadAllPhotos(
+  items: PendingUpload[],
+): Promise<PendingUpload[]> {
+  const settled = await Promise.allSettled(
+    items.map(async ({ uploadUrl, file }) => {
+      const put = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      throwIfNotOk(put);
     }),
-  });
-
-  if (res.status === 401) return { kind: "botCheckFailed" };
-  throwIfNotOk(res);
-
-  const { key, uploadUrl } = (await res.json()) as { key: string; uploadUrl: string };
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  throwIfNotOk(put);
-  return { kind: "uploaded", key };
+  );
+  return items.filter((_, i) => settled[i].status === "rejected");
 }

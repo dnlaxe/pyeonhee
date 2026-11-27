@@ -16,7 +16,9 @@ func (r *CreateJobRequest) normalize() {
 	r.Area = strings.TrimSpace(r.Area)
 	r.Korean = strings.TrimSpace(r.Korean)
 	r.Description = strings.TrimSpace(r.Description)
-	r.Logo = strings.TrimSpace(r.Logo)
+	if r.Logo != nil {
+		r.Logo.ContentType = strings.TrimSpace(r.Logo.ContentType)
+	}
 }
 
 func (r CreateJobRequest) validate() map[string]string {
@@ -83,6 +85,12 @@ func (r CreateJobRequest) validate() map[string]string {
 		errs["description"] = "Add a little more detail about the job."
 	case n > maxBodyLength:
 		errs["description"] = "Shorten the description."
+	}
+
+	if r.Logo != nil {
+		if _, msg := r.Logo.validate(); msg != "" {
+			errs["logo"] = msg
+		}
 	}
 
 	return errs

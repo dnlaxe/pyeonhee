@@ -59,10 +59,13 @@ func TestCreateJobRequestToItem(t *testing.T) {
 	req := validCreateJobRequest()
 	now := time.Date(2026, 10, 13, 12, 0, 0, 0, time.FixedZone("KST", 9*60*60))
 
-	item := req.toJobItem("TESTID", now)
+	item := req.toJobItem("TESTID", "media/logo.png", now)
 
 	if item.PK != "JOB#TESTID" || item.SK != store.SortKeyMeta || item.ID != "TESTID" {
 		t.Fatalf("keys = %q %q %q", item.PK, item.SK, item.ID)
+	}
+	if item.Logo != "media/logo.png" {
+		t.Fatalf("logo = %q", item.Logo)
 	}
 	if item.EntityType != store.EntityJob {
 		t.Fatalf("entityType = %q", item.EntityType)
@@ -79,5 +82,8 @@ func TestCreateJobRequestToItem(t *testing.T) {
 	}
 	if item.PosterEmail != req.Email || item.EmailOption != req.EmailOption {
 		t.Fatalf("email fields = %q %q", item.PosterEmail, item.EmailOption)
+	}
+	if wantTTL := now.Add(store.PendingTTL).Unix(); item.TTL != wantTTL {
+		t.Fatalf("ttl = %d, want %d", item.TTL, wantTTL)
 	}
 }

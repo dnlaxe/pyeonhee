@@ -13,7 +13,9 @@ func (r *CreateServiceRequest) normalize() {
 	r.Email = strings.TrimSpace(r.Email)
 	r.Webpage = strings.TrimSpace(r.Webpage)
 	r.Message = strings.TrimSpace(r.Message)
-	r.Logo = strings.TrimSpace(r.Logo)
+	if r.Logo != nil {
+		r.Logo.ContentType = strings.TrimSpace(r.Logo.ContentType)
+	}
 }
 
 func (r CreateServiceRequest) validate() map[string]string {
@@ -67,6 +69,12 @@ func (r CreateServiceRequest) validate() map[string]string {
 		errs["message"] = "Add a little more detail about the service."
 	case n > maxBodyLength:
 		errs["message"] = "Shorten the message."
+	}
+
+	if r.Logo != nil {
+		if _, msg := r.Logo.validate(); msg != "" {
+			errs["logo"] = msg
+		}
 	}
 
 	return errs

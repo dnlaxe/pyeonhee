@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -21,6 +22,8 @@ const (
 	EntityJob     = "job"
 	EntityMarket  = "market"
 	EntityService = "service"
+
+	PendingTTL = 24 * time.Hour
 )
 
 var (
@@ -165,9 +168,10 @@ func (s *Store) Publish(ctx context.Context, pk, orderID, paymentKey string) err
 	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:        &s.table,
 		Key:              metaKey(pk),
-		UpdateExpression: new("SET #status = :published, paymentKey = :paymentKey"),
+		UpdateExpression: new("SET #status = :published, paymentKey = :paymentKey REMOVE #ttl"),
 		ExpressionAttributeNames: map[string]string{
 			"#status": "status",
+			"#ttl":    "ttl",
 		},
 		ConditionExpression: new("#status = :pending AND orderId = :orderId"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

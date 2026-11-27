@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/payment"
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
@@ -54,24 +55,55 @@ func (a *App) checkout(w http.ResponseWriter, r *http.Request) {
 
 	var amount int64
 	var orderName string
-	var err error
-
-	orderID := rand.Text()
-
+	var pk string
 	switch kind {
 	case payJob:
-		amount, orderName = jobPriceKRW, jobOrderName
-		err = a.Store.SetOrder(r.Context(), store.JobPK(id), orderID, amount)
+		amount, orderName, pk = jobPriceKRW, jobOrderName, store.JobPK(id)
 	case payMarket:
-		amount, orderName = marketPriceKRW, marketOrderName
-		err = a.Store.SetOrder(r.Context(), store.MarketPK(id), orderID, amount)
+		amount, orderName, pk = marketPriceKRW, marketOrderName, store.MarketPK(id)
 	case payService:
-		amount, orderName = servicePriceKRW, serviceOrderName
-		err = a.Store.SetOrder(r.Context(), store.ServicePK(id), orderID, amount)
+		amount, orderName, pk = servicePriceKRW, serviceOrderName, store.ServicePK(id)
 	default:
 		http.Error(w, "invalid json body", http.StatusBadRequest)
 		return
 	}
+
+	listing, err := a.getPayListing(r.Context(), kind, id)
+	if errors.Is(err, store.ErrNotFound) {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		writeInternalError(w, "checkout: get", err)
+		return
+	}
+	if listing.status != store.StatusPending {
+		http.Error(w, store.ErrNotPending.Error(), http.StatusConflict)
+		return
+	}
+	if listing.ttl > 0 && time.Now().Unix() > listing.ttl {
+		http.Error(w, "listing draft expired", http.StatusGone)
+		return
+	}
+	if len(listing.photos) > 0 {
+		if a.Photos == nil {
+			writeInternalError(w, "checkout", errors.New("UPLOADS_BUCKET not set"))
+			return
+		}
+		for _, key := range listing.photos {
+			if err := a.Photos.CheckUpload(r.Context(), key); err != nil {
+				if errors.Is(err, errBadPhoto) {
+					http.Error(w, "photo upload missing", http.StatusUnprocessableEntity)
+					return
+				}
+				writeInternalError(w, "checkout: photo", err)
+				return
+			}
+		}
+	}
+
+	orderID := rand.Text()
+	err = a.Store.SetOrder(r.Context(), pk, orderID, amount)
 	if err != nil {
 		if errors.Is(err, store.ErrNotPending) {
 			http.Error(w, err.Error(), http.StatusConflict)
@@ -103,6 +135,8 @@ type payListing struct {
 	amount  int64
 	email   string
 	title   string
+	photos  []string
+	ttl     int64
 }
 
 func (a *App) getPayListing(ctx context.Context, kind, id string) (payListing, error) {
@@ -112,19 +146,27 @@ func (a *App) getPayListing(ctx context.Context, kind, id string) (payListing, e
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title}, nil
+		var photos []string
+		if item.Logo != "" {
+			photos = []string{item.Logo}
+		}
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title, photos: photos, ttl: item.TTL}, nil
 	case payMarket:
 		item, err := a.Store.GetMarket(ctx, id)
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title}, nil
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.PosterEmail, title: item.Title, photos: item.Images, ttl: item.TTL}, nil
 	case payService:
 		item, err := a.Store.GetService(ctx, id)
 		if err != nil {
 			return payListing{}, err
 		}
-		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.Contact, title: item.Company}, nil
+		var photos []string
+		if item.Logo != "" {
+			photos = []string{item.Logo}
+		}
+		return payListing{id: item.ID, status: item.Status, orderID: item.OrderID, amount: item.Amount, email: item.Contact, title: item.Company, photos: photos, ttl: item.TTL}, nil
 	default:
 		return payListing{}, store.ErrNotFound
 	}
@@ -185,6 +227,19 @@ func (a *App) confirmPayment(w http.ResponseWriter, r *http.Request) {
 	if err != nil && !errors.Is(err, payment.ErrAlreadyConfirmed) {
 		writeInternalError(w, "confirm: provider", err)
 		return
+	}
+
+	if len(listing.photos) > 0 {
+		if a.Photos == nil {
+			writeInternalError(w, "confirm", errors.New("UPLOADS_BUCKET not set"))
+			return
+		}
+		for _, key := range listing.photos {
+			if err := a.Photos.Promote(r.Context(), key); err != nil {
+				writeInternalError(w, "confirm: promote photo", err)
+				return
+			}
+		}
 	}
 
 	switch kind {

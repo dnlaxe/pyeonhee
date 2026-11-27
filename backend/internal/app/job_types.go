@@ -24,9 +24,9 @@ type CreateJobRequest struct {
 	EmailOption    string `json:"emailOption"`
 	Title          string `json:"title"`
 	Location       string `json:"location"`
-	EmploymentType string `json:"employmentType"`
-	Logo           string `json:"logo,omitempty"`
-	Track          string `json:"track"`
+	EmploymentType string     `json:"employmentType"`
+	Logo           *PhotoSpec `json:"logo,omitempty"`
+	Track          string     `json:"track"`
 	Area           string `json:"area"`
 	Korean         string `json:"korean"`
 	Description    string `json:"description"`
@@ -56,7 +56,7 @@ func toJobResponse(item store.JobItem) JobResponse {
 	return job
 }
 
-func (r CreateJobRequest) toJobItem(id string, now time.Time) store.JobItem {
+func (r CreateJobRequest) toJobItem(id, logo string, now time.Time) store.JobItem {
 	return store.JobItem{
 		PK:             store.JobPK(id),
 		SK:             store.SortKeyMeta,
@@ -67,7 +67,7 @@ func (r CreateJobRequest) toJobItem(id string, now time.Time) store.JobItem {
 		EmploymentType: r.EmploymentType,
 		Track:          r.Track,
 		Area:           r.Area,
-		Logo:           r.Logo,
+		Logo:           logo,
 		Korean:         r.Korean,
 		Description:    r.Description,
 		Tags:           []string{r.EmploymentType, r.Track, r.Area, r.Korean},
@@ -76,5 +76,6 @@ func (r CreateJobRequest) toJobItem(id string, now time.Time) store.JobItem {
 		CreatedAt:      now.UTC().Format(time.RFC3339),
 		PosterEmail:    r.Email,
 		EmailOption:    r.EmailOption,
+		TTL:            now.Add(store.PendingTTL).Unix(),
 	}
 }

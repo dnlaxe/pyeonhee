@@ -30,6 +30,7 @@ type JobItem struct {
 	OrderID        string   `dynamodbav:"orderId,omitempty"`
 	Amount         int64    `dynamodbav:"amount,omitempty"`
 	PaymentKey     string   `dynamodbav:"paymentKey,omitempty"`
+	TTL            int64    `dynamodbav:"ttl,omitempty"`
 }
 
 func (s *Store) GetJob(ctx context.Context, id string) (JobItem, error) {
