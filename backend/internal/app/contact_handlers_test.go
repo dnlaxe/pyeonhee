@@ -49,6 +49,21 @@ func TestContactValidation(t *testing.T) {
 			body:     `{"kind":"job","id":"JOB1","email":"","message":"","password":"secret"}`,
 			wantKeys: []string{"email", "message"},
 		},
+		{
+			name:     "email too long",
+			body:     `{"kind":"job","id":"JOB1","email":"` + strings.Repeat("a", maxEmailLength) + `@b.co","message":"Hello there","password":"secret"}`,
+			wantKeys: []string{"email"},
+		},
+		{
+			name:     "message too short",
+			body:     `{"kind":"job","id":"JOB1","email":"alice@example.com","message":"hi","password":"secret"}`,
+			wantKeys: []string{"message"},
+		},
+		{
+			name:     "message too long",
+			body:     `{"kind":"job","id":"JOB1","email":"alice@example.com","message":"` + strings.Repeat("a", maxShortMessageLength+1) + `","password":"secret"}`,
+			wantKeys: []string{"message"},
+		},
 	}
 
 	for _, tt := range tests {

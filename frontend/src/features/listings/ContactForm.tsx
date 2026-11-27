@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { throwIfNotOk } from "../../lib/httpError.ts";
+import { formRules } from "../../config";
 import {
   Button,
   Form,
@@ -26,21 +27,26 @@ type ContactErrors = {
   message?: string;
 };
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function validateContact(data: FormData): ContactErrors {
   const errors: ContactErrors = {};
+  const rules = formRules.contact;
   const email = String(data.get("email") ?? "").trim();
   const message = String(data.get("message") ?? "").trim();
 
   if (email === "") {
     errors.email = "Enter an email address.";
-  } else if (!EMAIL_PATTERN.test(email)) {
+  } else if (email.length > rules.email.maxLength) {
+    errors.email = "Shorten the email address.";
+  } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
   if (message === "") {
     errors.message = "Enter a message.";
+  } else if (message.length < rules.message.minLength) {
+    errors.message = "Make the message a little longer.";
+  } else if (message.length > rules.message.maxLength) {
+    errors.message = "Shorten the message.";
   }
 
   return errors;

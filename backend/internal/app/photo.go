@@ -15,16 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-const (
-	photoPrefix   = "media/"
-	maxPhotoBytes = 2 << 20
-)
-
-var photoExt = map[string]string{
-	"image/jpeg": "jpg",
-	"image/png":  "png",
-	"image/webp": "webp",
-}
+const photoPrefix = "media/"
 
 func newS3Client(ctx context.Context) (*s3.Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(ctx)

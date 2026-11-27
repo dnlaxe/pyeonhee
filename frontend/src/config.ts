@@ -6,6 +6,18 @@ export const config = {
   },
 } as const;
 
+// Must match backend/internal/app/rules.go.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const WEBPAGE_PATTERN = /^https?:\/\/.+/i;
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
+const EMAIL_RULE = { maxLength: 254, pattern: EMAIL_PATTERN } as const;
+const TITLE_RULE = { minLength: 2, maxLength: 120 } as const;
+const LOCATION_RULE = { minLength: 2, maxLength: 100 } as const;
+const BODY_RULE = { minLength: 40, maxLength: 5000 } as const;
+const SHORT_MESSAGE_RULE = { minLength: 10, maxLength: 2000 } as const;
+
 export const formRules = {
   jobs: {
     copy: {
@@ -14,9 +26,7 @@ export const formRules = {
       privacy:
         "Your job post may appear on the job board for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
-    email: {
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    },
+    email: EMAIL_RULE,
     emailOption: {
       options: [
         {
@@ -29,13 +39,13 @@ export const formRules = {
         },
       ],
     },
-    title: { minLength: 5, maxLength: 120 },
+    title: TITLE_RULE,
     photos: {
       max: 1,
-      maxBytes: 2 * 1024 * 1024,
-      allowedTypes: ["image/jpeg", "image/png", "image/webp"],
+      maxBytes: MAX_PHOTO_BYTES,
+      allowedTypes: ALLOWED_PHOTO_TYPES,
     },
-    location: { maxLength: 100 },
+    location: LOCATION_RULE,
     employmentType: {
       options: ["Full Time", "Part Time", "Internship"] as readonly string[],
     },
@@ -69,7 +79,7 @@ export const formRules = {
         "Fluent Korean required",
       ] as readonly string[],
     },
-    description: { minLength: 40, maxLength: 5000 },
+    description: BODY_RULE,
   },
   market: {
     copy: {
@@ -78,9 +88,7 @@ export const formRules = {
       privacy:
         "Your listing may appear on the market for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
-    email: {
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    },
+    email: EMAIL_RULE,
     emailOption: {
       options: [
         {
@@ -93,21 +101,21 @@ export const formRules = {
         },
       ],
     },
-    title: { maxLength: 120 },
+    title: TITLE_RULE,
     photos: {
       max: 3,
-      maxBytes: 2 * 1024 * 1024,
-      allowedTypes: ["image/jpeg", "image/png", "image/webp"],
+      maxBytes: MAX_PHOTO_BYTES,
+      allowedTypes: ALLOWED_PHOTO_TYPES,
     },
-    location: { maxLength: 100 },
+    location: LOCATION_RULE,
     listingType: {
       options: ["Selling", "Wanted", "Free"] as readonly string[],
     },
     category: {
       options: ["Furniture", "Electronics", "Clothing", "Kitchen", "Books", "Sports"] as readonly string[],
     },
-    price: { maxLength: 120 },
-    description: { minLength: 40, maxLength: 5000 },
+    price: { maxLength: 60 },
+    description: BODY_RULE,
   },
   service: {
     copy: {
@@ -116,7 +124,7 @@ export const formRules = {
       privacy:
         "Your service may appear on English Services for foreigners living in Korea. Include only details you are comfortable sharing publicly. pyeonhee does not sell your information or use it for ads.",
     },
-    company: { maxLength: 120 },
+    company: TITLE_RULE,
     category: {
       options: [
         "Visa",
@@ -131,19 +139,26 @@ export const formRules = {
         "Business setup",
       ] as readonly string[],
     },
-    location: { maxLength: 100 },
-    email: {
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    },
+    location: LOCATION_RULE,
+    email: EMAIL_RULE,
     webpage: {
-      pattern: /^https?:\/\/.+/i,
+      maxLength: 500,
+      pattern: WEBPAGE_PATTERN,
     },
-    message: { minLength: 40, maxLength: 5000 },
+    message: BODY_RULE,
     photos: {
       max: 1,
-      maxBytes: 2 * 1024 * 1024,
-      allowedTypes: ["image/jpeg", "image/png", "image/webp"],
+      maxBytes: MAX_PHOTO_BYTES,
+      allowedTypes: ALLOWED_PHOTO_TYPES,
     },
+  },
+  contact: {
+    email: EMAIL_RULE,
+    message: SHORT_MESSAGE_RULE,
+  },
+  report: {
+    email: EMAIL_RULE,
+    message: SHORT_MESSAGE_RULE,
   },
   payment: {
     options: [{ value: "mock", label: "Mock" }],

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/dnlaxe/pyeonhee/backend/internal/store"
 )
@@ -38,11 +39,19 @@ func (a *App) contact(w http.ResponseWriter, r *http.Request) {
 	errs := map[string]string{}
 	if req.Email == "" {
 		errs["email"] = "Enter an email address."
+	} else if utf8.RuneCountInString(req.Email) > maxEmailLength {
+		errs["email"] = "Shorten the email address."
 	} else if !emailPattern.MatchString(req.Email) {
 		errs["email"] = "Enter a full email address, like name@example.com."
 	}
-	if req.Message == "" {
+	msgLen := utf8.RuneCountInString(req.Message)
+	switch {
+	case msgLen == 0:
 		errs["message"] = "Enter a message."
+	case msgLen < minShortMessageLength:
+		errs["message"] = "Make the message a little longer."
+	case msgLen > maxShortMessageLength:
+		errs["message"] = "Shorten the message."
 	}
 	if req.ID == "" {
 		http.Error(w, "invalid json body", http.StatusBadRequest)

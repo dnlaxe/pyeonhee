@@ -20,36 +20,38 @@ func (r *CreateMarketRequest) normalize() {
 	}
 }
 
-const maxMarketImages = 3
-
-// Must match frontend/src/features/post/constants.ts.
-var (
-	marketListingTypes = []string{"Selling", "Wanted", "Free"}
-	marketCategories   = []string{"Furniture", "Electronics", "Clothing", "Kitchen", "Books", "Sports"}
-)
-
 func (r CreateMarketRequest) validate() map[string]string {
 	errs := map[string]string{}
 
 	if r.Email == "" {
 		errs["email"] = "Enter an email address."
+	} else if utf8.RuneCountInString(r.Email) > maxEmailLength {
+		errs["email"] = "Shorten the email address."
 	} else if !emailPattern.MatchString(r.Email) {
 		errs["email"] = "Enter a full email address, like name@example.com."
 	}
 
-	if !slices.Contains(jobEmailOptions, r.EmailOption) {
+	if !slices.Contains(emailOptions, r.EmailOption) {
 		errs["emailOption"] = "Choose whether to show your email."
 	}
 
-	if r.Title == "" {
+	titleLen := utf8.RuneCountInString(r.Title)
+	switch {
+	case titleLen == 0:
 		errs["title"] = "Add a post title."
-	} else if utf8.RuneCountInString(r.Title) > maxJobTitleLength {
+	case titleLen < minTitleLength:
+		errs["title"] = "Make the title a little longer."
+	case titleLen > maxTitleLength:
 		errs["title"] = "Shorten the post title."
 	}
 
-	if r.Location == "" {
+	locationLen := utf8.RuneCountInString(r.Location)
+	switch {
+	case locationLen == 0:
 		errs["location"] = "Add a location."
-	} else if utf8.RuneCountInString(r.Location) > maxJobLocationLength {
+	case locationLen < minLocationLength:
+		errs["location"] = "Make the location a little longer."
+	case locationLen > maxLocationLength:
 		errs["location"] = "Shorten the location."
 	}
 
@@ -63,7 +65,7 @@ func (r CreateMarketRequest) validate() map[string]string {
 
 	if r.Price == "" {
 		errs["price"] = "Add a price."
-	} else if utf8.RuneCountInString(r.Price) > maxJobTitleLength {
+	} else if utf8.RuneCountInString(r.Price) > maxPriceLength {
 		errs["price"] = "Shorten the price."
 	}
 
@@ -71,9 +73,9 @@ func (r CreateMarketRequest) validate() map[string]string {
 	switch {
 	case n == 0:
 		errs["description"] = "Add a description."
-	case n < minJobDescriptionLength:
+	case n < minBodyLength:
 		errs["description"] = "Add a little more detail about the item."
-	case n > maxJobDescriptionLength:
+	case n > maxBodyLength:
 		errs["description"] = "Shorten the description."
 	}
 
