@@ -107,7 +107,7 @@ export function ServicePostForm() {
     if (!fields) return;
     sessionStorage.setItem("serviceDraft", JSON.stringify({ ...fields, id }));
     sessionStorage.setItem("payTarget", "service");
-    navigate("/pay");
+    navigate(`/pay/service/${id}`);
   }
 
   function submitService(password: string) {

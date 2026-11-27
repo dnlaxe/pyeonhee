@@ -119,7 +119,7 @@ export function MarketPostForm() {
     if (!fields) return;
     sessionStorage.setItem("marketDraft", JSON.stringify({ ...fields, id }));
     sessionStorage.setItem("payTarget", "market");
-    navigate("/pay");
+    navigate(`/pay/market/${id}`);
   }
 
   function submitMarket(password: string) {

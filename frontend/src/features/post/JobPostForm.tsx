@@ -122,7 +122,7 @@ export function JobPostForm() {
     if (!fields) return;
     sessionStorage.setItem("jobDraft", JSON.stringify({ ...fields, id }));
     sessionStorage.setItem("payTarget", "job");
-    navigate("/pay");
+    navigate(`/pay/job/${id}`);
   }
 
   function submitJob(password: string) {

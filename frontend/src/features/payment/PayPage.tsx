@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useSearchParams } from "react-router";
+import { useEffect, useRef, type ReactNode } from "react";
+import { useParams, useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Container, ErrorMessage } from "../../shared";
 import { AppError, throwIfNotOk } from "../../lib/httpError";
@@ -53,6 +53,27 @@ function readDraft(): PayDraft | null {
   };
 }
 
+function resolveDraft(kindParam?: string, idParam?: string): PayDraft | null {
+  const source = draftSources.find((s) => s.kind === kindParam);
+  if (source && idParam) {
+    const stored = readDraft();
+    const title =
+      stored &&
+      stored.kind === source.kind &&
+      stored.id === idParam &&
+      stored.title
+        ? stored.title
+        : `your ${source.kind} post`;
+    return {
+      kind: source.kind,
+      id: idParam,
+      title,
+      cancelTo: source.cancelTo,
+    };
+  }
+  return readDraft();
+}
+
 function payUrl(path: string, kind: PayKind, id: string) {
   const q = new URLSearchParams({ kind, id });
   return `${window.location.origin}${path}?${q}`;
@@ -64,6 +85,26 @@ async function checkout(draft: PayDraft): Promise<Order> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ kind: draft.kind, id: draft.id }),
   });
+  if (res.status === 422) {
+    throw new AppError(
+      "Your photo didn't finish uploading. Return to the form and try again.",
+      {
+        tone: "warning",
+        title: "Photo upload missing",
+        status: 422,
+      },
+    );
+  }
+  if (res.status === 410) {
+    throw new AppError(
+      "This post draft has expired. Return to the form to submit again.",
+      {
+        tone: "warning",
+        title: "Draft expired",
+        status: 410,
+      },
+    );
+  }
   throwIfNotOk(res);
   return (await res.json()) as Order;
 }
@@ -120,7 +161,8 @@ function PayLayout({ title, children }: { title: string; children: ReactNode }) 
 }
 
 export function PayPage() {
-  const [draft] = useState(readDraft);
+  const { kind, id } = useParams<{ kind?: string; id?: string }>();
+  const draft = resolveDraft(kind, id);
   const start = useMutation({ mutationFn: checkout });
 
   if (!draft) {
@@ -224,7 +266,7 @@ export function PaySuccessPage() {
       <PayLayout title="Payment not completed">
         <ErrorMessage error={confirm.error} />
         <div>
-          <Button to="/pay">Try again</Button>
+          <Button to={`/pay/${kind}/${id}`}>Try again</Button>
         </div>
       </PayLayout>
     );
@@ -263,6 +305,12 @@ export function PaySuccessPage() {
 export function PayFailPage() {
   const [params] = useSearchParams();
   const cancelled = params.get("code") === "PAY_PROCESS_CANCELED";
+  const kind = params.get("kind");
+  const id = params.get("id");
+  const retryTo =
+    (kind === "job" || kind === "market" || kind === "service") && id
+      ? `/pay/${kind}/${id}`
+      : "/pay";
 
   return (
     <PayLayout title="Payment not completed">
@@ -272,7 +320,7 @@ export function PayFailPage() {
           : "The payment did not go through."}
       </p>
       <div>
-        <Button to="/pay">Try again</Button>
+        <Button to={retryTo}>Try again</Button>
       </div>
     </PayLayout>
   );

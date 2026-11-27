@@ -39,6 +39,7 @@ export function App() {
           <Route path="/pay" element={<PayPage />} />
           <Route path="/pay/success" element={<PaySuccessPage />} />
           <Route path="/pay/fail" element={<PayFailPage />} />
+          <Route path="/pay/:kind/:id" element={<PayPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/report/:kind/:id" element={<ReportPage />} />
           <Route path="*" element={<NotFound />} />
