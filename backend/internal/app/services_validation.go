@@ -1,7 +1,6 @@
 package app
 
 import (
-	"regexp"
 	"slices"
 	"strings"
 	"unicode/utf8"
@@ -17,29 +16,16 @@ func (r *CreateServiceRequest) normalize() {
 	r.Logo = strings.TrimSpace(r.Logo)
 }
 
-// Must match frontend/src/features/post/constants.ts.
-
-var serviceCategories = []string{
-	"Visa",
-	"Translation",
-	"Legal",
-	"Housing",
-	"Banking",
-	"Phone & SIM",
-	"Moving",
-	"Tutoring",
-	"Healthcare",
-	"Business setup",
-}
-
-var webpagePattern = regexp.MustCompile(`(?i)^https?://.+`)
-
 func (r CreateServiceRequest) validate() map[string]string {
 	errs := map[string]string{}
 
-	if r.Company == "" {
+	companyLen := utf8.RuneCountInString(r.Company)
+	switch {
+	case companyLen == 0:
 		errs["company"] = "Add a company name."
-	} else if utf8.RuneCountInString(r.Company) > maxJobTitleLength {
+	case companyLen < minTitleLength:
+		errs["company"] = "Make the company name a little longer."
+	case companyLen > maxTitleLength:
 		errs["company"] = "Shorten the company name."
 	}
 
@@ -47,29 +33,39 @@ func (r CreateServiceRequest) validate() map[string]string {
 		errs["category"] = "Choose a service."
 	}
 
-	if r.Location == "" {
+	locationLen := utf8.RuneCountInString(r.Location)
+	switch {
+	case locationLen == 0:
 		errs["location"] = "Add a location."
-	} else if utf8.RuneCountInString(r.Location) > maxJobLocationLength {
+	case locationLen < minLocationLength:
+		errs["location"] = "Make the location a little longer."
+	case locationLen > maxLocationLength:
 		errs["location"] = "Shorten the location."
 	}
 
 	if r.Email == "" {
 		errs["email"] = "Enter an email address."
+	} else if utf8.RuneCountInString(r.Email) > maxEmailLength {
+		errs["email"] = "Shorten the email address."
 	} else if !emailPattern.MatchString(r.Email) {
 		errs["email"] = "Enter a full email address, like name@example.com."
 	}
 
-	if r.Webpage != "" && !webpagePattern.MatchString(r.Webpage) {
-		errs["webpage"] = "Enter a full link, like https://example.com."
+	if r.Webpage != "" {
+		if utf8.RuneCountInString(r.Webpage) > maxWebpageLength {
+			errs["webpage"] = "Shorten the link."
+		} else if !webpagePattern.MatchString(r.Webpage) {
+			errs["webpage"] = "Enter a full link, like https://example.com."
+		}
 	}
 
 	n := utf8.RuneCountInString(r.Message)
 	switch {
 	case n == 0:
 		errs["message"] = "Add a message."
-	case n < minJobDescriptionLength:
+	case n < minBodyLength:
 		errs["message"] = "Add a little more detail about the service."
-	case n > maxJobDescriptionLength:
+	case n > maxBodyLength:
 		errs["message"] = "Shorten the message."
 	}
 

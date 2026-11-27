@@ -24,14 +24,15 @@ export function JobDetails() {
     data: job,
     isPending,
     error,
+    refetch,
   } = useQuery(jobDetailQueryOptions(queryClient, id));
 
   if (!apiUrl) {
     return (
       <main>
         <Container>
-          <p className="heading-section text-tone-danger m-0">
-            VITE_API_URL is not set
+          <p className="text-tone-danger">
+            Something went wrong. Please try again later.
           </p>
         </Container>
       </main>
@@ -45,9 +46,13 @@ export function JobDetails() {
   if (error) {
     return (
       <main>
-        <Container>
-          <ErrorMessage error={error} />
-        </Container>
+        <ErrorMessage
+          error={error}
+          variant="page"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </main>
     );
   }

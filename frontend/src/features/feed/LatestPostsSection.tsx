@@ -16,6 +16,7 @@ type LatestPostsSectionProps = {
   services: Service[];
   isPending?: boolean;
   error?: Error | null;
+  onRetry?: () => void;
   apiUrl?: string;
   kind: FeedKindFilter;
   query: string;
@@ -30,6 +31,7 @@ export function LatestPostsSection({
   services,
   isPending,
   error = null,
+  onRetry,
   apiUrl,
   kind,
   query,
@@ -121,12 +123,18 @@ export function LatestPostsSection({
           <h2 className="heading-section m-0 mt-3 mb-2">Latest Posts</h2>
 
           {!apiUrl && (
-            <p className="text-tone-danger">VITE_API_URL is not set</p>
+            <p className="text-tone-danger">
+              Something went wrong. Please try again later.
+            </p>
           )}
 
           {apiUrl && isPending ? <ListingCardSkeletonGrid /> : null}
 
-          {error && <ErrorMessage error={error} />}
+          {error && (
+            <div className="mt-4">
+              <ErrorMessage error={error} onRetry={onRetry} />
+            </div>
+          )}
 
           {!isPending &&
             apiUrl &&

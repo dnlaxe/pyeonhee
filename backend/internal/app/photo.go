@@ -15,16 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-const (
-	photoPrefix   = "media/"
-	maxPhotoBytes = 2 << 20
-)
-
-var photoExt = map[string]string{
-	"image/jpeg": "jpg",
-	"image/png":  "png",
-	"image/webp": "webp",
-}
+const photoPrefix = "media/"
 
 func newS3Client(ctx context.Context) (*s3.Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(ctx)
@@ -63,7 +54,7 @@ func (a *App) createPhoto(w http.ResponseWriter, r *http.Request) {
 		errs["contentType"] = "Use a JPEG, PNG, or WebP image."
 	}
 	if req.ContentLength < 1 || req.ContentLength > maxPhotoBytes {
-		errs["contentLength"] = "Image must be 2 MB or smaller."
+		errs["contentLength"] = "Use a photo smaller than 2 MB."
 	}
 	if len(errs) > 0 {
 		writeValidationErrors(w, errs)

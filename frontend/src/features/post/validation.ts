@@ -2,6 +2,7 @@ import { formRules } from "../../config";
 
 export type JobErrors = {
   email?: string;
+  emailOption?: string;
   title?: string;
   location?: string;
   employmentType?: string;
@@ -17,6 +18,7 @@ export function validateJob(data: FormData): JobErrors {
   const rules = formRules.jobs;
 
   const email = String(data.get("email") ?? "").trim();
+  const emailOption = String(data.get("emailOption") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
   const location = String(data.get("location") ?? "").trim();
   const employmentType = String(data.get("employmentType") ?? "").trim();
@@ -27,8 +29,14 @@ export function validateJob(data: FormData): JobErrors {
 
   if (email === "") {
     errors.email = "Enter an email address.";
+  } else if (email.length > rules.email.maxLength) {
+    errors.email = "Shorten the email address.";
   } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
+  }
+
+  if (!rules.emailOption.options.some((o) => o.value === emailOption)) {
+    errors.emailOption = "Choose whether to show your email.";
   }
 
   if (title === "") {
@@ -41,6 +49,8 @@ export function validateJob(data: FormData): JobErrors {
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length < rules.location.minLength) {
+    errors.location = "Make the location a little longer.";
   } else if (location.length > rules.location.maxLength) {
     errors.location = "Shorten the location.";
   }
@@ -72,6 +82,7 @@ export function validateJob(data: FormData): JobErrors {
 
 export type MarketErrors = {
   email?: string;
+  emailOption?: string;
   title?: string;
   location?: string;
   listingType?: string;
@@ -86,6 +97,7 @@ export function validateMarket(data: FormData): MarketErrors {
   const rules = formRules.market;
 
   const email = String(data.get("email") ?? "").trim();
+  const emailOption = String(data.get("emailOption") ?? "").trim();
   const title = String(data.get("title") ?? "").trim();
   const location = String(data.get("location") ?? "").trim();
   const listingType = String(data.get("listingType") ?? "").trim();
@@ -95,18 +107,28 @@ export function validateMarket(data: FormData): MarketErrors {
 
   if (email === "") {
     errors.email = "Enter an email address.";
+  } else if (email.length > rules.email.maxLength) {
+    errors.email = "Shorten the email address.";
   } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
+  if (!rules.emailOption.options.some((o) => o.value === emailOption)) {
+    errors.emailOption = "Choose whether to show your email.";
+  }
+
   if (title === "") {
     errors.title = "Add a post title.";
+  } else if (title.length < rules.title.minLength) {
+    errors.title = "Make the title a little longer.";
   } else if (title.length > rules.title.maxLength) {
     errors.title = "Shorten the post title.";
   }
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length < rules.location.minLength) {
+    errors.location = "Make the location a little longer.";
   } else if (location.length > rules.location.maxLength) {
     errors.location = "Shorten the location.";
   }
@@ -157,6 +179,8 @@ export function validateService(data: FormData): ServiceErrors {
 
   if (company === "") {
     errors.company = "Add a company name.";
+  } else if (company.length < rules.company.minLength) {
+    errors.company = "Make the company name a little longer.";
   } else if (company.length > rules.company.maxLength) {
     errors.company = "Shorten the company name.";
   }
@@ -167,18 +191,26 @@ export function validateService(data: FormData): ServiceErrors {
 
   if (location === "") {
     errors.location = "Add a location.";
+  } else if (location.length < rules.location.minLength) {
+    errors.location = "Make the location a little longer.";
   } else if (location.length > rules.location.maxLength) {
     errors.location = "Shorten the location.";
   }
 
   if (email === "") {
     errors.email = "Enter an email address.";
+  } else if (email.length > rules.email.maxLength) {
+    errors.email = "Shorten the email address.";
   } else if (!rules.email.pattern.test(email)) {
     errors.email = "Enter a full email address, like name@example.com.";
   }
 
-  if (webpage !== "" && !rules.webpage.pattern.test(webpage)) {
-    errors.webpage = "Enter a full link, like https://example.com.";
+  if (webpage !== "") {
+    if (webpage.length > rules.webpage.maxLength) {
+      errors.webpage = "Shorten the link.";
+    } else if (!rules.webpage.pattern.test(webpage)) {
+      errors.webpage = "Enter a full link, like https://example.com.";
+    }
   }
 
   if (message === "") {

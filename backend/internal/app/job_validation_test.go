@@ -15,7 +15,7 @@ func validCreateJobRequest() CreateJobRequest {
 		Track:          "Teaching",
 		Area:           "English Teaching",
 		Korean:         "No Korean required",
-		Description:    strings.Repeat("a", minJobDescriptionLength),
+		Description:    strings.Repeat("a", minBodyLength),
 	}
 }
 
@@ -28,9 +28,12 @@ func TestCreateJobRequestValidate(t *testing.T) {
 		{"valid", func(r *CreateJobRequest) {}, ""},
 		{"missing email", func(r *CreateJobRequest) { r.Email = "" }, "email"},
 		{"incomplete email", func(r *CreateJobRequest) { r.Email = "name@" }, "email"},
+		{"email too long", func(r *CreateJobRequest) { r.Email = strings.Repeat("a", maxEmailLength) + "@b.co" }, "email"},
 		{"unknown email option", func(r *CreateJobRequest) { r.EmailOption = "maybe" }, "emailOption"},
 		{"missing title", func(r *CreateJobRequest) { r.Title = "" }, "title"},
-		{"title too long", func(r *CreateJobRequest) { r.Title = strings.Repeat("a", maxJobTitleLength+1) }, "title"},
+		{"title too short", func(r *CreateJobRequest) { r.Title = "a" }, "title"},
+		{"title too long", func(r *CreateJobRequest) { r.Title = strings.Repeat("a", maxTitleLength+1) }, "title"},
+		{"location too short", func(r *CreateJobRequest) { r.Location = "a" }, "location"},
 		{"unknown employment type", func(r *CreateJobRequest) { r.EmploymentType = "Astronaut" }, "employmentType"},
 		{"old lowercase track", func(r *CreateJobRequest) { r.Track = "teaching" }, "track"},
 		{"area from other track", func(r *CreateJobRequest) { r.Area = "Front End" }, "area"},

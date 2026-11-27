@@ -7,7 +7,7 @@
   --color-accent-hover: #4fb6d6;
   --color-border: #dddddd;
   --color-surface: #f8f8f8;
-  --color-danger: #0072ce;
+  --color-danger: #dc2626;
   --color-warning: #b45309;
   --color-success: #16a34a;
   --color-ink: #000000;
@@ -18,6 +18,7 @@
   color-scheme: light;
 
   --color-on-accent: #1a1a1a;
+  --color-on-danger: #ffffff;
   --color-elevated: #ffffff;
   --color-scrim: #000000;
   --color-choice-bg: color-mix(in srgb, var(--color-ink) 50%, transparent);
@@ -78,12 +79,13 @@
   --color-accent-hover: #89d4ec;
   --color-border: #2a2d33;
   --color-surface: #181a1e;
-  --color-danger: #3b9eff;
+  --color-danger: #f87171;
   --color-warning: #f59e0b;
   --color-success: #22c55e;
   --color-ink: #ffffff;
 
   --color-on-accent: #111214;
+  --color-on-danger: #111214;
   --color-elevated: #1c1f24;
   --color-choice-bg: #22252b;
   --color-choice-hover: #2c3038;

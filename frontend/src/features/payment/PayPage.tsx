@@ -98,10 +98,11 @@ async function confirmPayment(body: ConfirmVars): Promise<PayKind> {
     body: JSON.stringify(body),
   });
   if (res.status === 402) {
-    throw new AppError(
-      "Your payment was declined. Please try again.",
-      "warning",
-    );
+    throw new AppError("Your payment was declined. Please try again.", {
+      tone: "warning",
+      title: "Payment declined",
+      status: 402,
+    });
   }
   throwIfNotOk(res);
   return body.kind;

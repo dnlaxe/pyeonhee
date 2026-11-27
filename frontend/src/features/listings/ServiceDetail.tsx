@@ -22,13 +22,16 @@ export function ServiceDetail() {
     data: service,
     isPending,
     error,
+    refetch,
   } = useQuery(serviceDetailQueryOptions(queryClient, id));
 
   if (!apiUrl) {
     return (
       <main>
         <Container>
-          <p className="text-tone-danger">VITE_API_URL is not set</p>
+          <p className="text-tone-danger">
+            Something went wrong. Please try again later.
+          </p>
         </Container>
       </main>
     );
@@ -41,9 +44,13 @@ export function ServiceDetail() {
   if (error) {
     return (
       <main>
-        <Container>
-          <ErrorMessage error={error} />
-        </Container>
+        <ErrorMessage
+          error={error}
+          variant="page"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </main>
     );
   }

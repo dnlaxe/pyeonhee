@@ -200,6 +200,7 @@ export function JobPostForm() {
             name="emailOption"
             options={formRules.jobs.emailOption.options}
             defaultValue={draft?.emailOption === "show" ? "show" : "hide"}
+            error={errors.emailOption}
           />
 
           <FormField label="Post title:" error={errors.title}>
