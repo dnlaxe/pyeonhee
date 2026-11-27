@@ -37,6 +37,7 @@ type App struct {
 	BotCheck      botcheck.Checker
 	Uploads       *s3.Client
 	UploadsBucket string
+	Photos        PhotoStore
 	Mail          mail.Sender
 }
 
@@ -67,11 +68,13 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 	}
 
 	var uploads *s3.Client
+	var photos PhotoStore
 	if cfg.UploadsBucket != "" {
 		uploads, err = newS3Client(ctx)
 		if err != nil {
 			return nil, err
 		}
+		photos = newS3PhotoStore(uploads, cfg.UploadsBucket)
 	}
 
 	return &App{
@@ -82,6 +85,7 @@ func New(ctx context.Context, cfg config.Config) (*App, error) {
 		BotCheck:      botCheck,
 		Uploads:       uploads,
 		UploadsBucket: cfg.UploadsBucket,
+		Photos:        photos,
 		Mail:          mailer,
 	}, nil
 }
