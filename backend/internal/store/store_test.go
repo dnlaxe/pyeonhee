@@ -149,11 +149,15 @@ func TestListPublishedListings(t *testing.T) {
 
 func TestSetOrder(t *testing.T) {
 	db := &fakeDB{}
-	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); err != nil {
+	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "", "ORDER1", 5000); err != nil {
 		t.Fatal(err)
 	}
 	if pk := str(db.update.Key["PK"]); pk != "JOB#JOB1" {
 		t.Fatalf("PK = %q", pk)
+	}
+	wantCond := "attribute_exists(PK) AND #status = :pending AND attribute_not_exists(orderId)"
+	if db.update.ConditionExpression == nil || *db.update.ConditionExpression != wantCond {
+		t.Fatalf("ConditionExpression = %v, want %q", db.update.ConditionExpression, wantCond)
 	}
 	values := db.update.ExpressionAttributeValues
 	if str(values[":orderId"]) != "ORDER1" || str(values[":amount"]) != "5000" {
@@ -182,7 +186,7 @@ func TestUpdatesMapConditionFailureToNotPending(t *testing.T) {
 	db := &fakeDB{updateErr: &types.ConditionalCheckFailedException{}}
 	s := New(db, "t")
 
-	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
+	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "", "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
 		t.Fatalf("SetOrder err = %v", err)
 	}
 	if err := s.Publish(context.Background(), JobPK("JOB1"), "ORDER1", "k"); !errors.Is(err, ErrNotPending) {
