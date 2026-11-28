@@ -149,14 +149,53 @@ func TestListPublishedListings(t *testing.T) {
 
 func TestSetOrder(t *testing.T) {
 	db := &fakeDB{}
-	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); err != nil {
+	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "", "ORDER1", 5000); err != nil {
 		t.Fatal(err)
 	}
-	if pk := str(db.update.Key["PK"]); pk != "JOB#JOB1" {
-		t.Fatalf("PK = %q", pk)
+	if pk, sk := str(db.update.Key["PK"]), str(db.update.Key["SK"]); pk != "JOB#JOB1" || sk != SortKeyMeta {
+		t.Fatalf("key = (%q, %q)", pk, sk)
+	}
+	wantUpdate := "SET orderId = :orderId, amount = :amount"
+	if db.update.UpdateExpression == nil || *db.update.UpdateExpression != wantUpdate {
+		t.Fatalf("UpdateExpression = %v, want %q", db.update.UpdateExpression, wantUpdate)
+	}
+	wantCond := "attribute_exists(PK) AND #status = :pending AND attribute_not_exists(orderId)"
+	if db.update.ConditionExpression == nil || *db.update.ConditionExpression != wantCond {
+		t.Fatalf("ConditionExpression = %v, want %q", db.update.ConditionExpression, wantCond)
+	}
+	if db.update.ExpressionAttributeNames["#status"] != "status" {
+		t.Fatalf("expression attribute names = %v", db.update.ExpressionAttributeNames)
 	}
 	values := db.update.ExpressionAttributeValues
-	if str(values[":orderId"]) != "ORDER1" || str(values[":amount"]) != "5000" {
+	if str(values[":orderId"]) != "ORDER1" || str(values[":amount"]) != "5000" || str(values[":pending"]) != StatusPending {
+		t.Fatalf("update values = %v", values)
+	}
+	if _, hasPrev := values[":prevOrderId"]; hasPrev {
+		t.Fatalf("unexpected :prevOrderId in first checkout values: %v", values)
+	}
+}
+
+func TestSetOrderRetry(t *testing.T) {
+	db := &fakeDB{}
+	if err := New(db, "t").SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", "ORDER2", 5000); err != nil {
+		t.Fatal(err)
+	}
+	if pk, sk := str(db.update.Key["PK"]), str(db.update.Key["SK"]); pk != "JOB#JOB1" || sk != SortKeyMeta {
+		t.Fatalf("key = (%q, %q)", pk, sk)
+	}
+	wantUpdate := "SET orderId = :orderId, amount = :amount"
+	if db.update.UpdateExpression == nil || *db.update.UpdateExpression != wantUpdate {
+		t.Fatalf("UpdateExpression = %v, want %q", db.update.UpdateExpression, wantUpdate)
+	}
+	wantCond := "attribute_exists(PK) AND #status = :pending AND orderId = :prevOrderId"
+	if db.update.ConditionExpression == nil || *db.update.ConditionExpression != wantCond {
+		t.Fatalf("ConditionExpression = %v, want %q", db.update.ConditionExpression, wantCond)
+	}
+	if db.update.ExpressionAttributeNames["#status"] != "status" {
+		t.Fatalf("expression attribute names = %v", db.update.ExpressionAttributeNames)
+	}
+	values := db.update.ExpressionAttributeValues
+	if str(values[":prevOrderId"]) != "ORDER1" || str(values[":orderId"]) != "ORDER2" || str(values[":amount"]) != "5000" || str(values[":pending"]) != StatusPending {
 		t.Fatalf("update values = %v", values)
 	}
 }
@@ -182,11 +221,23 @@ func TestUpdatesMapConditionFailureToNotPending(t *testing.T) {
 	db := &fakeDB{updateErr: &types.ConditionalCheckFailedException{}}
 	s := New(db, "t")
 
-	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
+	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "", "ORDER1", 5000); !errors.Is(err, ErrNotPending) {
 		t.Fatalf("SetOrder err = %v", err)
+	}
+	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", "ORDER2", 5000); !errors.Is(err, ErrNotPending) {
+		t.Fatalf("SetOrder retry err = %v", err)
 	}
 	if err := s.Publish(context.Background(), JobPK("JOB1"), "ORDER1", "k"); !errors.Is(err, ErrNotPending) {
 		t.Fatalf("Publish err = %v", err)
+	}
+}
+
+func TestSetOrderPropagatesOtherErrors(t *testing.T) {
+	want := errors.New("dynamo down")
+	s := New(&fakeDB{updateErr: want}, "t")
+
+	if err := s.SetOrder(context.Background(), JobPK("JOB1"), "ORDER1", "ORDER2", 5000); !errors.Is(err, want) || errors.Is(err, ErrNotPending) {
+		t.Fatalf("SetOrder err = %v, want %v", err, want)
 	}
 }
 

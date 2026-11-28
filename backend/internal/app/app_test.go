@@ -28,6 +28,7 @@ type fakeStore struct {
 
 	orderErr    error
 	orderJobID  string
+	orderPrevID string
 	orderID     string
 	orderAmount int64
 
@@ -87,14 +88,54 @@ func (f *fakeStore) PutReport(_ context.Context, item store.ReportItem) error {
 	return nil
 }
 
-func (f *fakeStore) SetOrder(_ context.Context, pk, orderID string, amount int64) error {
-	f.orderJobID, f.orderID, f.orderAmount = pk, orderID, amount
-	return f.orderErr
+func (f *fakeStore) SetOrder(_ context.Context, pk, prevOrderID, orderID string, amount int64) error {
+	f.orderJobID, f.orderPrevID, f.orderID, f.orderAmount = pk, prevOrderID, orderID, amount
+	if f.orderErr != nil {
+		return f.orderErr
+	}
+	switch {
+	case f.job != nil && pk == store.JobPK(f.job.ID):
+		if f.job.Status != store.StatusPending || f.job.OrderID != prevOrderID {
+			return store.ErrNotPending
+		}
+		f.job.OrderID, f.job.Amount = orderID, amount
+	case f.market != nil && pk == store.MarketPK(f.market.ID):
+		if f.market.Status != store.StatusPending || f.market.OrderID != prevOrderID {
+			return store.ErrNotPending
+		}
+		f.market.OrderID, f.market.Amount = orderID, amount
+	case f.service != nil && pk == store.ServicePK(f.service.ID):
+		if f.service.Status != store.StatusPending || f.service.OrderID != prevOrderID {
+			return store.ErrNotPending
+		}
+		f.service.OrderID, f.service.Amount = orderID, amount
+	}
+	return nil
 }
 
-func (f *fakeStore) Publish(_ context.Context, _, _, paymentKey string) error {
+func (f *fakeStore) Publish(_ context.Context, pk, orderID, paymentKey string) error {
+	if f.publishErr != nil {
+		return f.publishErr
+	}
+	switch {
+	case f.job != nil && pk == store.JobPK(f.job.ID):
+		if f.job.Status != store.StatusPending || f.job.OrderID != orderID {
+			return store.ErrNotPending
+		}
+		f.job.Status, f.job.PaymentKey = store.StatusPublished, paymentKey
+	case f.market != nil && pk == store.MarketPK(f.market.ID):
+		if f.market.Status != store.StatusPending || f.market.OrderID != orderID {
+			return store.ErrNotPending
+		}
+		f.market.Status, f.market.PaymentKey = store.StatusPublished, paymentKey
+	case f.service != nil && pk == store.ServicePK(f.service.ID):
+		if f.service.Status != store.StatusPending || f.service.OrderID != orderID {
+			return store.ErrNotPending
+		}
+		f.service.Status, f.service.PaymentKey = store.StatusPublished, paymentKey
+	}
 	f.published, f.publishedKey = true, paymentKey
-	return f.publishErr
+	return nil
 }
 
 func TestListListings(t *testing.T) {

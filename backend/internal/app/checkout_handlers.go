@@ -103,7 +103,7 @@ func (a *App) checkout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	orderID := rand.Text()
-	err = a.Store.SetOrder(r.Context(), pk, orderID, amount)
+	err = a.Store.SetOrder(r.Context(), pk, listing.orderID, orderID, amount)
 	if err != nil {
 		if errors.Is(err, store.ErrNotPending) {
 			http.Error(w, err.Error(), http.StatusConflict)
