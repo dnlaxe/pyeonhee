@@ -105,6 +105,16 @@ async function checkout(draft: PayDraft): Promise<Order> {
       },
     );
   }
+  if (res.status === 409) {
+    throw new AppError(
+      "This post is already live or another payment attempt was just started. Refresh or check your post before trying again.",
+      {
+        tone: "warning",
+        title: "Payment unavailable",
+        status: 409,
+      },
+    );
+  }
   throwIfNotOk(res);
   return (await res.json()) as Order;
 }
