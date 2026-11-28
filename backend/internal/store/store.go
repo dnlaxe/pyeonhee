@@ -152,19 +152,25 @@ func (s *Store) getMeta(ctx context.Context, pk string, out any) error {
 }
 
 func (s *Store) SetOrder(ctx context.Context, pk, prevOrderID, orderID string, amount int64) error {
+	cond := "attribute_exists(PK) AND #status = :pending AND attribute_not_exists(orderId)"
+	values := map[string]types.AttributeValue{
+		":orderId": &types.AttributeValueMemberS{Value: orderID},
+		":amount":  &types.AttributeValueMemberN{Value: strconv.FormatInt(amount, 10)},
+		":pending": &types.AttributeValueMemberS{Value: StatusPending},
+	}
+	if prevOrderID != "" {
+		cond = "attribute_exists(PK) AND #status = :pending AND orderId = :prevOrderId"
+		values[":prevOrderId"] = &types.AttributeValueMemberS{Value: prevOrderID}
+	}
 	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           &s.table,
 		Key:                 metaKey(pk),
 		UpdateExpression:    new("SET orderId = :orderId, amount = :amount"),
-		ConditionExpression: new("attribute_exists(PK) AND #status = :pending AND attribute_not_exists(orderId)"),
+		ConditionExpression: &cond,
 		ExpressionAttributeNames: map[string]string{
 			"#status": "status",
 		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":orderId": &types.AttributeValueMemberS{Value: orderID},
-			":amount":  &types.AttributeValueMemberN{Value: strconv.FormatInt(amount, 10)},
-			":pending": &types.AttributeValueMemberS{Value: StatusPending},
-		},
+		ExpressionAttributeValues: values,
 	})
 	return notPendingOr(err)
 }
