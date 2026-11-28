@@ -151,7 +151,7 @@ func (s *Store) getMeta(ctx context.Context, pk string, out any) error {
 	return nil
 }
 
-func (s *Store) SetOrder(ctx context.Context, pk, orderID string, amount int64) error {
+func (s *Store) SetOrder(ctx context.Context, pk, prevOrderID, orderID string, amount int64) error {
 	_, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           &s.table,
 		Key:                 metaKey(pk),

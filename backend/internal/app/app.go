@@ -25,7 +25,7 @@ type Store interface {
 
 	PutReport(ctx context.Context, item store.ReportItem) error
 
-	SetOrder(ctx context.Context, pk, orderID string, amount int64) error
+	SetOrder(ctx context.Context, pk, prevOrderID, orderID string, amount int64) error
 	Publish(ctx context.Context, pk, orderID, paymentKey string) error
 }
 
